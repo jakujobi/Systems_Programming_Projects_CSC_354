@@ -280,3 +280,68 @@ class Validator:
         return self.validate_symbol(symbol)
 
 
+class SymbolTableLogic:
+    """
+    Manages the high-level logic for file processing and symbol table management.
+    """
+    def __init__(self):
+        self.symbol_table = SymbolTable()
+        self.file_explorer = FileExplorer()
+        self.validator = Validator()
+
+    def process_syms_file(self, file_path):
+        """
+        Process SYMS.DAT file and insert valid symbols into the symbol table.
+        """
+        lines = self.file_explorer.open_SYSM_file(file_path)
+        for line in lines:
+            validation_result = self.validator.validate_syms_line(line)
+            if isinstance(validation_result, SymbolData):
+                self.symbol_table.insert(validation_result)
+            else:
+                print(validation_result)  # Print error message
+
+    def process_search_file(self, file_path):
+        """
+        Process search file and search symbols in the symbol table.
+        """
+        lines = self.file_explorer.open_SYSM_file(file_path)
+        for line in lines:
+            symbol = line.strip().upper()[:4]
+            result = self.symbol_table.search(symbol)
+            if result:
+                print(f"Found: {result.symbol}, Value: {result.value}, RFlag: {result.rflag}")
+            else:
+                print(f"Error: {symbol} not found")
+
+    def display_symbol_table(self):
+        """
+        Display the symbol table in order.
+        """
+        self.symbol_table.view()
+
+def main():
+    """
+    Main program logic to handle command-line arguments and process files.
+    """
+    manager = SymbolTableLogic()
+
+    # Process SYMS.DAT file
+    if len(sys.argv) < 2:
+        syms_file = input("Enter the SYMS.DAT file path: ")
+    else:
+        syms_file = sys.argv[1]
+    manager.process_syms_file(syms_file)
+
+    # Process search file
+    if len(sys.argv) < 3:
+        search_file = input("Enter the search file path: ")
+    else:
+        search_file = sys.argv[2]
+    manager.process_search_file(search_file)
+
+    # Display the symbol table
+    manager.display_symbol_table()
+
+if __name__ == "__main__":
+    main()
