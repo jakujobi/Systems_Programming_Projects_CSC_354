@@ -20,16 +20,24 @@ used to populate the symbol table.
 - one or more leading spaces in front of the VALUE and RFLAG attributes.
  SYMS.DAT		//  File names are case sensitive in Linux as well as some languages
 ```text
-ABCD:     50     True			//  Valid – insert ABCD and all attributes into symbol table  (*)
-     B12_34:     -3     false		//  Valid – insert B12_ and all attributes into symbol table  (*)
-  a1B2_c3_D4:   +45   true		//  Valid – insert A1B2 and all attributes into symbol table  (*)
-     ABCD!:    33     true		//  ERROR – symbols contain letters, digits and underscore:  ABCD!
-1234567890:     0     false		//  ERROR – symbols start with a letter:  1234567890
-          ABCD_EF:  +100  TRUE	//  ERROR – symbol previously defined:  ABCD  (+)
-a1234:  3.5   FALSE			//  ERROR – symbol a1234 invalid value:  3.5
-     XYZ:     100     5			//  ERROR – symbol XYZ invalid rflag:  5
-```
 
+ABCD:     50     True           //  Valid – insert ABCD and all attributes into symbol table  (*)
+
+     B12_34:     -3     false       //  Valid – insert B12_ and all attributes into symbol table  (*)
+
+  a1B2_c3_D4:   +45   true      //  Valid – insert A1B2 and all attributes into symbol table  (*)
+
+     ABCD!:    33     true      //  ERROR – symbols contain letters, digits and underscore:  ABCD!
+
+1234567890:     0     false     //  ERROR – symbols start with a letter:  1234567890
+
+          ABCD_EF:  +100  TRUE  //  ERROR – symbol previously defined:  ABCD  (+)
+
+a1234:  3.5   FALSE         //  ERROR – symbol a1234 invalid value:  3.5
+
+     XYZ:     100     5         //  ERROR – symbol XYZ invalid rflag:  5
+
+```
 (*) no message displayed for valid symbols with valid attributes – set IFLAG to true – set MFLAG to false
 (+) set MFLAG attribute to true for symbol ABCD
 
@@ -145,15 +153,15 @@ These are the rules to validate it
 - All duplicate or near duplicate assignments will earn a grade of 0.
 ---
 # Classes
-## Symbol Class
-The `Symbol` class can represent a single symbol entry in the table, storing:
+## SymbolData Class
+The `SymbolData` class can represent a single symbol entry in the table, storing:
 - A symbol (processed as uppercase, only the first 4 characters are significant).
 - Value (signed integer within the range of -5000 to 5000).
 - RFlag (Boolean).
 - IFlag (always true).
 - MFlag (tracks if the symbol was inserted more than once).
 ```pseudo
-class Symbol:
+class SymbolData:
     Attributes:
         symbol  # First 4 chars, uppercase
         value   # Integer value within -5000 to 5000
@@ -176,20 +184,24 @@ class SymbolNode:
 
 ## SymbolTable Class (BST Implementation)
 - **Insert symbols** into the binary search tree (BST).
-- **Search** for symbols in the BST.
+- **Search** for symbol name in the BST.
 - **View** the entire table (in-order traversal).
+- **Destroy** the entire table
+- **Remove** a symbol
 - **Tree Nodes**: Each node in the BST stores a `Symbol` object.
 - **Duplication Handling**: If the symbol already exists, set the `MFlag` to `true`.
 ```pseudo
 class SymbolTable:
     Methods:
-	    insert(symbol)
+	    insert(symbol_data)
 		    Calles _insert to insert into the BST
         _insert(symbol, value, rflag):
 			Does the actual insert implementation
 			It should insert it into BST based on symbol's lexicographical order.
+			check if symbol exists
                 If duplicate:
                     Set MFlag to true.
+                    This should only happen once
 
         search(symbol):
             exportable function to look up the symbol in the BST by calling the _search function
@@ -203,14 +215,14 @@ class SymbolTable:
         view():
             Perform an in-order traversal of the BST to display symbols and their attributes.
             Pause every 20 lines if there are more than 20 symbols (to prevent output scrolling).
-        
 
         inorder_traversal(node, counter):
             Recursively traverse left, print current node, then traverse right.
             Increment the counter for each symbol printed.
             If counter == 20, pause for user input before continuing.
 
-
+		destroy_symbol_table():
+		    Set root to None (and let garbage collection handle cleanup)
 ```
 
 ## File Explorer
@@ -218,47 +230,44 @@ This finds the files and opens them, then reads their information
 - **File Handling**: Open, read, and manage files.
 - **Get Files from Command Line**: Prompt the user for file input.
 - **System File Handling**: Interact with the file system for finding and opening files.
-- **`open_file()`**: Open a file for reading.
-    
-    - Can prompt the user for a file or use a system file explorer.
-- **`read_file()`**: Read the contents of the file line by line.
-    
-    - Extract data for each symbol and validate it.
-- **`get_file_from_system()`**: Use the system's file explorer to find and select a file (if necessary).
-    
-- **`get_file_from_command()`**: Get a file name from the command line arguments or prompt the user.
 ```pseudo
 class FileExplorer:
     Methods:
-        open_file(file_path):
+        open_SYSM_file(file_path):
             Try to open the file in read mode
+            Error handling for file not found, permission denied,  or file curropt
             If successful:
                 Return file object
             Else:
                 Return error
 
-        read_file(file):
+        read_SYSM(file):
             For each line in the file:
-                Extract symbol, value, and rflag
-                Validate using Validator class
-                If valid:
-                    Insert into SymbolTable
-                Else:
-                    Print error
+	            read the line
+	            Cleans the leading space
+				Skip empty lines
+				ignore the // comments
+	            add each line into a list of lines
+	        return the list
 
-        get_file_from_command():
+		read_search_file():
+            For each line in the file:
+	            read the line
+	            add each line into a list of lines
+	        return the list
+
+        get_search_file_from_command():
             If file name is provided as a command line argument:
                 Return file name
             Else:
                 Prompt user for file name
 
-        get_file_from_system():
+        get_search_file_from_system():
             Open system file explorer and allow the user to select the file.
             Return selected file path
-
 ```
 
-## Validation Class
+## Validator Class
 - Perform validation checks on symbols, values, and flags
 - Return error messages if the data does not meet criteria
 - **Error reporting**: If a symbol fails validation, include detailed error messages like "Invalid symbol: must start with a letter" or "Invalid value: must be between -5000 and 5000."
@@ -278,22 +287,81 @@ class Validator:
         validate_symbol(symbol):  # Check the symbol validity
             If symbol does not start with a letter or contains invalid characters:
                 Return error message
+            Check for reserved keywords or special characters
 
             If symbol length > 10:
                 Return error message
             Return success
 
         validate_value(value):  # Check if value is in the valid range
+	        It should chekc
             If value is not between -5000 and 5000:
                 Return error message
+            Check if it is an integer
+            Check for wierd symbols
             Return success
 
-        validate_rflag(rflag):  # Convert to Boolean and validate
-            If rflag is not 'true' or 'false':
+        validate_rflag(rflag):  # check if it is a Boolean
+            If rflag is not a boolean:
                 Return error message
             Return success
 
+		validate_syms_line (line)
+			This validates the line from the syms file
+			Separates each line into words/strings
+			Checks if the line has exactly 3 parts
+				Gives error message if not
+			Extracts the symbol name, value, and rflag and places them into a local variables
+			Convert using
+				convert_symbol_to_SYMB(temp_symbol)
+					then validate with validate_symbol
+				convert_value_to_int(temp_value)
+					then validate with validate_value
+				convert_rflag_to_bool(temp_rflag)
+					then validate with validate_rflag
+			If all are successful
+			returns it all as a SymbolData object
+
+		validate_search_line
+			This validates the line in question from the search file
+			Separates each line into words/strings
+			Checks if the line has exactly 1 parts
+				Gives error message if not
+			Extracts the symbol name, value, and rflag and places them into a local variables
+			Convert using
+				convert_symbol_to_SYMB(temp_symbol)
+					then validate with validate_symbol
+			If all are successful
+			returns it all as a symbol
+
+		convert_symbol_to_SYMB(temp_symbol)
+			string temp_symbol
+			It puts the symbol to uppercase
+			It truncates it into the first 4
+			string new_symbol
+			return string new_symbol
+
+		convert_rflag_to_bool(rflag)
+			check if rflag is already a boolean
+				if isinstance(rflag, bool):
+			if its a string
+				Convert to lowercase
+				Check if rflag is 'true' or 'false'
+					return true if rflag == true
+					return false if rflag == false
+					else it should raise error
+			if its an integer, convert 1 to True and 0 to False
+			If it matches none of the above, it should raise an error
+
+		convert_value_to_int(value)
+			check if it is already an integer, then return
+			If it is a float, raise an error
+			If it is a string, check if it has a "." and raise error
+			if it is a string, attempt to convert to integer and return
+			else raise a Typeerror
+
 ```
+
 
 ## SymbolTableLogic
 This is the main algorithm
@@ -304,6 +372,7 @@ This is the main algorithm
 - Use the `FileExplorer` to read files.
 - Use the `Validator` for checking input data.
 - Call `SymbolTable` methods to manage the data.
+- Add logging statements for each part
 
 ```pseudo
 class SymbolTableLogic:
@@ -320,26 +389,35 @@ class SymbolTableLogic:
     Methods:
         process_syms_file(file_path):
             Open and read the SYMS.DAT file using file_explorer
-            For each line in the file:
-                Parse the symbol, value, and rflag
-                Validate them using the validator
+            Receive the list of lines from file_explorer (symbol list)
+            For each line in the list:
+                Validate them using the validate_syms_line
                 If valid:
-                    Insert into symbol_table
+                    Insert the resulting symbol into symbol_table
                 Else:
                     Print error message
+            Do this until all the lines in the list are done
 
         process_search_file(file_path):
             Open and read the search file using file_explorer
-            For each line in the file:
-                Validate the symbol
+            Receive the list of lines from file_explorer (searchlist)
+            For each line in the list:
+                Validate them using validate_search_line
                 Search the symbol in the symbol_table
                 If found:
                     Print symbol details
                 Else:
                     Print "not found" error
+            Do this until all the lines in the list are done
 
-        display_symbol_table():
-            Call symbol_table.view() to perform in-order traversal and display all symbols
+		def display_symbol_table():
+		    counter = 0
+		    For each symbol in the table:
+		        If counter == 20:
+		            Prompt user for input ("Press Enter to continue...")
+		            Reset counter to 0
+		        Print symbol details
+		        Increment counter
 
 		continue():
 			This pauses the program and asks the user if they want to continue
@@ -362,31 +440,20 @@ class SymbolTableLogic:
 		    """
 		    Standalone function to view the contents of the symbol table.
 		    Calls the in-order traversal (view) method of the SymbolTable class.
+		    It displays the symbol data in a tabular format with pagination
+		    (pauses every 20 lines using the continue() function).
 		    """
 		    symbol_table.view()
+
+		destroy_symbol_table(symbol_table)
+
+		remove_symbol(symbol_table, symbol):
 ```
 ## Main Program
 - It simply **initializes** the `ProgramManager`.
 - It **delegates** all the complex tasks (processing files, searching symbols, displaying the table) to the `ProgramManager`.
-```pseudo
-def main():
-    # Initialize ProgramManager
-    manager = ProgramManager()
+- Allow command-line arguments using the `argparse` module 
 
-    # Step 1: Process SYMS.DAT
-    syms_file = FileExplorer.get_file_from_command()  # Get SYMS.DAT from user or command line
-    manager.process_syms_file(syms_file)  # Process SYMS.DAT
-
-    # Step 2: Process the Search file
-    search_file = FileExplorer.get_file_from_command()  # Get the search file from user or command line
-    manager.process_search_file(search_file)  # Process the search file
-
-    # Step 3: Display the symbol table
-    manager.display_symbol_table()  # Display all symbols in the table
-
-if __name__ == "__main__":
-    main()
-```
 ---
 # 
 ---
