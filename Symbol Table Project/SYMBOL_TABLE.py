@@ -151,3 +151,132 @@ class SymbolTable:
         self.root = None
 
 
+class FileExplorer:
+    """
+    Handles opening, reading, and processing files.
+    """
+    def open_SYSM_file(self, file_path):
+        try:
+            with open(file_path, "r") as file:
+                return file.readlines()  # Read all lines at once
+        except FileNotFoundError:
+            print("Error: File not found.")
+        except PermissionError:
+            print("Error: Permission denied.")
+        except Exception as e:
+            print(f"An unexpected error occurred: {e}")
+        return None
+    
+    def read_SYSM(self, file):
+        """
+        Reads the SYMS.DAT file line by line.
+        """
+        lines = []
+        for line in file:
+            cleaned_line = self.read_line_from_file(line)
+            if cleaned_line:
+                lines.append(cleaned_line)
+        return lines
+
+    def read_search_file(self, file):
+        """
+        Reads the search file line by line.
+        """
+        lines = []
+        for line in file:
+            cleaned_line = self.read_line_from_file(line)
+            if cleaned_line:
+                lines.append(cleaned_line)
+        return lines
+
+    def get_search_file_from_command(self, args):
+        """
+        Get file name from command line or prompt the user.
+        """
+        if len(args) > 1:
+            return args[1]
+        else:
+            return input("Enter the search file name: ")
+
+    def get_search_file_from_system(self):
+        """
+        Mock function to open a system file explorer (not implemented).
+        """
+        file_path = input("Enter the file path: ")
+        return file_path
+
+    def read_line_from_file(self, line):
+        """
+        Cleans and processes a single line from the file.
+        """
+        line = line.strip()
+        if not line or line.startswith("//"):
+            return None
+        return line
+
+
+class Validator:
+    """
+    Contains methods to validate symbols, values, and RFlag.
+    """
+    def validate_symbol(self, symbol):
+        """
+        Validate the symbol based on project requirements.
+        """
+        if len(symbol) > 10:
+            return "Error: Symbol length exceeds 10 characters."
+        if not symbol[0].isalpha():
+            return "Error: Symbol must start with a letter."
+        if not symbol.replace("_", "").isalnum():
+            return "Error: Symbol contains invalid characters."
+        return "Success"
+
+    def validate_value(self, value):
+        """
+        Validate the value (integer between -5000 and 5000).
+        """
+        if isinstance(value, int) and -5000 <= value <= 5000:
+            return "Success"
+        else:
+            return "Error: Value must be an integer between -5000 and 5000."
+    
+    def validate_rflag(self, rflag):
+        """
+        Validate the RFlag, ensuring it's a boolean or convertable to boolean.
+        """
+        if isinstance(rflag, bool):
+            return "Success"
+        if isinstance(rflag, str):
+            rflag = rflag.lower()
+            if rflag == "true":
+                return "Success"
+            elif rflag == "false":
+                return "Success"
+        return "Error: RFlag must be 'true' or 'false'."
+    
+    def validate_syms_line(self, line):
+        """
+        Validate a line from the SYMS.DAT file.
+        """
+        parts = line.split()
+        if len(parts) != 3:
+            return "Error: SYMS.DAT line must contain symbol, value, and rflag."
+        symbol, value, rflag = parts
+        symbol_validation = self.validate_symbol(symbol)
+        value_validation = self.validate_value(int(value))
+        rflag_validation = self.validate_rflag(rflag)
+        if symbol_validation == "Success" and value_validation == "Success" and rflag_validation == "Success":
+            return SymbolData(symbol, int(value), rflag.lower() == "true")
+        return "Error in line validation"
+
+    def validate_search_line(self, line):
+        """
+        Validate a line from the search file (only a symbol).
+        """
+        parts = line.split()
+        if len(parts) != 1:
+            return "Error: Search file line must contain only a symbol."
+        symbol = parts[0]
+        return self.validate_symbol(symbol)
+
+
