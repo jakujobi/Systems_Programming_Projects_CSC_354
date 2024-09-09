@@ -1,4 +1,13 @@
 import sys
+import os
+
+# Try to import Tkinter for GUI file explorer. If not available, fallback to manual entry.
+try:
+    import tkinter as tk
+    from tkinter import filedialog
+    tkinter_available = True
+except ImportError:
+    tkinter_available = False
 
 class SymbolData:
     """
@@ -149,116 +158,153 @@ class SymbolTable:
         print ("Symbol Table Destroyed")
 
 
-
 class FileExplorer:
     """
-    Takes care of anything to do with files
-     - Opens, Reads files
-     - Checks for default locations, prompt for paths, or use a system file explorer.
+    Takes care of anything to do with files:
+     - Opens, reads files line by line.
+     - Checks for default locations, prompts for paths, or uses a system file explorer.
     """
     
-    # ------------------- SYMS File Operations -------------------
-    def find_syms_file(self):
+    def process_file(self, file_name):
         """
-        Checks if SYMS.DAT exists in the current working directory.
-        If not found, prompts the user for input or to use file explorer.
-        Returns the valid file path to SYMS.DAT.
+        Process the file by finding it, opening it, and reading it line by line.
+        Returns a list of cleaned lines from the file or None if errors occur.
         """
-        default_path = os.path.join(os.getcwd(), "SYMS.DAT")  # Default directory (same as script)
+        file_path = self.find_file(file_name)
+        if file_path is None:
+            print(f"Error: Could not find the file '{file_name}'.")
+            return None
+
+        file_generator = self.open_file(file_path)  # Get generator from open_file
+        if file_generator is None:
+            print(f"Error: Could not open the file '{file_name}'.")
+            return None
         
-        # Check if SYMS.DAT exists in the current directory
+        return self.read_file(file_generator)
+
+    
+    def find_file(self, file_name):
+        """
+        Checks if the specified file exists in the current working directory.
+        If not found, prompts the user for input or to use the system file explorer.
+        Returns the valid file path to the file.
+        """
+        default_path = os.path.join(os.getcwd(), file_name)  # Default directory (same as script)
+        
+        # Check if the file exists in the current directory
         if os.path.isfile(default_path):
-            print(f"Found SYMS.DAT in current directory: {default_path}")
+            print(f"Found {file_name} in the current directory: {default_path}")
             return default_path
 
-        # If not found, present a menu to the user
-        print("SYMS.DAT file not found in the current directory.")
-        return self.prompt_for_file()
+        # If not found, prompt the user for a file path
+        print(f"{file_name} file not found in the current directory.")
+        return self.prompt_for_file(file_name)
 
-    def prompt_for_file(self):
+
+    def prompt_for_file(self, file_name):
         """
         Prompt the user for either typing the file path or using the system file explorer.
         Validates the input and returns a valid file path.
         """
         while True:
             print("\nFinding Menu:")
-            print("1. Type the SYMS file path manually.")
-            print("2. Use the system file explorer to locate the SYMS file.")
+            print(f"1. Type the {file_name} file path manually.")
+            if tkinter_available:
+                print(f"2. Use your system file explorer to locate the {file_name} file.")
+            
             choice = input("Choose an option (1 or 2): ").strip()
 
             if choice == "1":
-                # Ask the user to type the path manually
-                file_path = input("Enter the full path to SYMS.DAT: ").strip()
-                if self.validate_file(file_path):
+                # Manually type the file path
+                file_path = input(f"Enter the full path to {file_name}: ").strip()
+                if os.path.isfile(file_path):
                     return file_path
                 else:
-                    print("Error: Invalid file path. Please try again.")
+                    print(f"Error: Invalid typed file path for {file_name}. Please try again.")
             
-            elif choice == "2":
-                # Use the system file explorer (mock function for now)
+            elif choice == "2" and tkinter_available:
+                # Use the system file explorer
                 try:
-                    file_path = self.get_file_from_system()
+                    file_path = self.use_system_explorer()
                     if os.path.isfile(file_path):
                         return file_path
                     else:
-                        print("Error: Invalid file path. Please try again.")
+                        print(f"Error: Invalid file path for {file_name} from system explorer. Please try again.")
                 except Exception as e:
-                    print(f"Unexpected Error: Prompt_for_file {e} @ prompt_for_file")
+                    print(f"Unexpected Error: {e} @ prompt_for_file")
             else:
                 print("Invalid choice. Please select 1 or 2.")
-                
-        def open_SYSM_file(self, file_path):
+
+    
+    def open_file(self, file_path):
         """
-        Attempts to open SYMS.DAT for reading and returns the content.
+        Opens the file and reads line by line, using a generator to yield each line.
+        This approach avoids reading all lines into memory at once.
         """
         try:
             with open(file_path, "r") as file:
-                return file.readlines()  # Read all lines at once
+                for line in file:
+                    yield line  # Yield line to the caller (used in 'read_file')
         except FileNotFoundError:
-            print("Error: File not found. @ open_SYSM_file")
+            print(f"Error: {file_path} not found. @ open_file")
         except PermissionError:
-            print("Error: Permission denied. @ open_SYSM_file")
+            print(f"Error: Permission denied for {file_path}. @ open_file")
         except Exception as e:
-            print(f"An unexpected error occurred: {e} @ open_SYSM_file")
-        return None
-    
-    def read_SYSM(self, file):
+            print(f"An unexpected error occurred while opening {file_path}: {e} @ open_file")
+
+
+    def read_file(self, file):
         """
-        Read SYMS.DAT line by line, clean the lines, and return the list.
+        Reads file line by line, cleans the lines, and returns the list of cleaned lines.
+        Uses the open_file generator to process each line lazily.
         """
-        lines = [] # List to store cleaned lines
-        for line in file:
+        lines = []  # List to store cleaned lines
+        for line in file:  # The file here is a generator, so we can iterate over it
             cleaned_line = self.read_line_from_file(line)
             if cleaned_line:
                 lines.append(cleaned_line)
+        
+        if not lines:
+            print("Warning: No valid lines found in the file.")
+        
         return lines
 
-    # def validate_file(self, file_path):
-    #     """
-    #     Validates if the file path exists and points to a valid file.
-    #     """
-    #     return os.path.isfile(file_path)
 
-    def get_file_from_system(self):
+    def use_system_explorer(self):
         """
-        This uses the system file explorer to get the file path.
+        Opens a system file explorer window for the user to select a file using Tkinter.
+        Returns the selected file path as a string.
         """
-        return input("Enter the full path to SYMS.DAT using file explorer: ").strip()
+        if not tkinter_available:
+            return input("Enter the full path to the file: ").strip()
 
+        # Create a Tkinter root window and hide it
+        root = tk.Tk()
+        root.withdraw()  # Hide the root window
+        root.update()    # Keep the GUI up to date
+        
+        # Open file dialog
+        file_path = filedialog.askopenfilename(
+            title="Select a file",
+            filetypes=[("DAT files", "*.dat"), ("Text files", "*.txt"), ("All files", "*.*")]
+        )
+        
+        # Destroy the hidden Tkinter window after use
+        root.destroy()
+        
+        return file_path if file_path else None  # Return None if no file is selected
 
-    # ------------------- Search File Operations -------------------
-
-
-    def read_search_file(self, file):
+    def read_line_from_file(self, line):
         """
-        Read the search file line by line, clean the lines, and return the list.
+        Cleans and processes a single line from the file.
+        Removes leading/trailing spaces.
+        Skips empty lines and comments (lines starting with '//').
         """
-        lines = []
-        for line in file:
-            cleaned_line = self.read_line_from_file(line)
-            if cleaned_line:
-                lines.append(cleaned_line)
-        return lines
+        line = line.strip()
+        if not line or line.startswith("//"):
+            return None  # Skip empty lines and comments
+        return line
+
 
 
 class Validator:
@@ -339,7 +385,7 @@ class SymbolTableLogic:
         """
         Process SYMS.DAT file and insert valid symbols into the symbol table.
         """
-        lines = self.file_explorer.open_SYSM_file(file_path)
+        lines = self.file_explorer.open_file(file_path)
         for line in lines:
             validation_result = self.validator.validate_syms_line(line)
             if isinstance(validation_result, SymbolData):
@@ -351,7 +397,7 @@ class SymbolTableLogic:
         """
         Process search file and search symbols in the symbol table.
         """
-        lines = self.file_explorer.open_SYSM_file(file_path)
+        lines = self.file_explorer.open_file(file_path)
         for line in lines:
             symbol = line.strip().upper()[:4]
             result = self.symbol_table.search(symbol)
