@@ -310,7 +310,6 @@ class FileExplorer:
         return line
 
 
-
 class Validator:
     """
     Contains methods to validate symbols, values, and RFlag.
