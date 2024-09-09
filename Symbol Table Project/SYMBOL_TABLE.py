@@ -286,7 +286,7 @@ class FileExplorer:
         # Open file dialog
         file_path = filedialog.askopenfilename(
             title="Select a file",
-            filetypes=[("DAT files", "*.dat"), ("Text files", "*.txt"), ("All files", "*.*")]
+            filetypes=[("All files", "*.*"), ("DAT files", "*.dat"), ("Text files", "*.txt")]
         )
         
         # Destroy the hidden Tkinter window after use
