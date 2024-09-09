@@ -117,7 +117,7 @@ def main():
         print("Generating test files 'test_SYMS.DAT' and 'test_SEARCH.TXT'...")
 
         # Adjust number of lines as desired
-        num_lines = 100  # Example: Generate 100 lines for SYMS.DAT and SEARCH.TXT
+        num_lines = int(input("Enter the number of lines to generate: "))
 
         generator = SYMSGenerator(num_lines)
         generator.generate_files()
