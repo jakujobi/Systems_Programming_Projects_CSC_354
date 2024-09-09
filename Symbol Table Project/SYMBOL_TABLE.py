@@ -4,11 +4,11 @@ class SymbolData:
     """
     Represents a single symbol entry in the table.
     Attributes:
-        symbol: A string representing the symbol (first 4 chars, uppercase).
-        value: An integer value between -5000 and 5000.
-        rflag: A boolean indicating the relocation flag.
-        iflag: Always true, indicates the symbol was defined.
-        mflag: A boolean indicating if the symbol was duplicated.
+        symbol: string of the symbol (first 4 chars, uppercase).
+        value: Signed integer between -5000 and 5000.
+        rflag: Boolean for the relocation flag.
+        iflag: Always true.
+        mflag: Bboolean indicating if the symbol was duplicated.
     """
     def __init__(self, symbol, value, rflag, iflag=True, mflag=False):
         self.symbol = symbol.upper()[:4]  # Only first 4 characters, uppercase
@@ -42,6 +42,7 @@ class SymbolTable:
         """
         if self.root is None:
             self.root = SymbolNode(symbol_data)
+            print ("New Symbol Table Created, Symbol Inserted")
         else:
             self._insert(self.root, symbol_data)
     
@@ -49,19 +50,21 @@ class SymbolTable:
         """
         Recursively inserts the symbol_data into the BST.
         """
+        # Set MFlag to true if there's a duplicate
         if symbol_data.symbol == current_node.symbol_data.symbol:
-            # Handle duplicate: Set MFlag to true
             current_node.symbol_data.mflag = True
         elif symbol_data.symbol < current_node.symbol_data.symbol:
             # Insert into left subtree
             if current_node.left is None:
                 current_node.left = SymbolNode(symbol_data)
+                print ("Symbol Inserted")
             else:
                 self._insert(current_node.left, symbol_data)
         else:
             # Insert into right subtree
             if current_node.right is None:
                 current_node.right = SymbolNode(symbol_data)
+                print ("Symbol Inserted")
             else:
                 self._insert(current_node.right, symbol_data)
 
@@ -78,6 +81,7 @@ class SymbolTable:
         if current_node is None:
             return None  # Symbol not found
         if symbol == current_node.symbol_data.symbol:
+            print ("Symbol Found")
             return current_node.symbol_data
         elif symbol < current_node.symbol_data.symbol:
             return self._search(current_node.left, symbol)
@@ -107,80 +111,147 @@ class SymbolTable:
             counter = self.inorder_traversal(node.right, counter)
         return counter
     
-    def remove_symbol(self, symbol):
-        """
-        Remove a symbol from the BST.
-        """
-        self.root = self._remove(self.root, symbol.upper()[:4])
+    # def remove_symbol(self, symbol):
+    #     """
+    #     Remove a symbol from the BST. Added this feature just in case
+    #     """
+    #     self.root = self._remove(self.root, symbol.upper()[:4])
     
-    def _remove(self, node, symbol):
-        """
-        Recursive removal of a symbol from the BST.
-        """
-        if node is None:
-            return None
-        if symbol < node.symbol_data.symbol:
-            node.left = self._remove(node.left, symbol)
-        elif symbol > node.symbol_data.symbol:
-            node.right = self._remove(node.right, symbol)
-        else:
-            # Node to be removed found
-            if node.left is None:
-                return node.right
-            elif node.right is None:
-                return node.left
-            else:
-                # Node with two children
-                temp_node = self.find_min(node.right)
-                node.symbol_data = temp_node.symbol_data
-                node.right = self._remove(node.right, temp_node.symbol_data.symbol)
-        return node
+    # def _remove(self, node, symbol):
+    #     """
+    #     Recursive removal of a symbol from the BST.
+    #     """
+    #     if node is None:
+    #         return None
+    #     if symbol < node.symbol_data.symbol:
+    #         node.left = self._remove(node.left, symbol)
+    #     elif symbol > node.symbol_data.symbol:
+    #         node.right = self._remove(node.right, symbol)
+    #     else:
+    #         # Node to be removed found
+    #         if node.left is None:
+    #             return node.right
+    #         elif node.right is None:
+    #             return node.left
+    #         else:
+    #             # Node with two children
+    #             temp_node = self.find_min(node.right)
+    #             node.symbol_data = temp_node.symbol_data
+    #             node.right = self._remove(node.right, temp_node.symbol_data.symbol)
+    #     return node
     
-    def find_min(self, node):
-        """
-        Find the minimum value node in the subtree.
-        """
-        while node.left is not None:
-            node = node.left
-        return node
     
     def destroy_symbol_table(self):
         """
         Set the root to None to destroy the tree.
         """
         self.root = None
+        print ("Symbol Table Destroyed")
+
 
 
 class FileExplorer:
     """
-    Handles opening, reading, and processing files.
+    Takes care of anything to do with files
+     - Opens, Reads files
+     - Checks for default locations, prompt for paths, or use a system file explorer.
     """
-    def open_SYSM_file(self, file_path):
+    
+    # ------------------- SYMS File Operations -------------------
+    def find_syms_file(self):
+        """
+        Checks if SYMS.DAT exists in the current working directory.
+        If not found, prompts the user for input or to use file explorer.
+        Returns the valid file path to SYMS.DAT.
+        """
+        default_path = os.path.join(os.getcwd(), "SYMS.DAT")  # Default directory (same as script)
+        
+        # Check if SYMS.DAT exists in the current directory
+        if os.path.isfile(default_path):
+            print(f"Found SYMS.DAT in current directory: {default_path}")
+            return default_path
+
+        # If not found, present a menu to the user
+        print("SYMS.DAT file not found in the current directory.")
+        return self.prompt_for_file()
+
+    def prompt_for_file(self):
+        """
+        Prompt the user for either typing the file path or using the system file explorer.
+        Validates the input and returns a valid file path.
+        """
+        while True:
+            print("\nFinding Menu:")
+            print("1. Type the SYMS file path manually.")
+            print("2. Use the system file explorer to locate the SYMS file.")
+            choice = input("Choose an option (1 or 2): ").strip()
+
+            if choice == "1":
+                # Ask the user to type the path manually
+                file_path = input("Enter the full path to SYMS.DAT: ").strip()
+                if self.validate_file(file_path):
+                    return file_path
+                else:
+                    print("Error: Invalid file path. Please try again.")
+            
+            elif choice == "2":
+                # Use the system file explorer (mock function for now)
+                try:
+                    file_path = self.get_file_from_system()
+                    if os.path.isfile(file_path):
+                        return file_path
+                    else:
+                        print("Error: Invalid file path. Please try again.")
+                except Exception as e:
+                    print(f"Unexpected Error: Prompt_for_file {e} @ prompt_for_file")
+            else:
+                print("Invalid choice. Please select 1 or 2.")
+                
+        def open_SYSM_file(self, file_path):
+        """
+        Attempts to open SYMS.DAT for reading and returns the content.
+        """
         try:
             with open(file_path, "r") as file:
                 return file.readlines()  # Read all lines at once
         except FileNotFoundError:
-            print("Error: File not found.")
+            print("Error: File not found. @ open_SYSM_file")
         except PermissionError:
-            print("Error: Permission denied.")
+            print("Error: Permission denied. @ open_SYSM_file")
         except Exception as e:
-            print(f"An unexpected error occurred: {e}")
+            print(f"An unexpected error occurred: {e} @ open_SYSM_file")
         return None
     
     def read_SYSM(self, file):
         """
-        Reads the SYMS.DAT file line by line.
+        Read SYMS.DAT line by line, clean the lines, and return the list.
         """
-        lines = []
+        lines = [] # List to store cleaned lines
         for line in file:
             cleaned_line = self.read_line_from_file(line)
             if cleaned_line:
                 lines.append(cleaned_line)
         return lines
+
+    # def validate_file(self, file_path):
+    #     """
+    #     Validates if the file path exists and points to a valid file.
+    #     """
+    #     return os.path.isfile(file_path)
+
+    def get_file_from_system(self):
+        """
+        This uses the system file explorer to get the file path.
+        """
+        return input("Enter the full path to SYMS.DAT using file explorer: ").strip()
+
+
+    # ------------------- Search File Operations -------------------
+
 
     def read_search_file(self, file):
         """
-        Reads the search file line by line.
+        Read the search file line by line, clean the lines, and return the list.
         """
         lines = []
         for line in file:
@@ -188,31 +259,6 @@ class FileExplorer:
             if cleaned_line:
                 lines.append(cleaned_line)
         return lines
-
-    def get_search_file_from_command(self, args):
-        """
-        Get file name from command line or prompt the user.
-        """
-        if len(args) > 1:
-            return args[1]
-        else:
-            return input("Enter the search file name: ")
-
-    def get_search_file_from_system(self):
-        """
-        Mock function to open a system file explorer (not implemented).
-        """
-        file_path = input("Enter the file path: ")
-        return file_path
-
-    def read_line_from_file(self, line):
-        """
-        Cleans and processes a single line from the file.
-        """
-        line = line.strip()
-        if not line or line.startswith("//"):
-            return None
-        return line
 
 
 class Validator:
