@@ -314,65 +314,107 @@ class Validator:
     """
     Contains methods to validate symbols, values, and RFlag.
     """
+    
     def validate_symbol(self, symbol):
         """
         Validate the symbol based on project requirements.
+        - Must be at most 10 characters.
+        - Must start with a letter.
+        - Must contain only letters, digits, and underscores.
         """
+        # Strip colons (:) and spaces, and convert to uppercase for consistency
+        symbol = symbol.strip().rstrip(":").upper()
+
+        # Check if the symbol length exceeds 10 characters
         if len(symbol) > 10:
-            return "Error: Symbol length exceeds 10 characters."
+            return f"Error: Symbol '{symbol}' length exceeds 10 characters."
+        
+        # Check if the first character is a letter
         if not symbol[0].isalpha():
-            return "Error: Symbol must start with a letter."
-        if not symbol.replace("_", "").isalnum():
-            return "Error: Symbol contains invalid characters."
+            return f"Error: Symbol '{symbol}' must start with a letter."
+
+        # Check if the symbol contains only letters, digits, or underscores
+        for char in symbol:
+            if not (char.isalnum() or char == "_"):
+                return f"Error: Symbol '{symbol}' contains invalid character '{char}'."
+        
         return "Success"
 
     def validate_value(self, value):
         """
-        Validate the value (integer between -5000 and 5000).
+        Validate the value:
+        - Must be an integer.
+        - Must be between -5000 and 5000.
         """
-        if isinstance(value, int) and -5000 <= value <= 5000:
+        value = value.strip()  # Strip spaces
+        try:
+            value = int(value)  # Attempt to convert to integer
+        except ValueError:
+            return f"Error: Value '{value}' must be an integer."
+        
+        if -5000 <= value <= 5000:
             return "Success"
         else:
-            return "Error: Value must be an integer between -5000 and 5000."
+            return f"Error: Value '{value}' must be an integer between -5000 and 5000."
     
     def validate_rflag(self, rflag):
         """
-        Validate the RFlag, ensuring it's a boolean or convertable to boolean.
+        Validate the RFlag, ensuring it's a boolean or convertible to boolean.
         """
-        if isinstance(rflag, bool):
+        rflag = rflag.strip().lower()  # Strip spaces and convert to lowercase
+        if rflag in ["true", "false"]:
             return "Success"
-        if isinstance(rflag, str):
-            rflag = rflag.lower()
-            if rflag == "true":
-                return "Success"
-            elif rflag == "false":
-                return "Success"
-        return "Error: RFlag must be 'true' or 'false'."
+        return f"Error: RFlag '{rflag}' must be 'true' or 'false'."
     
+    def convert_symbol(self, symbol):
+        """
+        Convert the symbol to uppercase and truncate it to the first 4 characters.
+        """
+        return symbol.strip().rstrip(":").upper()[:4]  # Strip spaces and colons, convert to uppercase, truncate
+
     def validate_syms_line(self, line):
         """
         Validate a line from the SYMS.DAT file.
+        Line must contain exactly three parts: symbol, value, and rflag.
+        Returns a SymbolData object if valid, or an error message if invalid.
         """
         parts = line.split()
         if len(parts) != 3:
-            return "Error: SYMS.DAT line must contain symbol, value, and rflag."
+            return f"Error: SYMS.DAT line '{line}' must contain symbol, value, and rflag."
+        
         symbol, value, rflag = parts
+        
+        # Validate each part after stripping spaces
         symbol_validation = self.validate_symbol(symbol)
-        value_validation = self.validate_value(int(value))
+        value_validation = self.validate_value(value)
         rflag_validation = self.validate_rflag(rflag)
+        
+        # If all validations pass, convert the symbol and return a SymbolData object
         if symbol_validation == "Success" and value_validation == "Success" and rflag_validation == "Success":
-            return SymbolData(symbol, int(value), rflag.lower() == "true")
-        return "Error in line validation"
+            converted_symbol = self.convert_symbol(symbol)
+            rflag_bool = rflag.lower() == "true"  # Convert rflag to boolean based on the string value
+            return SymbolData(converted_symbol, int(value), rflag_bool)
+        
+        # Otherwise, return an error message indicating the first failure
+        if symbol_validation != "Success":
+            return f"{symbol_validation} in line: '{line}'"
+        if value_validation != "Success":
+            return f"{value_validation} in line: '{line}'"
+        if rflag_validation != "Success":
+            return f"{rflag_validation} in line: '{line}'"
 
     def validate_search_line(self, line):
         """
-        Validate a line from the search file (only a symbol).
+        Validate a line from the search file, which should contain only a symbol.
+        Returns success or an error message.
         """
         parts = line.split()
         if len(parts) != 1:
-            return "Error: Search file line must contain only a symbol."
+            return f"Error: Search file line '{line}' must contain only a symbol."
+        
         symbol = parts[0]
         return self.validate_symbol(symbol)
+
 
 
 class SymbolTableLogic:
