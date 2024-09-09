@@ -348,6 +348,7 @@ class Validator:
         """
         value = value.strip()  # Strip spaces
         try:
+            # Allow values like +45 and -45 to be processed as integers
             value = int(value)  # Attempt to convert to integer
         except ValueError:
             return f"Error: Value '{value}' must be an integer."
@@ -378,7 +379,8 @@ class Validator:
         Line must contain exactly three parts: symbol, value, and rflag.
         Returns a SymbolData object if valid, or an error message if invalid.
         """
-        parts = line.split()
+        # Split line by spaces but ensure there are exactly 3 parts (symbol, value, rflag)
+        parts = line.split(maxsplit=2)
         if len(parts) != 3:
             return f"Error: SYMS.DAT line '{line}' must contain symbol, value, and rflag."
         
@@ -403,17 +405,30 @@ class Validator:
         if rflag_validation != "Success":
             return f"{rflag_validation} in line: '{line}'"
 
+
     def validate_search_line(self, line):
         """
         Validate a line from the search file, which should contain only a symbol.
-        Returns success or an error message.
+        Returns the processed symbol (converted, uppercase, truncated) if valid, 
+        or an error message if invalid.
         """
         parts = line.split()
+
         if len(parts) != 1:
             return f"Error: Search file line '{line}' must contain only a symbol."
         
-        symbol = parts[0]
-        return self.validate_symbol(symbol)
+        symbol = parts[0].strip()  # Strip any surrounding spaces
+
+        # Validate the symbol using the same logic as SYMS.DAT validation
+        symbol_validation = self.validate_symbol(symbol)
+        
+        if symbol_validation == "Success":
+            # If valid, convert the symbol to uppercase and truncate it
+            converted_symbol = self.convert_symbol(symbol)
+            return converted_symbol  # Return the processed symbol
+        else:
+            # Return the error message if the symbol is invalid
+            return f"{symbol_validation} in line: '{line}'"
 
 
 
