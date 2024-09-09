@@ -1,3 +1,11 @@
+## CSC 354 - Systems Programming
+# Project: Symbol Table Manager
+# File: SYMBOL_TABLE.py
+
+# Author: John Akujobi
+# Date: 9/8/2024
+# Description: This program is a symbol table manager that reads symbols from a SYMS.DAT file, inserts them into a binary search tree, and searches for symbols in the tree using a SEARCH.TXT file. The program uses a FileExplorer class to handle file operations, a Validator class to validate symbols, values, and RFlag, and a SymbolTable class to manage the binary search tree. The SymbolData class represents a symbol entry, and the SymbolNode class represents a node in the binary search tree. The SymbolTableDriver class manages the high-level logic for file processing and symbol table management. The program also includes a GUI file explorer using Tkinter for selecting files. The main function initializes and runs the SymbolTableDriver.
+
 import sys
 import os
 
