@@ -49,11 +49,15 @@ class SymbolTable:
         """
         Insert symbol into the binary search tree, calls internal _insert.
         """
+        if not isinstance(symbol_data, SymbolData):
+            raise TypeError("Expected a SymbolData object.")
+            
         if self.root is None:
             self.root = SymbolNode(symbol_data)
-            print ("New Symbol Table Created, Symbol Inserted")
+            print("New Symbol Table Created, Symbol Inserted")
         else:
             self._insert(self.root, symbol_data)
+
     
     def _insert(self, current_node, symbol_data):
         """
@@ -62,15 +66,16 @@ class SymbolTable:
         # Set MFlag to true if there's a duplicate
         if symbol_data.symbol == current_node.symbol_data.symbol:
             current_node.symbol_data.mflag = True
+            print("Duplicate symbol found. MFlag set to True.")
+        # Insert into left subtree
         elif symbol_data.symbol < current_node.symbol_data.symbol:
-            # Insert into left subtree
             if current_node.left is None:
                 current_node.left = SymbolNode(symbol_data)
                 print ("Symbol Inserted")
             else:
                 self._insert(current_node.left, symbol_data)
+        # Insert into right subtree
         else:
-            # Insert into right subtree
             if current_node.right is None:
                 current_node.right = SymbolNode(symbol_data)
                 print ("Symbol Inserted")
@@ -79,9 +84,13 @@ class SymbolTable:
 
     def search(self, symbol):
         """
-        Search for a symbol in the binary search tree.
+        Search for a symbol in the binary search tree and return it.
         """
-        return self._search(self.root, symbol.upper()[:4])
+        result = self._search(self.root, symbol.upper()[:4])
+        if result is None:
+            print(f"Symbol '{symbol.upper()[:4]}' not found.")
+        return result
+
     
     def _search(self, current_node, symbol):
         """
@@ -102,7 +111,14 @@ class SymbolTable:
         Perform an in-order traversal to display symbols.
         Pauses every 20 lines.
         """
+        if self.root is None:
+            print("No symbols in the table.")
+            return
+        
+        print(f"{'Symbol':<10} {'Value':<5} {'RFlag':<5} {'IFlag':<5} {'MFlag':<5}")
+        print("-" * 35)
         self.inorder_traversal(self.root, counter=0)
+
 
     def inorder_traversal(self, node, counter):
         """
@@ -120,42 +136,61 @@ class SymbolTable:
             counter = self.inorder_traversal(node.right, counter)
         return counter
     
-    # def remove_symbol(self, symbol):
-    #     """
-    #     Remove a symbol from the BST. Added this feature just in case
-    #     """
-    #     self.root = self._remove(self.root, symbol.upper()[:4])
-    
-    # def _remove(self, node, symbol):
-    #     """
-    #     Recursive removal of a symbol from the BST.
-    #     """
-    #     if node is None:
-    #         return None
-    #     if symbol < node.symbol_data.symbol:
-    #         node.left = self._remove(node.left, symbol)
-    #     elif symbol > node.symbol_data.symbol:
-    #         node.right = self._remove(node.right, symbol)
-    #     else:
-    #         # Node to be removed found
-    #         if node.left is None:
-    #             return node.right
-    #         elif node.right is None:
-    #             return node.left
-    #         else:
-    #             # Node with two children
-    #             temp_node = self.find_min(node.right)
-    #             node.symbol_data = temp_node.symbol_data
-    #             node.right = self._remove(node.right, temp_node.symbol_data.symbol)
-    #     return node
-    
-    
+    def remove_symbol(self, symbol):
+        """
+        Remove a symbol from the BST and notify if it doesn't exist.
+        """
+        if self.root is None:
+            print("Symbol table is empty.")
+            return
+        
+        self.root, removed = self._remove(self.root, symbol.upper()[:4])
+        if removed:
+            print(f"Symbol '{symbol.upper()[:4]}' removed.")
+        else:
+            print(f"Symbol '{symbol.upper()[:4]}' not found.")
+
+
+    def _remove(self, node, symbol):
+        """
+        Recursive removal of a symbol from the BST.
+        Returns the updated node and whether the symbol was removed.
+        """
+        if node is None:
+            return None, False
+        if symbol < node.symbol_data.symbol:
+            node.left, removed = self._remove(node.left, symbol)
+        elif symbol > node.symbol_data.symbol:
+            node.right, removed = self._remove(node.right, symbol)
+        else:
+            # Node to be removed found
+            if node.left is None:
+                return node.right, True
+            elif node.right is None:
+                return node.left, True
+            else:
+                # Node with two children
+                temp_node = self.find_min(node.right)
+                node.symbol_data = temp_node.symbol_data
+                node.right, _ = self._remove(node.right, temp_node.symbol_data.symbol)
+            return node, True
+        return node, removed
+
+    def destroy_symbol_table(self): # Alias for destroy_symbol_table
+        """
+        Destroy the symbol table by setting the root to None.
+        """
+        self._destroy()
+        
     def destroy_symbol_table(self):
         """
-        Set the root to None to destroy the tree.
+        Destroy the symbol table by setting the root to None.
         """
-        self.root = None
-        print ("Symbol Table Destroyed")
+        if self.root is None:
+            print("Symbol table is already empty.")
+        else:
+            self._destroy()
+            print("Symbol Table Destroyed")
 
 
 class FileExplorer:
@@ -185,20 +220,23 @@ class FileExplorer:
     
     def find_file(self, file_name):
         """
-        Checks if the specified file exists in the current working directory.
+        Checks if the specified file exists in the same directory as the script.
         If not found, prompts the user for input or to use the system file explorer.
         Returns the valid file path to the file.
         """
-        default_path = os.path.join(os.getcwd(), file_name)  # Default directory (same as script)
+        # Get the directory where the script is running from
+        script_directory = os.path.dirname(os.path.realpath(__file__))
+        default_path = os.path.join(script_directory, file_name)  # Search in the script's directory
         
-        # Check if the file exists in the current directory
+        # Check if the file exists in the script's directory
         if os.path.isfile(default_path):
-            print(f"Found {file_name} in the current directory: {default_path}")
+            print(f"Found {file_name} in the script directory: {default_path}")
             return default_path
 
         # If not found, prompt the user for a file path
-        print(f"{file_name} file not found in the current directory.")
+        print(f"{file_name} file not found in the script directory.")
         return self.prompt_for_file(file_name)
+
 
 
     def prompt_for_file(self, file_name):
@@ -431,10 +469,10 @@ class Validator:
             return f"{symbol_validation} in line: '{line}'"
 
 
-
-class SymbolTableLogic:
+class SymbolTableDriver:
     """
     Manages the high-level logic for file processing and symbol table management.
+    Handles inserting symbols from SYMS.DAT into a symbol table and searching for symbols.
     """
     def __init__(self):
         self.symbol_table = SymbolTable()
@@ -443,57 +481,137 @@ class SymbolTableLogic:
 
     def process_syms_file(self, file_path):
         """
-        Process SYMS.DAT file and insert valid symbols into the symbol table.
+        Process SYMS.DAT file, validate symbols, and insert valid symbols into the symbol table.
         """
-        lines = self.file_explorer.open_file(file_path)
-        for line in lines:
-            validation_result = self.validator.validate_syms_line(line)
-            if isinstance(validation_result, SymbolData):
-                self.symbol_table.insert(validation_result)
-            else:
-                print(validation_result)  # Print error message
+        try:
+            print(f"Processing {file_path} for symbol insertion...")
+            lines = self.file_explorer.process_file(file_path)
+            if lines is None:
+                print(f"Error: Unable to read {file_path}.")
+                return
+
+            valid_count = 0 # Number of valid symbols inserted
+            invalid_count = 0   # Number of invalid lines encountered
+
+            # Process each line from the file
+            for line in lines:
+                validation_result = self.validator.validate_syms_line(line)
+                if isinstance(validation_result, SymbolData):
+                    self.symbol_table.insert(validation_result)
+                    valid_count += 1
+                else:
+                    print(f"Invalid line: {validation_result}")
+                    invalid_count += 1
+
+            # Summary
+            print(f"\nSummary: {valid_count} valid symbols inserted, {invalid_count} invalid lines encountered.")
+        
+        except Exception as e:
+            print(f"An error occurred while processing the SYMS file: {e}")
 
     def process_search_file(self, file_path):
         """
-        Process search file and search symbols in the symbol table.
+        Process the search file and look for each symbol in the symbol table.
+        Display found symbols in a paginated table format.
         """
-        lines = self.file_explorer.open_file(file_path)
-        for line in lines:
-            symbol = line.strip().upper()[:4]
-            result = self.symbol_table.search(symbol)
-            if result:
-                print(f"Found: {result.symbol}, Value: {result.value}, RFlag: {result.rflag}")
-            else:
-                print(f"Error: {symbol} not found")
+        try:
+            print(f"Processing {file_path} for symbol search...")
+            lines = self.file_explorer.process_file(file_path)
+            if lines is None:
+                print(f"Error: Unable to read {file_path}.")
+                return
 
-    def display_symbol_table(self):
+            found_symbols = []
+            not_found_symbols = []
+
+            # Search for each symbol from the search file
+            for line in lines:
+                validation_result = self.validator.validate_search_line(line)
+                if "Error" not in validation_result:
+                    symbol = validation_result
+                    result = self.symbol_table.search(symbol)
+                    if result:
+                        found_symbols.append(result)
+                    else:
+                        not_found_symbols.append(symbol)
+                else:
+                    print(f"Invalid search line: {validation_result}")
+
+            # Display found symbols in a paginated table format
+            if found_symbols:
+                self.display_symbols_paginated(found_symbols)
+            else:
+                print("No symbols were found in the search.")
+
+            # Display not found symbols
+            if not_found_symbols:
+                print(f"\nSymbols not found: {', '.join(not_found_symbols)}")
+            
+        except Exception as e:
+            print(f"An error occurred while processing the search file: {e}")
+
+            
+    def display_symbols_paginated(self, symbols):
         """
-        Display the symbol table in order.
+        Display the given symbols in a table format with pagination.
+        Pauses every 20 lines to prevent output scrolling.
         """
-        self.symbol_table.view()
+        print(f"\n{'Symbol':<10} {'Value':<5} {'RFlag':<5} {'IFlag':<5} {'MFlag':<5}")
+        print("-" * 35)
+        
+        counter = 0
+        for sym in symbols:
+            print(f"{sym.symbol:<10} {sym.value:<5} {int(sym.rflag):<5} {int(sym.iflag):<5} {int(sym.mflag):<5}")
+            counter += 1
+            if counter % 20 == 0:
+                input("Press Enter to continue...")  # Pause after every 20 symbols
+
+        print("-" * 35)  # End of the table
+
+    def view(self):
+        """
+        Display the contents of the symbol table in-order.
+        """
+        try:
+            if self.symbol_table.root is None:
+                print("The symbol table is empty.")
+            else:
+                print("Displaying symbol table:")
+                self.symbol_table.view()
+        except Exception as e:
+            print(f"An error occurred while displaying the symbol table: {e}")
+
+    def run(self):
+        """
+        Main method to run the program. Asks the user to process SYMS.DAT and a search file.
+        """
+        try:
+            # Step 1: Process SYMS.DAT file
+            syms_file = self.file_explorer.find_file("SYMS.DAT")
+            if syms_file:
+                self.process_syms_file(syms_file)
+
+            # Step 2: Process the search file
+            search_file = self.file_explorer.find_file("SEARCH.TXT")
+            if search_file:
+                self.process_search_file(search_file)
+
+            # Step 3: Display the final symbol table
+            # self.view()
+
+        except Exception as e:
+            print(f"An unexpected error occurred: {e}")
+
+   
+        
 
 def main():
     """
-    Main program logic to handle command-line arguments and process files.
+    The main function that initializes and runs the SymbolTableDriver.
     """
-    manager = SymbolTableLogic()
-
-    # Process SYMS.DAT file
-    if len(sys.argv) < 2:
-        syms_file = input("Enter the SYMS.DAT file path: ")
-    else:
-        syms_file = sys.argv[1]
-    manager.process_syms_file(syms_file)
-
-    # Process search file
-    if len(sys.argv) < 3:
-        search_file = input("Enter the search file path: ")
-    else:
-        search_file = sys.argv[2]
-    manager.process_search_file(search_file)
-
-    # Display the symbol table
-    manager.display_symbol_table()
+    print("Welcome to the Symbol Table Manager!")
+    driver = SymbolTableDriver()
+    driver.run()
 
 if __name__ == "__main__":
     main()
