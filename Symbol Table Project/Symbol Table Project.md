@@ -253,6 +253,9 @@ class FileExplorer:
 		read_search_file():
             For each line in the file:
 	            read the line
+	            Cleans the leading space
+				Skip empty lines
+				ignore the // comments
 	            add each line into a list of lines
 	        return the list
 
@@ -373,6 +376,7 @@ This is the main algorithm
 - Use the `Validator` for checking input data.
 - Call `SymbolTable` methods to manage the data.
 - Add logging statements for each part
+- This class actually does the whole program
 
 ```pseudo
 class SymbolTableLogic:
