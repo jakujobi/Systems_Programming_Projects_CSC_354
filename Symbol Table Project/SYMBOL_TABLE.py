@@ -175,14 +175,8 @@ class SymbolTable:
                 node.right, _ = self._remove(node.right, temp_node.symbol_data.symbol)
             return node, True
         return node, removed
-
-    def destroy_symbol_table(self): # Alias for destroy_symbol_table
-        """
-        Destroy the symbol table by setting the root to None.
-        """
-        self._destroy()
         
-    def destroy_symbol_table(self):
+    def destroy(self):
         """
         Destroy the symbol table by setting the root to None.
         """
@@ -191,6 +185,23 @@ class SymbolTable:
         else:
             self._destroy()
             print("Symbol Table Destroyed")
+            
+    def _destroy(self):
+        """
+        Recursive destruction of the symbol table.
+        """
+        if self.root is not None:
+            self._destroy_nodes(self.root)
+            self.root = None
+            
+    def _destroy_nodes(self, node):
+        """
+        Recursive destruction of nodes.
+        """
+        if node is not None:
+            self._destroy_nodes(node.left)
+            self._destroy_nodes(node.right)
+            del node
 
 
 class FileExplorer:
