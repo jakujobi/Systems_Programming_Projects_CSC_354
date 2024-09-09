@@ -1,15 +1,3000 @@
-ABCD:     50     True           //  Valid – insert ABCD and all attributes into symbol table  (*)
-
-     B12_34:     -3     false       //  Valid – insert B12_ and all attributes into symbol table  (*)
-
-  a1B2_c3_D4:   +45   true      //  Valid – insert A1B2 and all attributes into symbol table  (*)
-
-     ABCD!:    33     true      //  ERROR – symbols contain letters, digits and underscore:  ABCD!
-
-1234567890:     0     false     //  ERROR – symbols start with a letter:  1234567890
-
-          ABCD_EF:  +100  TRUE  //  ERROR – symbol previously defined:  ABCD  (+)
-
-a1234:  3.5   FALSE         //  ERROR – symbol a1234 invalid value:  3.5
-
-     XYZ:     100     5         //  ERROR – symbol XYZ invalid rflag:  5
+s7v:     3916.4745833653305     true
+zJY_GJrH78:     3536     false
+Gwzcv7:     999999     5
+eDXqs48XZ0:     588     true
+a52yR:     -2735     
+AW:     1979     false
+PEUo:     5216.850449365917     
+tvewcG:     4754     5
+lcdi6CSs:     -1643     false
+dWjcg:     4856     
+BmX:     -3979     5
+Cg:     -2589.6974773711627     
+hTnT:     -1616     5
+UlxKL:     4775     5
+Bd4u02mxT:     -118     true
+Q:     999999     true
+t:     -3113     5
+OpS:     -1462     false
+PjkOo:     not_a_number     5
+Z:     4848     true
+bvLPT5DR:     not_a_number     true
+fDv:     -4837.20243168245     false
+f6:     -1768     random_value
+Daf6uj7SGr:     999999     true
+hcuYRDO:     3581     random_value
+Lnu:     999999     
+w:     not_a_number     5
+yXR_K:     999999     random_value
+zyruD5O:     3083     false
+YzRzIp4:     3126.3089422165576     false
+nlF_GXn:     not_a_number     5
+kDoVSBWlO:     999999     false
+xK8tvpJg8:     -4792.975877869079     true
+H:     3353     5
+J:     not_a_number     5
+q6m7:     773     
+aqtHlT:     -785     5
+JF3E4G:     4156     
+boJWQzO:     494     random_value
+I:     3773.026488521189     true
+Ez:     not_a_number     false
+EvvZhA:     4782     true
+grktCXYm:     -3501.6134544277675     random_value
+thDYxrb:     not_a_number     
+kj98:     -1805     
+hB41TZwT:     -4371     random_value
+Um:     -4612.994804073878     5
+ZNit18Pn:     not_a_number     
+u2_k8Cth:     3299     5
+c1O:     999999     false
+iL:     1629     
+t:     999999     true
+ry:     -4621     5
+vnDF:     2612     true
+Gd:     1793     false
+RMu:     4880     true
+w_0PN:     -2799     5
+sN2w:     1995     random_value
+sS2pqRH31S:     -4303     false
+K:     -3077.45092195721     false
+U6:     1632     5
+hHdFpneEy:     not_a_number     true
+mKsAc:     -3103     5
+er:     not_a_number     random_value
+sA8Xjr:     -80     false
+Xziq:     2665     5
+q:     2683     true
+Jda1hB:     5565.570715302283     5
+B:     2502.839941661563     false
+g7DSVV8SX:     999999     5
+AdtKcOqS:     560     true
+z0V9Jsv:     -620     
+OG_csL:     not_a_number     5
+D6aom:     3942.387782546095     false
+qBWDR:     -4083     random_value
+OrqRbQ:     -4498.923995104838     random_value
+nI_:     239     random_value
+AZY:     5780.856438950446     random_value
+dzw:     -3924     5
+eSDsefrO:     -3968     true
+afGC:     999999     true
+Q:     3956.6173367820356     5
+ppmkr94pbG:     -4830     true
+EQF:     999999     5
+wk4oRH1vJs:     891.7175336026321     false
+tM:     999999     5
+QSO:     -729     false
+STYX:     -1556.0965988322932     5
+bHe8A:     2528     
+evW8_JWJ:     -4413     random_value
+epKzeAg:     not_a_number     random_value
+IatpCJ7:     -4776.036404140052     true
+ZSJttS:     27     random_value
+oXeQY8:     999999     true
+xh:     not_a_number     false
+z:     1465.5471758610547     5
+VddiytCGR:     2991     true
+u:     not_a_number     true
+I7s:     -4562     random_value
+KnU__2l:     not_a_number     true
+y4JDu3MAJk:     999999     5
+lqrusQ1D:     not_a_number     5
+oFm8:     4899     false
+I3N:     999999     random_value
+G9dbT0s:     9879.414303691832     true
+aPNwi8Ny:     -1862     random_value
+yS:     8094.981610232917     random_value
+T1sD:     -5184.703273448781     5
+LmX4SSpQ:     5619.098450674352     
+Bc0tDIPWHf:     not_a_number     false
+r95VNPVYGV:     5195.898018749998     false
+c8ae:     -2308     false
+CqkKXy2dRM:     -3305     false
+ZD3:     2426     
+v:     4948     true
+qMdHz11iR:     -3996     
+ayN:     not_a_number     false
+xKL:     not_a_number     
+R:     334     
+S63fTA18DF:     not_a_number     
+K7oWBpI1Ql:     999999     false
+o6IuIqbHaT:     -1253     
+cVvjyxIn:     -4966.459712851492     true
+A:     -3049     
+B:     -4728     true
+o:     not_a_number     
+eAK:     not_a_number     true
+Nsjoja_RrC:     3319     
+uy:     999999     5
+kujX03:     3102     random_value
+QNzsiX:     -2310     true
+uVQSthwm:     -29     5
+wXCmeiam:     2752.1358960655925     true
+sJ_AE3b:     4868     true
+CD38GtNXq:     -5451.408036874592     random_value
+iX4XbH8vnQ:     -7350.968709604764     true
+cn:     -4601     5
+UqiKU3G4zf:     -2062     true
+Qt9B8:     999999     true
+p9nH:     797     
+PKFnpB9PK:     -1906     true
+fMZ:     1901     
+YYQ9ybq9_b:     999999     true
+ms5nB2:     -2931     5
+V2avrwL:     2187     false
+Bq4E:     not_a_number     
+ZmmrEXT:     3691     5
+yOAMJ:     999999     
+p2ggpi_E5:     -3846     
+b:     999999     
+U4_hSr:     395     random_value
+xRE:     999999     true
+HFLTmXFZt4:     776.5271798591166     5
+k8mV7:     -3101.4106399501197     
+G4TUQd:     2068.2893147591603     random_value
+vfmm:     245.1502812413546     
+i:     1803     true
+q6:     -2932     true
+DSiI:     2880     random_value
+OPhWqtxzYz:     2444     
+o6:     59     true
+QmRKH:     4453.824569691691     
+ZmRl7Z:     -8555.548442139956     
+d1mj:     not_a_number     random_value
+nBzxxrq0w:     8011.471669466846     false
+GNf:     -6009.270994445846     true
+Xpqg6leSaq:     -996     
+T9VD7BSgv:     2517     random_value
+hsDAy:     -3116     5
+vrg9E:     999999     
+yYqIj14:     -1326     false
+DoFneTeY5:     not_a_number     false
+lF7:     1257     true
+lFFC36:     999999     true
+K:     -1024     
+x:     999999     5
+Xo9mnxKAjb:     3940     random_value
+h_QJNAWqv6:     -3106     5
+kirYsR8:     not_a_number     true
+d4:     999999     random_value
+SXohkF:     999999     5
+Iw3V:     -978     5
+bVj:     999999     
+tHjRZ6_:     779     true
+zhY3to:     -30     5
+n7XL:     999999     5
+jpHpG:     999999     5
+is0B4MNk:     -4943     true
+NmSsaXbYtv:     -2962.144039811181     
+zJ9F:     -2861     random_value
+S1SFnbM:     not_a_number     5
+nTxg:     -4815     5
+ojk:     3873     5
+auj:     -4100.562663661249     false
+uhVRHrT:     1494     random_value
+YBfZrC:     3167     false
+c:     3099     true
+rG5Ef7DZ7O:     3870.2746356202624     random_value
+RB8kz5y_:     -4237     false
+el:     3707     
+E:     -487     true
+jvjas:     4422.366524718807     true
+r_o:     -3460     false
+PWWxE:     4641.2694446338355     random_value
+RKX5:     999999     random_value
+R:     -1879     false
+I:     -4657     
+bEfw:     not_a_number     5
+SGL_eN00:     4875     random_value
+UIi5EPmF3_:     999999     5
+H6L_scqg:     not_a_number     true
+UKF3fW:     not_a_number     
+YkHYUHXV:     786     random_value
+LWy:     -3185     5
+Veuitj:     999999     
+a6Z5Au:     -2808     random_value
+IzlFQxj:     4631     true
+vo:     2705     
+jc36:     -3805     5
+q:     -750     random_value
+b8C0v:     -790.3884704522716     false
+gqw9:     not_a_number     
+qdK:     4361     true
+qeCHd:     2362     true
+Cv6:     1883     random_value
+NCJBttZu_B:     999999     random_value
+m:     4686     random_value
+wm:     999999     5
+sx:     -1294     false
+AS74_gpV:     999999     false
+ZSrc:     -2952     
+WStf73t2R_:     -4074     5
+fOtIDB:     3723     true
+PfKs:     -4102.901181565994     
+sYGpTlDn:     -4351     5
+JxY1xz4a:     not_a_number     false
+J5oY_Uvn:     -348     false
+X79O:     999999     random_value
+hf:     -3112     random_value
+Dthvy3xkOz:     -1074     true
+io:     6760.836418415471     random_value
+PBBXhmwM8:     999999     
+deQrP:     -4842     false
+Dgv:     not_a_number     random_value
+HngboX3EH:     2603     false
+J25w1tUrd:     999999     false
+rj9o:     not_a_number     true
+S0CmOF2:     -4726     false
+kOCjRWfnR:     3071     true
+BPSi1nxGRZ:     4299     false
+mnAZiTS:     3434     false
+RLg:     4060     
+Bc:     -436.6419466655698     random_value
+Leq73:     -2866.138033729557     true
+U7uL6:     537     
+pn_:     999999     5
+YXYZKO:     3456.302328733509     false
+L1F2a:     91.45631823900294     random_value
+U41ZDr1:     4368     random_value
+O:     not_a_number     true
+SBa11:     3916     false
+bcEN0:     999999     random_value
+QQMkWXaf9u:     2276     random_value
+Q38mdbx4p5:     -3520     5
+Xi9T9lWZx:     not_a_number     true
+yRCD3bav9:     999999     false
+Jpm6wr:     -2762     
+N3evg2:     not_a_number     5
+U:     -5444.766211284617     false
+O:     2962     random_value
+taoZsQs:     4288     
+xcKOoO3ri:     -3087     true
+u:     -780     random_value
+HBZ4hrzQhk:     937     false
+wPZ:     300     true
+Need2L:     -3825     5
+q1:     -9601.724327095917     random_value
+cN:     4458     random_value
+m:     -4686     random_value
+y_ALXo0:     999999     random_value
+vjEeVTXC1:     not_a_number     random_value
+m:     2327     
+CVM:     1751     5
+P4t4I6M:     not_a_number     5
+S2p:     not_a_number     false
+Wu969E:     999999     true
+pFV:     -4447     random_value
+UhqCNT:     -3694     random_value
+WtMD85I:     999999     5
+L3prsXL:     999999     random_value
+hNyO1:     -2565.033324824708     true
+uQ8VMzQf:     not_a_number     5
+mQct8:     -2503     false
+Wwa:     not_a_number     5
+XSojMPU:     5011.818386111676     random_value
+G6hUEL1MR:     -4171     5
+jyqm:     not_a_number     true
+Dxoyz:     -1017     random_value
+p0:     not_a_number     
+gHSn7D:     -2886     false
+mLF1W9H:     999999     
+TVm:     1406     false
+Jw29yKGE:     not_a_number     false
+Nbuj9tL:     -32     random_value
+SHZwD:     276     true
+VxaOXv:     -5026.683286755334     false
+of4cSb:     not_a_number     false
+t7LHE0y:     -3371     true
+XWe:     -7274.334200558093     true
+OU_5:     1060     random_value
+h1R1B2f:     -2949     random_value
+ajrrKD6ga:     999999     false
+F7qnM2:     -4191.211350070125     
+YS:     -2006     false
+V:     3798     5
+dKp:     not_a_number     random_value
+e:     3780     5
+qXCV:     not_a_number     true
+jnlb:     -3184     
+aVh6QNq7:     3056     true
+c7gBfH:     999999     false
+phi:     999999     false
+c0Qob9:     999999     random_value
+Ck4kM:     7584.703785286503     
+b5wY9hYRyT:     not_a_number     5
+BahkBA:     -1009     true
+Z8l:     5759.3722119995255     
+B2F:     -5595.459823075253     true
+F2eUNadT:     -9706.583304164129     random_value
+unxr:     not_a_number     true
+lDFA:     999999     random_value
+yUWs8L:     -2037     false
+W1CMyT:     not_a_number     
+H7:     4167     
+J:     -608     5
+ChJwhstZXV:     999999     5
+OSh:     3731     false
+WNM:     -1485     
+PD:     not_a_number     false
+PEftVx3:     -2061     false
+Rg9bIVouAi:     999999     false
+G:     999999     false
+j2iZ:     -4282     5
+mL10:     1495     random_value
+GUSBF6J:     -4853     true
+awGmZHs6I:     not_a_number     random_value
+ClF4F:     2656     random_value
+ex2PGujZ8X:     1407     5
+m:     not_a_number     random_value
+uy:     -6512.125648032847     
+U_BbT:     3858.6276135192347     
+dc:     985     5
+Ys3UIfcm:     -2125.277662056468     random_value
+jVw_r:     not_a_number     5
+yuGR5:     3830     random_value
+crXwO:     3531.6974744371655     false
+wbltNz:     1126.7936614693426     
+s:     734     true
+Z:     856     5
+yxh:     4243     
+SexxIA:     999999     5
+FADiNg:     999999     5
+q:     999999     5
+Nw:     999999     false
+FpX2NXYCUv:     -1158.7708883475461     false
+N2kyUS:     779     false
+klHxaOgZ:     -2410     random_value
+Ui:     999999     true
+LIys:     not_a_number     random_value
+mwClhSd:     -2083     
+fVn59GSVL:     -4599     5
+gy:     not_a_number     random_value
+A7K0KG:     not_a_number     true
+rPou89:     -9312.33217802543     random_value
+hlnYVRHun:     -4823     true
+TCziDbD:     4760.1774917609655     
+R:     999999     5
+jNKvCQ_8T:     -4161     5
+dKeoQjWm:     -765.1747766033732     false
+RqhiFmQ:     1045     random_value
+FuHdfD:     not_a_number     
+ec6f72kk:     2500     5
+Z5TzpIVSv:     -497     
+KI9pTyLc:     1316     random_value
+O:     -1978     5
+HLqjx:     -1224     true
+j1:     999999     
+h99AUtju:     999999     
+ZUaax:     2385     true
+XzgAsKidfh:     not_a_number     
+vR:     639     true
+X74k8U95M:     9042.173877688918     random_value
+NCxesrU:     not_a_number     
+HLR4:     -1730     5
+RhXWI:     -4604     5
+s2OjMw3Z1t:     999999     
+N8AWqANjn:     999999     5
+XQZKqtts9:     -7745.2437846851935     random_value
+Vp7VXB:     4338     5
+EKC:     not_a_number     true
+V6ZKva:     747     
+MHP6G:     999999     false
+wgM5dFmR9:     -4637     true
+lCCnMqpE:     -4984     true
+vgw:     999999     false
+z:     not_a_number     true
+OrHibahK7:     -46     false
+P9:     4569     random_value
+YfGru:     -3342.0330860274735     5
+s:     1686     5
+uWk4rm9hu:     3672.139596572435     random_value
+axz5Kn:     1342     
+XQElJa:     999999     
+Ub2NXY2Y:     -4558     false
+cLsXa:     -1116     true
+oE:     434     5
+QbyNvKM8:     999999     false
+sa2aCA:     587     random_value
+W:     -6053.65801042458     5
+YsF6OWcB:     not_a_number     false
+dHp_5ihsVo:     -917     5
+lR9FV:     999999     true
+LHbjul:     -4889     false
+NqDj4hO:     -2395     false
+pU_:     -3226.1566978455967     true
+fsmf2S:     -459     5
+J_ah:     -1290     5
+Fwrvk:     not_a_number     random_value
+tW:     2864     true
+an:     1650     true
+KMD:     999999     
+D4BdmwHu:     -4018     true
+Rf:     -2414     random_value
+rIQ:     -543     true
+zPrm41H3:     999999     true
+P:     999999     
+twVCgu:     8620.07306984378     false
+KUV:     3458.2649988852336     random_value
+zl7u:     -1076     
+HT9DERE:     26     true
+Gz:     4593     5
+OiIQUFkGjH:     -4633     
+vjjza4AWC:     9676.104508746856     random_value
+Qbo0q7ricY:     not_a_number     5
+FBkdb1:     3973     5
+aSZ4d9:     not_a_number     true
+k3ugV:     -1396     false
+RaNQOH:     999999     false
+RUuew7q:     6755.314302965162     false
+IuIAJd:     1957     random_value
+kilHxqt_LK:     3503     true
+xPmwyzSFsf:     999999     false
+Eg23Y:     999999     5
+gmdc:     -5891.308993002158     false
+FxqcTj1GD:     not_a_number     false
+JgQMUHLae0:     -3559     5
+lUFmzcf:     999999     false
+SCm2XSi20g:     not_a_number     
+ggNIa8QU:     -4030     5
+eNCIDu:     2458     
+YB:     -1569     5
+llV:     not_a_number     false
+F:     not_a_number     false
+wL7OQYgKsY:     -5119.379999772522     
+j7hc3:     -4652     5
+H1k:     -1331     random_value
+lwPTJ:     -2505     random_value
+ZISeR:     not_a_number     true
+HZLS4:     -1877     
+p:     not_a_number     random_value
+L1paCbDt:     -2717     5
+wfl6VoA:     not_a_number     false
+RPVL1:     not_a_number     false
+PP45E5D:     326     true
+IY4U88o65:     not_a_number     random_value
+RUX6Lc4:     999999     5
+xM:     -4815     random_value
+CZEao5n:     not_a_number     random_value
+E:     2046     false
+JAxllWp:     2227     
+m8J6vTYo1Q:     4086     true
+GFd9auHm:     999999     true
+nz14a:     2901.1666384403507     
+wFfA:     -3414     false
+zCQ7:     999999     
+VZA3LDFWE:     -3518     random_value
+SAf:     3344     false
+JybNF:     999999     true
+C8cf:     999999     random_value
+BYZh:     3011     true
+yfSE5N:     not_a_number     true
+KcZEa:     999999     5
+X:     not_a_number     5
+etP:     -3410     false
+MQDOKg:     -7113.750052993071     
+P:     1700     true
+M9chf:     -4608     
+Qp1fq3xSfG:     9911.070847752424     random_value
+wh:     2230     
+SMdC46ciXC:     -3726     random_value
+ZBqFO:     not_a_number     false
+ONqCH:     -1931.2287911243202     true
+DpVBygYeCS:     -2740     
+yBj0H:     4365     false
+H_eMcj:     2586     true
+Z2tVn:     746     5
+iRTwCLnd:     999999     true
+FwU:     999999     
+eWyX96x:     3278     random_value
+uHs:     237     5
+vDJHwoNSL:     999999     random_value
+kca8:     -8881.656607551893     
+fAlPhwS:     237     true
+x8LLMGD:     -217     
+edhAt:     -2998     random_value
+Gc81pY:     not_a_number     
+rxOj1tn:     not_a_number     random_value
+e5:     -4234     false
+uN9CvRrl:     72     false
+Lifk4d:     999999     false
+wHEQ0:     -3432     true
+scdpyVHvV:     3647     random_value
+QygtSF2N:     1439     true
+QqD:     999999     random_value
+N9aYeuA:     8172.0661094092575     random_value
+JhG:     not_a_number     true
+Vii:     999999     
+B_1:     999999     5
+c_a:     -2459     
+zZJ:     not_a_number     false
+KJ:     999999     random_value
+JaxOKLPe1:     3865     random_value
+OJoaP:     999999     false
+Q:     -3827     random_value
+EKyRvlI:     3575     false
+O1:     -7312.868262332306     5
+Pf2qvjpYwv:     999999     5
+LQKM6cMe3:     1902     random_value
+ioDq:     -1518     5
+WPFzmO:     not_a_number     false
+FIdzq:     -4571     5
+XUnJmg:     -402     5
+e:     -4571     true
+LLwnPLRy:     -7114.945149117835     random_value
+POyvlhUPL:     -2632     
+fgpcw:     not_a_number     5
+AZS94tz:     999999     true
+WcYwvrSM:     not_a_number     true
+fFTlM:     957     5
+g:     1599     random_value
+Yk7Xmb:     -378.8992547543385     random_value
+fc6sy1:     999999     5
+H:     -1365     random_value
+q4NUwysn3:     not_a_number     
+Ux09rngG:     not_a_number     true
+P:     -3864     true
+IKoJIwjk7:     999999     false
+TodX:     -1603     random_value
+JD:     6659.485623069173     5
+sCqUx7iwWP:     695.7608229863981     5
+Y:     4754     random_value
+n_wY:     -1597     false
+wjFsFBFE:     -7556.6574322822635     random_value
+JBqE:     -1857     true
+Zd:     -63     
+q:     -972.8167522831827     
+yqSCVAb_:     -3523     false
+ADNn:     3682     false
+siP5rNkaHF:     2148     
+U6rW:     -4623     5
+yx:     4503     
+kaahEMQP:     999999     
+q7RltzWG:     not_a_number     random_value
+OE_cvBRlMU:     -2853     5
+lT3KBFhR:     not_a_number     false
+uj417gO028:     1181     false
+eg9:     -2425     
+AWchdUxBr:     2564     random_value
+nlDsacY:     not_a_number     true
+TW:     2771     false
+DGUpklCHJM:     999999     random_value
+u3vcIws:     3012     false
+Vr8ogcV:     not_a_number     random_value
+Q_No:     -7076.855934836576     random_value
+l09cM:     4338     random_value
+J8nc0JsxxD:     -1098.8794658899533     
+pa2Uj:     4463     true
+tp6QwTw:     1305.475302446106     true
+C1kHKL:     -2914     
+Rn:     not_a_number     5
+Y:     645     false
+SygikdjTw:     -4370     true
+y:     not_a_number     false
+tKKi_:     2982     true
+oLWn7Bp:     -4512     true
+jFA2H9hhj:     2859     
+AVKTD2F:     not_a_number     5
+cutT:     963     5
+NQ1M:     999999     true
+GK:     3360     
+kN3QbUJ:     999999     false
+C6:     7857.791961564944     5
+Pm66jejjo:     -4993.7123114995475     true
+jHu4fa:     not_a_number     
+af:     -1930     5
+dBc4zNR:     -3899     false
+d:     2324     5
+ADx:     999999     random_value
+iWdLFNlTio:     6401.5620161703955     5
+ezu7hA5Xv_:     999999     
+xy4p3Fk:     not_a_number     
+GF_9xkM_8B:     5840.247691493192     false
+bm1CkjIR:     999999     5
+doCU:     -396     5
+VdZ5z:     -527     random_value
+g:     2058.948034247438     random_value
+s3:     1376.0673995247726     
+Jb:     999999     5
+I:     4767.928399220171     
+W:     not_a_number     
+rdZD:     -4499     random_value
+kxArO:     141     
+SvtTFo9:     -4819     
+Gnj_:     1403     5
+kV9q7npse:     2597     5
+C:     -2564.9930518802157     
+EdpJaX1rn:     not_a_number     random_value
+uL_Y0:     999999     false
+UgkQxyv:     not_a_number     false
+HodGa:     not_a_number     true
+e4wyMAhy:     999999     
+o2CPx:     1636     
+jRxTWKt1Qm:     1699     true
+W6:     4464     false
+M_84X4Y:     -4540     false
+eQ:     -1469     5
+aDaH:     8860.852375740316     false
+oCXXpZxGuZ:     4937     false
+ZopdxNd6:     -9532.7019957331     random_value
+X4JrdKvX_:     1604     
+p59nATm2S:     1491     
+oapwr:     8211.011309130408     random_value
+Z98BmJSX:     999999     random_value
+aR4iL_V:     -2294     random_value
+wtpO75nHC:     3541     false
+ghwzKxof:     not_a_number     
+tit1ap:     1699     5
+e2dG:     -2582     5
+xiqDnu:     -3755.7747273399264     false
+Fr:     -1375     true
+Bb4VTjrR:     3566     5
+i3B5THA:     1230     
+SK4YBz:     999999     5
+zGrJzQU:     -6671.489730504245     random_value
+P46WL:     -3585     true
+RB38:     -8135.404030942465     random_value
+K:     -4469.9960123654755     5
+jvWtOfWdn:     999999     false
+nluC:     -1382     
+AXji:     -3835     random_value
+m4b1xKpok:     2057     true
+z:     999999     5
+pf4L4hR:     -4308     random_value
+BmsBf:     not_a_number     5
+CNtSMbX:     999999     
+y4WYm8:     not_a_number     false
+aKhyj:     4612     false
+uDmPO:     1024     5
+cBRWAgx0I:     -235     false
+YXS9ebip:     not_a_number     5
+zNz8:     4683     false
+KSsH:     -4230     
+N:     8077.216788388323     5
+ep:     not_a_number     5
+R:     3316     
+s_8PID:     999999     5
+DAi9Xg7nDu:     999999     true
+INTzk:     -2758     random_value
+dXdK:     2106     true
+x:     -3188     false
+PJ2iXQE78d:     999999     false
+F7Ac:     3077     false
+mTJpd77:     -1833     true
+Lo_:     1699     
+tqCF:     -1007     5
+X7bQFD0:     -2896     
+LzmDkp0F:     3163     5
+UEElVQA:     1672     5
+TA28B:     6619.454041835914     
+RPYRgFmoL:     4070     true
+F:     -1795     true
+iH:     not_a_number     random_value
+Y:     1283.4080220559426     random_value
+Hl:     999999     false
+dYSw0yqM6:     2037     true
+iHdkcH6:     192     true
+ZMXXVzyF:     1386     false
+y2DXLjq2:     -3903     true
+EycXC:     2608.23021579938     false
+B5:     -258     5
+F:     3293     
+MHeBoawOs:     not_a_number     false
+fHf:     999999     random_value
+hej:     -159.48944701060827     true
+pJ2oCS:     740.8874639377918     5
+StJ2V:     -3263.9541465080347     
+LPZk:     -955     
+l5LazXHO2T:     not_a_number     true
+qPHrcRh:     8015.7771158488285     
+DCHM:     999999     true
+iRz0VO6:     4151     5
+x:     -4159     true
+Z:     -3664     true
+R9r49S:     1470     random_value
+u:     1948.3743198730208     true
+D3jq:     1546     false
+q:     -3140     true
+Xr4wypSQe:     999999     random_value
+JxN8TfoEUK:     not_a_number     5
+cKxanI62f:     not_a_number     random_value
+pReSdlBo:     -2959.073248702329     
+EMm:     -2433     true
+yLyz:     3225.3888227301304     
+iy:     -2271     random_value
+NOt9enr:     724     random_value
+DAeX:     -3499     random_value
+PnminRtoIL:     4034     true
+EGX2:     999999     
+etm6d:     6049.839076501523     false
+OPk:     not_a_number     5
+PUtRj6wUo:     657     
+E1y:     9878.34231217212     
+kqLE9n:     887     true
+wtloVGA_VG:     -2582     
+hMVytoj:     -1232     true
+fkCW88q:     4850     true
+nO:     not_a_number     5
+M95OJ:     not_a_number     
+tbcBAv:     2262     5
+N:     -262     random_value
+rsy77s:     1048     true
+Q:     4112     5
+XABa:     9088.376587827803     false
+qNFqcHvWCz:     -4883     false
+S09M:     not_a_number     random_value
+qRIF6p:     -4118     true
+RiZwmQ4:     not_a_number     random_value
+F:     not_a_number     true
+CTI:     not_a_number     
+dSv_3U7BTI:     999999     5
+GQ:     2983     5
+WoixIk7:     -2454     random_value
+UBYdXKPG:     not_a_number     5
+qymSlly_:     3857     random_value
+PZbRnek:     999999     
+hBMRe_vf:     not_a_number     
+KB62XrtDq:     1398     true
+BmGcLNmZ:     3024     random_value
+hV6_Xwr:     1895     
+fMpod:     4267     
+SPusLzcNFq:     999999     random_value
+i:     4734     5
+pbW0tmg:     3984     
+ov1b_:     999999     true
+ayH5rabQL:     999999     5
+Oyg0BUjby:     -9571.727591426907     random_value
+kPDzEymm:     999999     random_value
+YZBV4elbxj:     -365     false
+dmQV:     2706.3648130785677     true
+IScc_BV:     -1737     
+noydLOIM:     -2416     random_value
+i8:     not_a_number     
+QyD:     -1726     random_value
+LPN:     2996     true
+BnD2jN_oQC:     3082.8190198043794     random_value
+EsSVOjkI2:     285     5
+aLcRkaY:     not_a_number     5
+r:     not_a_number     random_value
+QC:     6344.757537422094     
+lcLkmrgl:     4413     random_value
+yjANShOm:     -315.1617399141651     true
+Pu29He0zM2:     917     random_value
+T93:     4365     false
+dSRipgWwY:     1008     true
+Bo:     1969     random_value
+xECdm9c:     not_a_number     
+ZGpW:     1239.818464911521     5
+gEr:     3236     true
+XxDZeOq17:     not_a_number     
+JHfX:     not_a_number     
+BsRnxfC:     -922     true
+bD_:     3679.8001632210235     false
+Di6VAL:     -971     false
+lBFY:     -379     random_value
+WjWRmQSywY:     not_a_number     true
+bwxSnl6:     not_a_number     
+IdIVFHnBVV:     999999     
+SaS_u6Zt9:     4232     false
+WveP:     -2522     5
+Qr:     -738     true
+u:     3564     random_value
+D:     1717     random_value
+AGYCplkvZ:     326.3698970706191     
+xg1z8vfL:     4463     
+KGmB178x:     9136.653086504153     false
+fuEyxDe:     -8003.625920409046     5
+QIGO:     1136     random_value
+JDQ:     -1785     random_value
+xsB:     999999     
+z6XJgXdS:     1113     random_value
+kq:     4800     false
+UFopkV33kW:     not_a_number     random_value
+uQLLRbQR3:     2308     5
+CRMs4F:     not_a_number     5
+oI_T572:     999999     true
+K3pnSND:     not_a_number     
+voN:     -2765     
+ecjBegXe:     not_a_number     
+rc:     3439     random_value
+Mah2KnXnM:     8094.800352033879     
+sTrFB:     not_a_number     5
+d6FGILhcuX:     -6393.012235248603     5
+dXRjfI0uw:     not_a_number     random_value
+U6YDyDdCv:     -217     5
+e:     not_a_number     
+y5ogtoj:     4669.92324996237     
+sWOvoO:     -632     true
+Kh:     not_a_number     random_value
+ZD0on9Xt:     -4260     true
+eQ0lpcoK:     -4399     
+U:     2246     5
+a:     -1990     true
+S:     20     true
+nzi5TIVy3:     999999     true
+vT:     -2771.4305480733965     
+yTT_XVaCqA:     -2194     5
+RAYjjjXs:     -1801     5
+G:     -4161     
+nW:     999999     5
+TlsM:     not_a_number     random_value
+w9Y:     not_a_number     true
+AKHRIiF:     1784     
+mzFPkO:     -720.77670111933     random_value
+qDeK:     not_a_number     
+R1UuTe0:     999999     false
+m_RDUy2:     761     5
+UZqp:     989     false
+dmpmtQmm:     2994     random_value
+NUwT83hGvh:     not_a_number     5
+rFq1v0:     -453     
+Q:     2905.290307224761     
+wpeTn_0n:     2832     random_value
+gM:     -1185     5
+M4:     not_a_number     
+t:     -158     random_value
+MjfylTpW7:     999999     random_value
+oan:     999999     true
+Q:     999999     false
+sc0tvF4l:     not_a_number     5
+YgVm:     4334.797444462552     true
+xDFUkns:     999999     5
+Dym:     999999     5
+Sqnlk2PQ:     -3121.525709193509     5
+FT:     2702     true
+yMNxR:     not_a_number     true
+vtCw:     999999     
+f:     2786.88021701889     5
+qnYm:     999999     5
+HfWvV_iI:     not_a_number     random_value
+OK0mk:     -2890     false
+soyVz5:     959     random_value
+hhG9Sb8:     not_a_number     true
+mv64OU0FK:     4788     false
+qTz3:     not_a_number     random_value
+wNz3g1MKi_:     -2597.47214335605     
+nL:     -3605     random_value
+xa4w:     1569.9820314439676     true
+Cg:     2908     5
+LKSiA:     203.560679392589     random_value
+h4eb6TvWtc:     1183     false
+oZH:     -5052.774693645981     5
+Y3:     -3960.525244938096     5
+vfYwvQle:     4280     false
+nII:     not_a_number     random_value
+rtIJcO:     1722.2061524990404     random_value
+DXJ:     -3705     false
+HHE8:     -2227     true
+EwW5ut:     999999     true
+sd3Lu9:     999999     false
+w0eOqv1GNm:     -2427.929240522977     random_value
+JBQ:     -2195     true
+nt0Q24y:     8116.655391597975     
+uA:     -4052     random_value
+Fzhn_eK:     not_a_number     
+n9wI0Drfc:     4835.6684278753     5
+UVXfkY:     1899     true
+S:     -9060.074957445338     5
+gI:     2977     
+rlVzzwK9hx:     -3542     false
+ch:     3847     
+A1T:     4316     false
+qUmE87Np:     -726.9691254962836     random_value
+aH:     not_a_number     5
+Rw_G0bH:     -5440.8639646565325     random_value
+rMKRtU7Tkp:     -3136     false
+sf2Zy4A_g:     -2001     false
+zu6:     999999     random_value
+QE2IM422:     4182     random_value
+FUJ92F9E:     -3077     
+J:     not_a_number     
+DAV1Z0:     -632     
+Lx:     -1413.836130002026     5
+BwmN:     -7912.743295470177     5
+f7XSgUkFv0:     1173     
+MRYF57k:     -1525     true
+eH:     5748.963060858376     false
+z:     3868     random_value
+te0SVS:     2897.0832615012423     random_value
+ofohA:     not_a_number     random_value
+G:     4349     
+u1tQh:     not_a_number     
+kP3mZ:     2685     
+v0PC5k:     not_a_number     true
+JFAkt6iqk:     1348     random_value
+XJ8ZG4n_TN:     -4413.451830276968     false
+Sv:     1162.0494584357639     
+my7WDS:     2559.5694757633464     random_value
+LXvSCE0t:     999999     random_value
+X:     not_a_number     
+M4p4U:     8789.192972715271     true
+xdxmxsoOd:     512     true
+wkdd:     -621     
+N:     999999     true
+woRIg:     -2894.3200915370708     true
+Oevj:     -9929.396419432362     
+DeYSG:     -3072     5
+yquAXT:     -9651.322883258224     
+mSw:     2696     true
+npSQkLc:     -3386     false
+kxOUf:     9484.44787164194     false
+L:     3004.0160502116723     5
+tZj:     not_a_number     random_value
+Z:     4303     true
+PNiO:     2556.489583144039     false
+irt:     999999     
+BiKXH:     not_a_number     true
+X5W:     -7110.365728527461     
+P91EZ_:     not_a_number     true
+dNFrtn:     -4290     true
+eSDvqer:     -4346     
+yoUmMqWa:     -2063     true
+vV:     -3294     random_value
+YQaI:     3725     
+hA:     999999     5
+DTPT6SY:     not_a_number     true
+ib0kN3xP:     579     5
+NsH3yOy:     not_a_number     5
+XEC:     999999     true
+jEQgs:     not_a_number     5
+h9N2Zqh:     4144     
+Ill6Z5qLpA:     999999     true
+Xri:     630.5596507491991     random_value
+keW7yMt:     not_a_number     random_value
+tTwJQ_u67Y:     -1271     
+P:     9121.040925072848     true
+qMyyUD85:     not_a_number     true
+ol5V1zjf:     not_a_number     random_value
+x9ce:     999999     
+Dcrc:     -2930.8256956045843     random_value
+SB:     999999     5
+vLul0v2MAz:     8565.219545172302     true
+rxjZ_CxC:     1414     true
+vu549:     999999     5
+UBhUCz6Na6:     1223     random_value
+rMc:     999999     true
+g:     -1812     
+fW4N:     -3181     
+z5D:     999999     false
+JKfSEYswDT:     2579     false
+BJLn:     -2711     random_value
+y:     1759     false
+fL:     2706.200187747678     
+R4eFit6Y:     -2195.3966908886514     
+hz:     -3163.9263917076523     
+bmg:     -209     random_value
+qarn:     999999     random_value
+QUgSifD6:     -4223     random_value
+GCW:     -2953     random_value
+X4zaZdgw:     999999     
+t31E5806x6:     not_a_number     false
+vw:     -1376     random_value
+wKG6:     999999     false
+D045z:     -836     true
+o5Nr3:     240     random_value
+eP4Uh:     -2161     true
+R:     2025     random_value
+C6J:     -3203     
+dtKN:     3787     false
+K4a:     -4641     random_value
+x6mEG59A:     not_a_number     random_value
+iex:     -8431.99624834859     random_value
+aziKc9M:     525.4110968467667     5
+GKpHt:     -9192.195005087922     true
+u:     999999     true
+enzOI4uR8L:     2231     5
+sKxYMz:     -2891.228521892226     5
+gT28MVS:     -1925     random_value
+Q7:     -2292     random_value
+kixkSP2rCc:     999999     false
+H9Y:     4411.344522691319     random_value
+WTL:     4921     random_value
+jPrDj0bb:     999999     true
+OrgZ3LN:     1041     5
+s:     1364     5
+tLZLuMOZ:     5143.667231617028     random_value
+kygJDmd:     999999     random_value
+vF1f:     -4325     random_value
+bE2ZxrbcRA:     999999     false
+sn8Mhk_I0S:     999999     5
+XI9B4OBp:     2883     false
+Ix6HlbY9C:     3924     5
+D6kQS:     -752     random_value
+RsQS8:     -2580     true
+mF:     not_a_number     false
+khLq5xDJN:     -3934     random_value
+NJRaUqvAp:     4840     false
+x:     999999     
+lV8PdNWYlM:     not_a_number     
+sknGk13dxl:     -4906     false
+aRzFE3:     -9354.68462530531     
+N0y:     3204     5
+l:     3944     
+DpTx5NZS2:     5693.388959335389     random_value
+e1A2tWZMij:     -2492     false
+bx:     2120     false
+m:     -98     
+en:     -1123     
+h8:     999999     true
+k1nfMqD9:     2434     5
+S2uYP3XM9:     -4725     5
+JO95F_z48R:     not_a_number     true
+M:     -2747     
+NUXM_L:     2071     random_value
+MQbgUYuxM:     not_a_number     random_value
+xAN:     999999     5
+qCq_p3tTE:     -4587     5
+oda:     -3928     
+sjpf9IR:     not_a_number     true
+Ob:     4549     random_value
+G:     -2553.971930914149     
+efq6py:     -875     true
+KBHm8X8e:     -513     
+LZ:     999999     random_value
+A5W4aoOtIr:     999999     
+YBq:     -7319.990374298138     false
+kxy:     9267.821353590134     random_value
+UjkDm:     1871     true
+Vhu:     -1028     random_value
+k:     -2076     
+l:     not_a_number     5
+VvIiukFCoE:     -3503     false
+hk:     not_a_number     random_value
+xLku3wM:     3600     5
+Thtk:     not_a_number     5
+L:     8642.981913288408     true
+Rwwnt7t5A:     not_a_number     
+udc6kWLB:     -2252     
+bKMw:     not_a_number     random_value
+ysd:     7643.035975372179     false
+LewsiW:     not_a_number     5
+wSoczWcT34:     3377     true
+Z07TIv9c:     6568.531454368967     random_value
+K:     -3041.326573166665     false
+lxr1N:     999999     5
+nI:     -4951     
+VZ:     -4294     5
+N:     not_a_number     false
+qwubhOVy6:     999999     5
+lAG_ZQ:     2181     5
+f:     999999     true
+biTnRVhchX:     -8669.258827608379     
+KvqfZRna:     999999     random_value
+LH:     -8059.981633067566     5
+yZY0RFd:     999999     false
+o:     not_a_number     5
+RAktcgp0RE:     -617     random_value
+MumEI:     2307     false
+oJ0ut:     277     false
+yt:     999999     random_value
+PBIR7UD:     -338     5
+bKQ86C8:     999999     random_value
+Q:     -1296     5
+yPUmh:     -4855     random_value
+P:     not_a_number     random_value
+ja:     not_a_number     true
+BzKF:     not_a_number     random_value
+btGo:     4837.0550544054695     5
+t:     999999     5
+iL1p:     -2168     5
+WfGMwscG_6:     4338.462888743501     false
+kWybH:     -4592     5
+z3PF8Me:     1194     5
+htwz:     -4155     random_value
+SVn1CnjocO:     999999     true
+C:     not_a_number     
+r:     -4393.2059784053545     random_value
+Ayir:     not_a_number     random_value
+Eo:     -6691.406352709686     random_value
+z:     -4305     false
+oixBWthZ:     450     random_value
+ewkXMB:     not_a_number     5
+fCVVABrU:     3341     true
+wbF:     360     5
+H_XAnit3H:     not_a_number     true
+X:     7108.476104406604     5
+BmLYv4QWG8:     -3239     false
+dbAk9f:     -2073     random_value
+n3czkDPQ:     not_a_number     
+t5fLQJEjj:     -2500     true
+W__:     999999     false
+qiDKJmuUr5:     -2320     random_value
+hT_uVT:     -497     
+UAsbxCb:     999999     random_value
+nlH:     999999     false
+lXuk:     -2852     false
+xcoF:     4119     random_value
+UU5wmX:     -3265     random_value
+SZzXWyQJc:     not_a_number     5
+RLemCQ:     -1348.3764936122152     5
+hYmYL4h:     474     false
+RvI:     999999     
+u9eUqtZQ:     -4917     
+iO:     -2785     true
+AW:     3059.132060853597     false
+MxczC:     -7564.023515554294     
+GO:     -2127     5
+c:     not_a_number     true
+JcXaJom:     -4923     false
+U7:     664     false
+eWh:     -3279     false
+jl_bkhhBl:     -259     5
+zt9r:     1476     
+YsluotmV:     -3500     5
+pqD:     -4180     5
+HobkpR:     3852     
+TBwfm:     -2668     random_value
+b:     3741     true
+DGapI:     -4901     true
+TCzL:     not_a_number     false
+QDn6XKwzr:     -610     false
+pqJ4C6qqr:     -2801.482839333018     true
+RFfRSE:     -4903     true
+KwT:     2724     5
+KFQs4:     4321     
+htyXE:     -4392     random_value
+ip7ht:     -3934     false
+TmPIuEs:     999999     random_value
+GFy2:     999999     5
+T8UtNwqw:     999999     random_value
+qEnSeg:     999999     5
+wW6:     not_a_number     5
+epJa:     502     
+S:     5792.625631091398     false
+NxjJ_ir:     940     true
+mKQ:     408     random_value
+vx4oW:     -4326     random_value
+dMmPv_x:     -4203     true
+W:     3833     true
+EHz52:     4902     false
+iprYVA2tbo:     999999     true
+bwqMwqUa:     -3292     false
+z:     4738     false
+Cjw:     2420     
+cyF_KzlT:     999999     false
+Aq:     not_a_number     true
+Wdy:     -8866.23277910659     true
+rx:     -760     random_value
+zb:     -24     false
+LKn1ps:     -3491     true
+TSJ:     -3167     random_value
+k:     -1645     true
+j5_jfg4:     not_a_number     
+wD2b:     2663     
+Xdu4Ec2iy:     -539     random_value
+QK2XL9q5Q:     -2851     random_value
+s61oIz9Xj:     999999     5
+tw2:     -892     random_value
+zFlx5:     -3566     random_value
+sB2KkRQC4:     999999     5
+hL02t9NN:     -1160     true
+Q4nL:     388.2201051277625     true
+Q7:     999999     true
+j9I:     4809     false
+Pn0w:     -3838     false
+Qv:     3020     true
+UNr:     999999     
+ypCM:     -2610     true
+pCib8hVzFd:     -4555     true
+HvZDGgn:     not_a_number     
+NY:     999999     5
+O:     -1484     false
+OPZtGza8LW:     999999     
+P2Zk:     1059.4732969647212     false
+lBXpPCzeE:     not_a_number     random_value
+La:     2427     5
+DY56Qzqec:     -51     true
+iJM:     3118     random_value
+fPYoyDM:     not_a_number     5
+Pg:     4551     true
+SrXUn:     999999     true
+Z_JG:     999999     5
+r0Jd9C:     4117     true
+PfPT3fF:     2144     random_value
+z47biK:     999999     5
+m8:     -8754.218977254122     true
+e9BAOMIcQ:     -1304     false
+lV:     2485     true
+uqt2:     -3318.1884893749093     random_value
+QthMjkCJc:     not_a_number     5
+rlEfW:     999999     false
+eIFxbVB:     not_a_number     
+u5sKgh9b:     not_a_number     false
+fLfSlrL0j:     -4250     false
+n9VODW7y:     not_a_number     
+D4CWOaV854:     2147.570307654345     random_value
+joWrPi:     4472     5
+m16:     5865.635430257002     
+AMNt:     -3653     false
+Zqg05d_fB:     -3127     5
+xO:     -593     
+Gp8UF:     -2728     random_value
+h:     -1400.8231956067411     false
+cjpSrTm:     999999     5
+igm5:     752     
+Ty2zA:     -1768     
+VQ:     3710.2287908122526     false
+V:     553.0966765103967     
+McgNxifzc:     999999     false
+dkA:     -1395     true
+vL73zd:     not_a_number     true
+zC:     2847     5
+WUVby1:     658     
+LJ1cBIVj:     2911.7611662061245     true
+z1N:     not_a_number     random_value
+Jul2vDlTG:     999999     5
+mKSBQZi:     -234.6726249627991     random_value
+GFpV4a:     999999     true
+zpDMS5FjvF:     not_a_number     true
+rc:     999999     random_value
+AZP:     999999     false
+j1cXACvj4:     -4568     random_value
+jet:     1517     true
+U:     2977     5
+qAp5trw:     -2323     true
+b75iKEf:     -428     
+fC:     -5344.74002993144     5
+gNRsg:     -2263     random_value
+S:     539     
+C:     595     5
+jgvd:     3122     random_value
+T6x:     4818     true
+doT4Gv:     4446     
+Mwu8Y17a0:     -4458     
+Ol:     -1683     false
+TMkre:     3301     random_value
+GoxSzk2:     -3440     false
+QyioYO:     -3637     random_value
+ZSx3:     999999     
+xQnMacT:     999999     5
+VzbON:     999999     true
+LLetGFKwaK:     999999     false
+BlK:     999999     5
+FxVPsvTkGI:     not_a_number     
+MMpd:     4527     5
+Ayal:     1678.9302342470364     
+yO67:     9578.404898212131     random_value
+sq2:     -1387     
+jCq0M:     3971     true
+j998zN:     68.04450592873764     true
+X:     1770     random_value
+ePV:     -2050     true
+q:     -2161.732235709431     true
+gIttX0:     999999     random_value
+TOzAnDGu:     895     random_value
+A:     906.758004050238     5
+fDB21TJ:     -1674     false
+llEFIbt:     -3000.2875672475484     false
+baiuopxJ9:     1253     5
+y4IPyu_:     4821     5
+cSsh6:     -5819.646472474828     true
+DWso3Zn:     999999     5
+F1tBe0YhMQ:     -4761.646839583534     
+Z4m4ceweDo:     not_a_number     5
+KFPr2_YPJN:     126     true
+sRWhFa:     999999     
+cvzx:     -2986     true
+xsOqfG_tH:     -2478     random_value
+h:     1448     random_value
+e:     4094     5
+N:     999999     false
+c5nU1967Q0:     not_a_number     
+J:     -6939.432885734885     
+GLWS:     not_a_number     5
+Av0c4:     not_a_number     
+S6PTV4XHPx:     2353     
+fkJPVYOo6c:     999999     true
+ZogO1D6IJ:     329.4015826219493     5
+IG:     -3796.8636569122973     false
+Ud2a:     3827     
+aUv6:     999999     true
+Ps6jHuc7n:     4470     random_value
+E:     -3918     false
+ajZxvSmuZ:     999999     false
+mh:     268     5
+E1:     -2630     5
+KlSHoOxqw:     -1747     5
+n16eWq:     -4400.339799852933     false
+hCOGGSLGL:     999999     5
+q2QhYw9:     7798.760320904774     true
+ax:     999999     5
+yw_:     -1743     false
+D4zEhJ:     -1302     5
+yBKw:     4368     
+l:     not_a_number     
+A3:     1562.4761180592723     false
+bOxGt:     not_a_number     5
+yXlFULO3pb:     -2221     false
+b:     -2730     false
+iqVRWh:     999999     true
+Yq:     -1326.6916734734386     false
+wn2umIPAr:     1944     
+Y68lk4:     5390.884106581421     5
+yZmRQ_i8:     -7260.562772789492     false
+W3l4DlDe:     not_a_number     5
+dBdTiX:     999999     5
+S:     1700     
+DZ6r:     not_a_number     false
+P8b:     999999     
+JnVqKE:     -2181     true
+i:     -771     random_value
+r:     -2630     false
+k:     not_a_number     random_value
+fy:     -49     
+Ag5k1_8:     2917     false
+hS0j9uIjmN:     not_a_number     
+U7KXM8Nh:     -498     5
+I2:     357     
+lkX2qZ:     848.7325604587168     random_value
+Ge7aoc:     298     false
+aL4z:     999999     false
+jOpm6VUN:     not_a_number     
+KwUJQOE:     999999     true
+oTe1pj:     4413     true
+mKu3vX:     not_a_number     false
+jVW5rl:     -2727     true
+b:     1537     false
+w:     3778     random_value
+QCuek:     not_a_number     true
+rxO8TSt:     999999     
+Q:     999999     true
+cVe07:     3546     
+NbuigIqJFF:     987     
+gB:     999999     true
+AzDHlOM:     -9564.336660492185     5
+cAu5rx2:     4524     false
+IGt:     999999     false
+Elzg3aB:     9038.646373313837     false
+DEpv:     -2961     random_value
+Zh:     not_a_number     random_value
+pMvySrRY:     not_a_number     5
+BOJV:     -4516     false
+CxiO2HKLD:     1608     random_value
+fkJwA4zkW:     -175.6634074135327     random_value
+BYBQNXF:     697     random_value
+rbxkgmsFU:     -4816     true
+JAUtKClSHe:     999999     random_value
+sCoP:     999999     false
+KiWOukh3:     not_a_number     random_value
+j3Q:     999999     5
+WwzQTZ:     -8821.726218856758     
+rUg:     625     
+PAW3aD6rR:     999999     true
+E7Vm:     999999     false
+xCxmwKbwM:     999999     false
+b5pqe6B:     not_a_number     false
+Hwwni8O2:     1836.9222083457862     random_value
+RoBjak:     999999     false
+WvFAzhfe:     -1097     random_value
+jwqwdNtx:     999999     5
+Kvx1:     4711     random_value
+RJf7BF:     not_a_number     true
+a4jr2IDTy:     2678.747300164856     5
+GYjjx_j4v:     2851     5
+D5Xt:     -3224.3010088894853     
+CafglqbO:     not_a_number     false
+IBlY:     1012     
+GxAUQYJx:     not_a_number     5
+M:     8449.979941267193     false
+hR58P:     897     true
+xWzF:     -832.3092564650742     random_value
+A:     3280     false
+zdHT5_d:     506     true
+XmSC_9y:     2726     
+bPI:     4300.375509189416     random_value
+OdxADm:     3058     false
+cPRn7QR:     not_a_number     
+f:     6933.330871764745     true
+qrZx6aT1:     -4634.935659304169     
+BAkEk58ELf:     -6071.113665498529     5
+ZM4raPcf:     999999     true
+WG:     -5136.122112297086     false
+HAVw4EN:     -2800     5
+h:     6894.918432191742     
+QtVVg:     -525     true
+Z:     999999     true
+h:     -4967     true
+K6hLY:     2208     5
+xa71WBGyq:     -635     true
+xRYz:     not_a_number     5
+P6:     -4275     
+TWOr:     999999     random_value
+uVu:     999999     
+obd92cZD:     -3896     false
+k:     999999     
+a4bFi9j_c:     1009     true
+fJy:     675     random_value
+sWRbyk:     -5928.424613588683     true
+DZ:     -4058     false
+WRs:     -3438.906428273088     5
+gVx7N83E:     1572     
+kpc:     not_a_number     false
+zpBAwCWN:     7861.249729730662     5
+AKeKpKjAd:     -203     true
+p:     -3039     false
+SRngbDbhxf:     -172.52504221246818     5
+d:     2243     true
+lVyrX:     not_a_number     5
+ZsSinKrPjz:     -1585     true
+zMrLSHAm:     446     
+X0hBpCLciT:     not_a_number     false
+Fr:     -2782     true
+Oh5QomhN:     -8691.8136966497     random_value
+bnwuSVW:     -8101.313281903548     true
+iGmujO84J:     not_a_number     
+VEKBJIm:     999999     5
+euWQt:     999999     true
+QT:     -277.3980769332866     false
+nc47HD_hB:     1220     false
+TJ6hx:     -4641     5
+aNLwEdMk:     4868     false
+xXyehg:     -4819     5
+O1TT1GIiY:     -3340     5
+sgRbbK8qKu:     999999     random_value
+Imr:     -3237     
+Z8XWdQFC0:     not_a_number     
+AT0Xe:     212     5
+nnW:     -2136     true
+XG1:     -1559     random_value
+AtGx7Ptz:     6586.22782005513     
+N:     2820     false
+x:     1482     random_value
+YkjZ:     -6051.391292863473     random_value
+I:     -2198     true
+a:     1274     random_value
+mI:     not_a_number     5
+vboeW:     1457     true
+bcZ2i:     -8274.60204477227     
+rjBHFM:     -100     true
+Pf:     999999     
+x:     2778     5
+pw5f:     1569     false
+VEYpkhvme:     8390.657662990645     
+wuUlx0V:     4570     
+ig7jP5:     999999     random_value
+PeRBGIz:     not_a_number     5
+bli:     -1701     random_value
+GPW:     -4151     
+dJL2:     not_a_number     random_value
+uZD_eZsk:     999999     5
+q5QX:     -354.8065585217282     5
+T5FNBjT:     not_a_number     
+WMcnPtw:     not_a_number     
+Jy0YAVOR2:     -2864.8799017427536     
+SsU:     -28     true
+r598:     206     5
+ky:     not_a_number     true
+CLbo:     -2148     false
+ZAHJ08:     -3481     5
+PGnaNf9G:     not_a_number     random_value
+v7yeK:     999999     
+rQAnc:     -4286     
+DV:     -1780     false
+nNLiu:     -7875.186272776345     5
+axczL:     999999     true
+m:     not_a_number     random_value
+nxZL:     not_a_number     random_value
+iuXS8ww1T:     -9871.157028894473     
+xYBEzU:     9240.89111676882     
+oa:     -366     true
+nrTDp_:     -8172.354986449262     5
+Ny936:     -9760.787504959126     false
+W:     -4253     random_value
+mLugNWzWi:     -886     
+h8raWBB:     -4366     true
+GA6LT5Gm2Z:     -1431     true
+zlVH:     -2442     
+Q1u25UR:     -7613.34419734308     false
+WM:     -1546     true
+QKzR:     999999     false
+ubIMI:     798     random_value
+JMsbMlo7Yi:     738     
+t7qhPg:     not_a_number     random_value
+aW:     366     5
+Tt:     not_a_number     random_value
+peI6:     -4903     5
+LR9Hox5bK:     4538     false
+rkvzlwNQW:     999999     false
+o:     200     true
+jlEcG:     -3020.2912212937827     random_value
+Jb13l:     -1239     true
+nUZMl:     -2195     true
+VUS84_Tr:     999999     5
+c:     999999     random_value
+K_7O:     3744.866020542244     5
+yOYsfOHa:     -1409     true
+FGn:     -2049.892819400654     false
+YupcQhl_T:     999999     true
+xBNALAtv:     3022     
+hLU:     -5710.683277811803     5
+jjObOEz:     not_a_number     false
+MBmiEQ:     366     true
+m8XA:     3402     5
+FZPAhq4z8u:     not_a_number     true
+FMiXgTu:     -1243     random_value
+OqAH2JRE5g:     6344.406723808464     5
+TMM8br7:     not_a_number     false
+awTwdAjBZG:     8344.515985278897     random_value
+rOw6Spewdi:     1873     
+vRF5pl0i7B:     4048.5892765684002     random_value
+G3bqj7:     -4833     random_value
+k3r2RODZlv:     not_a_number     true
+X:     4027     false
+M:     999999     false
+kaiXC2J:     not_a_number     true
+OpK7zx7:     -4110     true
+IcPyTmCIx:     2020     5
+mckKJ:     990     random_value
+ssAKLlz:     3753     5
+S4ds:     -3891     random_value
+AaE:     -2716     random_value
+QzSBjw:     -3662     false
+hFzg:     999999     5
+XV:     -1888     
+fH9:     7886.596938446797     random_value
+OEx:     -800     true
+TK31__CT:     3181     false
+zXoTbRJ:     -4076     
+tlH32NR:     1040.0186887592008     false
+mtAYcIE072:     not_a_number     true
+B:     -6580.336937404314     random_value
+rjGVUgnZb:     not_a_number     true
+v0ySZHpQ5:     not_a_number     5
+EpwNqWtxev:     999999     5
+Ez:     4471     
+xRo7N5xba:     -2327.5868016413597     true
+ZnPdfbUoO:     -1219.3874476138517     true
+vpYXNE:     not_a_number     true
+mWh:     999999     true
+ko0pAv6z:     999999     random_value
+OiRwAR5:     not_a_number     false
+CE:     not_a_number     false
+iy:     999999     
+wO0lp8rr:     3054     
+Kd:     9159.528090954514     true
+ErqXwZk:     3026     true
+SKhF04s2:     not_a_number     
+NQhF9clN:     -926     random_value
+i84lAr:     756.0350799343505     
+fElMcSQcu:     999999     random_value
+rCNeL4o:     4223     5
+j:     2196     
+zm:     -3821     true
+itiZDOb2:     -1674     false
+bROUo:     -9103.999334211067     5
+lpfpiP:     263     
+CGrqap0pjK:     -3340     
+oO:     not_a_number     5
+byqX_Rr4:     -1632     true
+msO6g:     869     false
+MsQD_Zu2:     -1423     false
+v5fbXVyR:     -2201     
+fSItHbGp1:     -1818     random_value
+M2KFc:     1685     false
+W:     -3382     false
+eWBDc5:     3251     
+SoQF:     -2645     
+Hnhq5kes:     999999     5
+T:     4626     random_value
+wEn:     -1164     
+VJHy:     -2103     5
+CmF0t9:     8713.615082168606     5
+XS_xCcJGfE:     -4627     
+b:     2304     5
+h:     -3581     
+LlYwVMrE:     5202.8828281200895     true
+PUuq8l:     -3867     false
+wT2ME:     8810.25366006577     random_value
+fXV9DSTk4s:     2164     
+PHh0CN:     -2676     5
+wBd8JNFJTZ:     -920     false
+K:     999999     false
+DB8:     999999     false
+rHYA:     999999     random_value
+uLPhE3n:     -2498     true
+sXypNR8Jq:     3357     false
+uXfaD_1g:     120     
+cvM:     -7350.0812343159     true
+wLk:     911.8944284990739     true
+v7mjT4:     999999     false
+KxKUYdfP0:     370     5
+NbUlgnMaQ:     999999     5
+HOkTpq:     -487.8080267215337     false
+R2bZCO3K:     -1123.0492975876314     
+qn:     3870.063277426865     5
+aYhwpKbi:     134     true
+z:     2025     
+s5f:     not_a_number     5
+xFpL0yxOvc:     not_a_number     random_value
+G9OIsx:     -2724     true
+IR3:     937     false
+lojEkIi:     -3794.5495246328956     
+Vb43:     -9373.665328197665     5
+rm46rf_lt:     999999     true
+roYPh3xO:     not_a_number     
+vUC09N4h4p:     not_a_number     random_value
+GSg8DBZ:     4947     random_value
+aG0:     -4148     true
+MPs84Xz3:     -1185     random_value
+Nkk4CDWlj:     463     true
+Cj5DQdQDfj:     -1625     true
+enQl3ui5:     999999     
+iHzWJZE:     4192     
+CyjA61:     not_a_number     false
+CH:     -574.327036698407     true
+Eo:     -2830     false
+nUiGui8rQ1:     -319     5
+wCkj:     -4247.9081288935295     random_value
+CG84:     9603.489106024696     
+Q:     -6093.652248730601     
+uUP_hMzgmh:     not_a_number     5
+fn46z_6:     -3483     5
+s:     2896.3614339772685     random_value
+z:     4127     true
+VO:     -3854     false
+Qy7Rr:     2374     random_value
+ObdWL1z:     -57     true
+HAK_NS:     not_a_number     false
+oGwh8q:     -3861.7103015102257     5
+vNKKy9b5_:     999999     true
+VLeDrX:     999999     
+DRj:     -4845.990998890841     random_value
+B3dUtO5r:     999999     random_value
+DF:     830     false
+Lx4yd:     999999     5
+j49xYtAe:     2274     false
+NtJ:     4969     5
+dMuW3z0h:     420     random_value
+TDHroDiy:     1382     5
+P:     999999     5
+pWj7WD9H:     117     random_value
+wYz:     4770     
+RbcDy1Ic0:     4671     random_value
+pq931:     1347     
+Flbd:     not_a_number     random_value
+Ax:     1635     random_value
+yL:     -1652     random_value
+mLZDi:     -9861.503243100213     false
+ME2oUA:     223     
+RpT:     -3931     true
+U5:     -336     
+mQ9p:     -179     false
+q:     not_a_number     false
+L:     -3525     false
+blI8C5St:     -385     random_value
+L:     999999     5
+D1L:     -4510     
+yvqw5bR5U:     not_a_number     false
+XDlALI:     -3265     5
+TPbNSAc:     -4956     false
+y:     -4942     false
+pVeis:     7958.992567516139     random_value
+wY5Nl5AS:     -4531     
+f7YL:     2208     random_value
+e0dn:     999999     true
+fkReSo0tN:     -946.2625553305861     
+DgV:     4032     
+KYN53A:     -2333     false
+WCmXR9Jib:     3816     random_value
+n:     1259     5
+v58icr2:     999999     true
+wDmC9:     -677     random_value
+sMoxSK:     not_a_number     true
+yz:     2282     true
+yrnWDuiXi8:     not_a_number     
+w4KKzcW1d:     999999     
+I:     -417     true
+M_wV:     -2999     5
+DP8q:     3809     
+biL:     999999     true
+pQfP90:     not_a_number     5
+k:     -4126     true
+c_vsLZfV0:     9711.122645832907     true
+HLScb:     not_a_number     
+KjsUcvd:     8528.24938793476     5
+O3IJX:     999999     
+bI0M5WxK:     -710     false
+eQ:     2834.672377729521     false
+R:     4452     false
+mMz:     999999     false
+M:     -842     random_value
+uHoXThgDu:     1681     
+DkP:     -6903.146481418574     5
+qtVevoxyr:     not_a_number     
+sO:     not_a_number     
+I5lhk:     -1633     
+Dg:     576     random_value
+cRCoWolF:     2057     true
+dSQCsAg:     999999     true
+yo0UrY60:     not_a_number     true
+Luzd27_M:     -3714     true
+q0FjeYHGbv:     not_a_number     
+R_X6:     not_a_number     
+pDYi1p5:     not_a_number     true
+T4qnUyjTl:     1121     random_value
+y8Q3J:     543     5
+HWNNb_qXF1:     -3356     false
+PZ96YP:     2081     5
+n0SB:     -2756     false
+BMj1gTHI:     910     false
+B5Dvo3TA:     not_a_number     
+tjy5:     1621     5
+tKU:     5441.31416625985     5
+MeSPe5qHW:     1262     true
+R7R_E0L7:     214     5
+yeXu0xKVjx:     -660     random_value
+Yt5ECN:     -2091     5
+aOfVG:     -2887     random_value
+F:     not_a_number     false
+poPm:     -638     
+s:     9356.856085196596     true
+DgyIh4_RIu:     not_a_number     false
+Ym:     999999     random_value
+Uhun:     not_a_number     true
+A5iHzBASg5:     not_a_number     5
+L7VyLt5:     3565.4845531750398     false
+XB:     2309     random_value
+dC8QdxVVD:     465     5
+yVhs2v:     not_a_number     5
+JgiqMANT:     1238.2812924114278     random_value
+snW8Ik:     3694     random_value
+Bls8fDTcP:     -8583.93094288422     true
+Y:     not_a_number     
+I7jVrIr:     1395     5
+WJfBG_Q:     -357.76701132450216     false
+sfZEh:     999999     5
+ndD:     not_a_number     
+iQ7gLeIFJ:     -4238     5
+jZB:     not_a_number     false
+B8cHP:     1472     true
+rN:     999999     5
+M07c:     1095     
+p4MSw:     -1642.916881533558     
+C:     999999     
+Hh0uutrKk:     999999     random_value
+VfZQCbUKIM:     999999     true
+Ve:     -5386.057308108041     5
+Gt:     -3501     
+UzxcF:     -2155     
+E8Kcz:     not_a_number     
+U5FT:     3823     
+Kuc6:     not_a_number     false
+xJpVGxU57:     2007     5
+PZZs:     not_a_number     true
+Zw8_JCC:     3770     random_value
+h9XbH6:     -6888.4841401689155     5
+sur1dc13Ra:     1015     true
+wuv:     not_a_number     false
+w:     999999     random_value
+U_la2:     1355     
+WvSWpSw_:     -2052     true
+N1XRjZ:     9108.634635748735     random_value
+MwRMQyP:     not_a_number     false
+cKOnUe:     -3843.5421612118835     true
+UtcPT7Peox:     4586     5
+eTbHRl:     5647.920836392477     false
+O:     -1850     
+q:     not_a_number     true
+I3y3Dj6KkC:     -885     true
+a:     -3488.3988478481906     random_value
+DcP:     -650     5
+nj7:     5296.315295055649     true
+CTrqhp:     3781     5
+nUj4:     1043     5
+MCZuLcvak:     3665     
+c:     not_a_number     true
+ePT0hrGi:     999999     5
+vz9:     not_a_number     false
+bD:     2003     
+ZTxb1We_h6:     -1981     random_value
+RIYd:     -603.8894425333147     true
+Djs:     -2188.6962992604595     true
+Lfm__6KSfY:     -1288     random_value
+W:     -359     true
+K:     5106.937400324827     random_value
+IA:     4052     false
+JqC:     4032     false
+n:     -1888     true
+WKYiBU:     938     
+aj9:     709     5
+v1F:     -2895     true
+AR:     not_a_number     false
+zZrwkpd:     277     false
+ps:     not_a_number     true
+ypBzJ4:     999999     false
+vI:     3055     false
+Q6Lo5:     999999     5
+eV52P:     2686     true
+GwIDNr:     1658     5
+LnR8:     -3448     random_value
+QdYDHodVat:     999999     random_value
+l:     999999     true
+qB9OZRk:     -2792     false
+il:     -2016     random_value
+Fhg7lCG:     999999     
+c:     not_a_number     false
+KLlI:     -585     random_value
+qn:     3343.9920494652924     
+ddT8:     2462     
+MXQ4IiSq:     2254     true
+E:     -40     
+csh0:     -8241.512025495666     
+f49qsbSb:     7710.171927022544     5
+BtYmbMN3:     999999     5
+HZTmq3eO:     -666     5
+EjBBHct_:     -2633     5
+UFpRz:     1549.2758031419598     false
+f:     -1506     5
+MXGArKti:     -1561     
+MWvDvMrV45:     1702     true
+GXa:     999999     
+qXg:     -1140     5
+U0:     2601     5
+C:     -230     5
+tXfFWn:     19     false
+iDCTPTWt:     4210     
+Cub:     -3742     5
+okj8k:     -1421     false
+tY4uL:     -2806     5
+G:     -559     false
+L:     -2710     random_value
+zhH9Wk7e:     4078     false
+C4th6DFz:     999999     
+O7lIy6:     999999     true
+RTcWpZv:     1283     
+SqKiq15MpW:     not_a_number     random_value
+pu5i:     -3415.4109391496368     5
+q3YW:     3685     random_value
+Y:     -3935.8890270592074     true
+AXj2jurO7l:     3092     random_value
+cvtUKnm2l:     1185     
+m:     not_a_number     true
+Vd:     7855.8730138355095     true
+gycx6h:     4287     5
+aYo4p0:     999999     5
+lW:     -318.8264082054502     random_value
+RQJPQdp:     1585     true
+ubNkl0ucr:     not_a_number     
+D9OUFJq5JP:     337.9865192429861     true
+E6tKSEbH0S:     422.2639350434292     random_value
+pd:     2628     
+TG:     999999     
+hWoFv2EpcY:     -7609.332955134005     
+qV4YupD:     -332.1461175300283     
+WYFTXjVjjg:     1955     random_value
+uN:     1315     5
+DZDuc:     2768     random_value
+jQDSC:     -1513     false
+TDkLx8j:     -3080     random_value
+kuNY:     -3548     5
+Ev53oYE_Ih:     330     true
+jq21TS:     999999     5
+oUb:     -8496.812661266484     5
+Y6PH:     4215     5
+bpRn:     2621     random_value
+VOnt:     -3059     true
+scd:     -1644     5
+YTv4w0D5jB:     not_a_number     
+SDAH:     not_a_number     true
+qf:     999999     random_value
+hyf1_:     999999     random_value
+Q:     not_a_number     true
+HpQOgCTdYm:     -2437     random_value
+QYL:     -2784     true
+MZm1Imj:     999999     
+GhEFsv:     999999     random_value
+dppU8aOU:     -9508.907477122406     random_value
+U7Y:     not_a_number     5
+L:     not_a_number     5
+kZ8LCPQ:     -490     
+Dph0RyzwT:     32     random_value
+u:     956     
+DRi:     not_a_number     false
+FZSg2KH:     not_a_number     true
+Er4_lYa9h:     not_a_number     true
+olrEjyk7l:     3468     true
+anUyHN4_lA:     4289     
+jzD2U1t:     -477.71972925241425     
+fS:     -950     random_value
+kk0ll:     7998.594579216791     random_value
+aU:     -7594.806756905532     
+dHp:     -7560.417664393659     false
+L:     -854.1209577782083     
+HYlF4Y:     not_a_number     random_value
+hXi5fG:     1125     true
+nS:     -4670     true
+NQDGdgAN:     201     5
+neZr:     999999     random_value
+dk:     -9088.723124668608     false
+rJ:     999999     
+e:     not_a_number     
+C:     -3863     
+nFwqyRk:     611.1357074710304     false
+fc84yt:     -409     
+xgRt:     999999     5
+rt:     2970.0815742942104     
+gq5v:     3546     false
+WF5v:     not_a_number     
+ES:     1927     
+Pq:     -3705.039986868879     random_value
+DIMf4scdNv:     -699     false
+Ejk03v:     not_a_number     false
+h:     not_a_number     random_value
+IB1lTbgF:     421     5
+Hb:     -3673     5
+sypE:     -9264.097164210403     
+c0:     999999     5
+oRq1tQpQ:     not_a_number     
+KGsCnt:     -3199     
+u1ZnQzpEO:     999999     5
+JSFmeLvbLN:     not_a_number     random_value
+qiSP:     687     random_value
+G0kAaNnqIg:     999999     true
+TVgkeFiMSX:     not_a_number     
+r:     -3800     true
+j7:     -3597     false
+y1MAfuZv:     2008     false
+sBNjvLrY:     4410     false
+JbP3t5R:     -3297     true
+cDx:     999999     5
+L:     not_a_number     random_value
+GA8Cn_I66:     -3215.321472756671     
+mjpj8S:     777     5
+bDHtyA1O:     4809     true
+Bqbrca_z:     -637     false
+cIpW:     1352     
+PLpj:     999999     5
+lIW:     5540.412354899705     true
+S9_hrM9OPg:     4895     
+SWWMd:     not_a_number     false
+HvD0:     -4426     true
+ZsL5ky:     -2546     random_value
+Y7We5:     3025     true
+MBriUVCKv1:     999999     5
+osOPX:     not_a_number     5
+tJ0:     4153     5
+ZjXMie:     not_a_number     true
+vSM2I:     2828     false
+OYW9_T2:     999999     false
+w:     898     false
+L_JzwCSy:     not_a_number     true
+Rj:     3216     
+WkD:     -4492     5
+lB60W3YDJH:     6470.007819304039     false
+jj6LtyAf5:     3761     random_value
+TFVX6AULq:     6536.370981231892     5
+qUTJ8Hb2i:     825     false
+kXo:     not_a_number     false
+zi:     not_a_number     false
+f1:     1828     5
+q1KiUSN:     999999     
+onYUH:     999999     
+ob:     7060.357857940777     false
+tsb:     not_a_number     random_value
+n3:     -2989     random_value
+mkekqJkMa:     2629     5
+RNUl:     9101.792224240718     random_value
+uFHtaI:     -3127     true
+E7t:     999999     5
+Koy1438:     -1365.8736824136558     true
+U8CN7Ll:     -1193     false
+vvZz1cX:     9818.306747997096     true
+VEN:     not_a_number     random_value
+eVf7dnhpj:     2502.572595703108     5
+C8CV:     -4771     false
+xs:     1703     false
+sDMxsGII:     999999     random_value
+Udu6yd:     1014     random_value
+Cej554QXg:     -1211     random_value
+nnWBLmMVF:     999999     random_value
+E5WD33i:     -8870.691614993613     5
+j2NphmuwGG:     not_a_number     random_value
+GboN5t5F:     not_a_number     
+Zu0ZNDJp:     1006     random_value
+yyHX4:     999999     
+Qb7lnqq:     -421     random_value
+Sv5zwqo:     -813     true
+DohB9S:     4855     false
+mdc3G:     3270     false
+IZWsTU5:     1210     true
+vnqVSeVZ:     not_a_number     true
+T6HLSYB9U:     999999     5
+UD3Tn0:     -3278     random_value
+L:     999999     false
+WNE:     4942     true
+gDxIy6sJK:     4838     5
+wOf4kD2:     -7610.644892711658     5
+WzoI:     not_a_number     true
+Q:     not_a_number     random_value
+FH3:     -2753     
+s7k4F_8p:     5014.887874056523     
+mXBcFOZ40:     7233.823321705386     5
+faqqRd:     -162     5
+gc:     3079     false
+PxZ6:     not_a_number     true
+JCfduBaL:     not_a_number     false
+FYASrsNA:     -6624.6247130412785     random_value
+eR:     -560     true
+fd3WzzKB:     4915     
+XPE7:     not_a_number     random_value
+U:     2131     true
+Su9iB1h:     2699     random_value
+eAX:     999999     false
+LDaTV:     -7484.9290701122845     random_value
+Z2lNJw2pN1:     -3293     random_value
+U:     999999     random_value
+qI5pQZO:     not_a_number     true
+fDk:     not_a_number     true
+b5YX:     3082     false
+Q:     -3522     false
+f6:     1193.245521128054     
+JJvZeY:     not_a_number     true
+UO4j:     -5901.808077001351     true
+SpmvunquC:     -2309     false
+G:     999999     true
+bW5NSA:     962     random_value
+S3L:     -1784     random_value
+FdlGHGVeZc:     8308.379823730957     false
+D:     3100     false
+Z4AFhB0UYG:     999999     
+r:     not_a_number     5
+k:     -1526     false
+hWgLs:     -1259     false
+Pw:     -236     true
+Moen:     2756     
+hIESo9:     999999     true
+J:     -3781     true
+uJPa:     -3521     
+ev_e:     -4821     random_value
+RT:     4912     5
+Q6AvVdp:     -4314     random_value
+iW75DO02Ja:     999999     false
+hY:     -4104     random_value
+x27v9l6MnO:     578.7418153082672     false
+ZsRurrI:     3575     true
+oW2Mp:     2904     false
+eb:     -8313.925744262866     5
+OSo9QQt9T:     4196     true
+qNnXirTdxa:     999999     
+o5m5Wgsn:     -7960.081854747332     random_value
+uLD2YR6zG:     not_a_number     5
+FFA:     -1840.6677935603311     random_value
+NElV:     not_a_number     false
+HyR711bt:     3315     
+x7DpIBQJpD:     not_a_number     true
+v:     999999     5
+EvrJkjS4q:     7033.6669011736885     random_value
+ca9B3:     -5024.151551939171     false
+qGLYmPaQi_:     -411     5
+Ru:     -1816     
+r3lljM:     3902     random_value
+PoDDGh90Mi:     487     
+uTPi:     -3623     random_value
+gkYM0H:     1814     
+WFZKk:     999999     random_value
+EJmwKrtnz:     -3126     true
+NDm:     not_a_number     true
+Da1cHcYm8I:     -576     true
+LPV:     not_a_number     
+zm:     -2688     false
+Y:     98.31582799121134     false
+AR7j6Ec:     -1954     false
+DZyI_t91r:     -3125     
+KW09Sm54dX:     not_a_number     true
+DQIHSH:     4213.525516753813     true
+X2b5ek3g:     999999     
+JQDMKl:     -1954     true
+Bt:     1660     true
+hcgCS_dJ:     9901.702715014366     true
+nC5Cc:     -9899.589949701047     random_value
+Gw04twU6W:     -2940     true
+LsA:     not_a_number     random_value
+j5FhK:     -4885     false
+k0OGebfC:     not_a_number     
+v2_:     999999     5
+zUqqIaYb:     -4928     
+YwrU9G2:     999999     
+uAlJe:     not_a_number     5
+cG0QQzI9:     4720     5
+mPGm1g5M:     not_a_number     true
+x9:     999999     5
+hoDb52E_z:     -344     random_value
+BuxUZSi7:     not_a_number     false
+PSM907niZ:     -4316.146843850919     
+o:     -2473     5
+z4xGCw:     not_a_number     5
+sK8Y4:     -3186     random_value
+Fw:     -3157     
+gJhphxbS:     2672     true
+QsRJ_3:     999999     5
+QMe:     999999     5
+Rkf4X5E5Y:     -2690     true
+uoKkHXVcSa:     999999     
+v7Fh:     -9179.454767717712     false
+D1aVy:     -3517     random_value
+r7QD:     999999     
+j0DPAvBR:     999999     true
+DpBHYHn77U:     -1992     true
+Tf52IYZapj:     999999     random_value
+Lcw:     574     
+iU6IyoHt:     -273     false
+cN:     -2710     random_value
+Ta85mmI:     999999     true
+aVsY:     2485     false
+KMm:     41     random_value
+D:     -286     random_value
+TKV:     -288     5
+mUBOtd:     1460     5
+jdFijS03gZ:     793.1740559216341     5
+Z:     -4511     5
+ejC0X_N:     999999     5
+SrH:     2137     true
+tqSqHOHcx:     6609.108966690532     5
+bvmpp:     4761     5
+qB4fHYAIKM:     -4985     
+in6HrNnPB:     1934     false
+KF:     not_a_number     
+IFsD3n:     2184     false
+zW:     2492     
+zgyLNSS:     999999     true
+NGXHZW:     -3274     random_value
+l:     2486     random_value
+FF:     2639     random_value
+W:     -645     false
+W28C:     -4941     random_value
+i:     999999     true
+Vtn8K:     not_a_number     false
+fwu4:     999999     random_value
+VMqfMfcRdP:     863     5
+vaLcmWKMJ:     not_a_number     
+JjbvdK:     not_a_number     random_value
+ob9K7O:     -1014     5
+dIuLLR7JQy:     999999     false
+NBFPBWtSUh:     3694     true
+Q:     not_a_number     random_value
+ZOmTYe_U:     -1833.500268590231     
+oDYjt4:     3166     false
+Id:     -1427     
+h5mPfjt22:     -5000.768781081628     false
+zgO4N2IOH:     -485.77602074127753     true
+E:     4207     false
+DgN8R:     -3737     
+mmE:     -5618.554463373811     false
+CrkxQ:     4667     true
+c5v:     -4891     true
+T1:     999999     true
+fV:     999999     random_value
+DExbT:     3589     true
+T6G:     3217     random_value
+BuV:     -591     false
+jm6zRB:     -368     true
+ZytH_oljKX:     -3532.4578754817157     5
+wBAn5QN4Vi:     2219     true
+yM:     3165     5
+XEJ:     3702     5
+xZ8MU9_m5R:     2944     random_value
+qfwbZiZwuz:     not_a_number     true
+SPfdPrJd:     -4409     5
+cnhNu3f:     4629     
+z:     not_a_number     5
+er2nq3:     999999     true
+d:     not_a_number     5
+WRVtdC:     5236.842935340897     5
+X8qNFTSRY:     1463     random_value
+rE4OmvdlX:     999999     
+MGSMdAN:     -794.5781245204325     false
+E4:     -3522     true
+jLut1lkW:     -3135     false
+brczAW9mt:     999999     
+eByvWn:     1902     random_value
+TslHw:     999999     true
+qfxqONu3FD:     2753     
+zLaS:     not_a_number     false
+pzHY:     4574     
+AFHPONMW:     not_a_number     false
+i:     not_a_number     false
+P:     1709.6127659331432     random_value
+d4DYbYN9q:     2337     
+UL:     999999     false
+CQJPtNXu:     -2590.49967129537     
+hjGMb4:     not_a_number     5
+u:     3115     false
+QKUE:     -1131     5
+NFgHkVJ8z:     9253.295379896834     
+e:     999999     false
+ZTfM:     -101     false
+sx_mZ:     -1177     
+WmgjSSh_UH:     -2818     5
+daEE0WlQ:     2979     true
+qK9VfWz0IN:     -570     false
+n4ri3RjsB:     999999     true
+fTs:     -3572     false
+RA0MaZMB:     219     
+YXU:     not_a_number     false
+cYDPbgio:     1655     true
+w0W:     -4958     random_value
+wUeNq0Er_:     2615     true
+WqN:     -5631.693251830769     random_value
+f:     4683     5
+OL20xnk:     999999     5
+qDD:     999999     5
+AlQB:     -2792     true
+hD3ln:     -576.437747706641     5
+rpHSnTX:     999999     true
+kWs:     not_a_number     5
+n:     not_a_number     
+y:     -691     random_value
+GkFa:     4487     false
+ecIPC:     -943     5
+zGO19qJIjD:     -2733.5041875575935     false
+zF4SdlIV7:     4058     random_value
+mvg1vPg77:     3694     false
+qYwF:     -9937.572773161988     5
+tOKly8VEg:     3827     
+l:     not_a_number     true
+n3Ixi:     999999     true
+tsPC8wOA:     not_a_number     false
+DBuLMcoum9:     999999     false
+x:     -9800.091651758703     true
+ScyDo:     -1696     
+KW:     -4599     
+FBQ:     -3940     
+tD:     999999     random_value
+L3HKBKB:     999999     5
+ocL62xm:     7758.249408077329     random_value
+cr:     -2054     5
+akugtxZVD:     999999     false
+HXkasmG1:     2682     false
+Sgb:     not_a_number     
+oly_i8H1:     not_a_number     
+Qw55GVap:     1176.9546646337603     5
+e1xk6k:     not_a_number     false
+EF9NYek:     127     false
+Yzu4nGW9VZ:     999999     true
+WMZj4DP4:     1790     5
+tV:     -6632.181083991278     random_value
+puF9F:     -2948     false
+Vlt:     514     random_value
+G:     not_a_number     false
+OTh:     999999     true
+NdE6W88L:     4140     random_value
+tCOWHGC:     999999     false
+cW:     1454     false
+A0xjUfjD:     2875     true
+Zh4cpfxxa:     1976     5
+Vn9gMwHo1:     999999     true
+ddiRQ500K:     -8752.837615870823     random_value
+IUCX_x4K:     3698     random_value
+plEVEC8wi:     -3410.961135749093     5
+zWw06Cq:     not_a_number     
+OiInIW:     999999     false
+mZ:     404     5
+BIO_:     3593     random_value
+Se:     -2368     false
+d:     -2427     true
+NYaIhrz:     not_a_number     random_value
+qEqf6uPc:     -1808     random_value
+m8SopOyuOo:     8691.61580413486     5
+u9Y:     -1912     false
+o0J8nNJ:     -6705.864710950684     random_value
+BMDf1:     -2026     
+BB:     999999     false
+Ejvqjb:     999999     5
+JYb8t:     999999     random_value
+JLaC:     9946.59439564831     random_value
+i2RI4M:     -2880.342325337868     false
+mRozExSiQv:     999999     random_value
+z7t:     -3075     false
+ZKaN:     not_a_number     true
+RgNET:     740     5
+I9:     4867.836882300522     true
+tekxsM4fH:     999999     true
+h:     2290     true
+w17GQLC:     -766     false
+y:     -3884.8977367926936     5
+bV:     not_a_number     
+z:     -705     random_value
+kSNWqw:     -2699     random_value
+SDIXs86M3S:     2773     false
+rfk1_Yi:     1080     true
+KUTBf74:     3591     false
+rS5nRw:     999999     
+CaT2:     999999     false
+S2:     not_a_number     
+r6g:     55     true
+TbE:     999999     false
+V73J:     -189     random_value
+gVuyfEL:     999999     5
+j:     not_a_number     random_value
+LpQytR:     -3250     
+nLe:     3531     random_value
+y11u9Ut:     -1     random_value
+UD0oJP0ds:     not_a_number     5
+AK9vBT:     not_a_number     true
+D3GZe41:     -7478.487649993035     
+Ci:     not_a_number     5
+NLlUK1:     not_a_number     
+SgvVlna:     not_a_number     random_value
+NaxKeTvZp2:     3808     5
+E4NiAifl:     9539.356064991796     random_value
+E5UAAhB9oz:     not_a_number     false
+hr6yd07sIp:     999999     5
+avMcdqPy:     -1254     false
+IE5w:     2923     random_value
+ynHmrk3eM9:     900     
+g0q1Na:     999999     false
+wM7XjKZCSu:     not_a_number     5
+wa6C:     -4789     random_value
+KZJ:     1079     5
+K329b9EMS_:     536     true
+NB:     17     
+vLdOt:     3676     true
+SPtmdwqW8S:     -3865     true
+cImZU2:     -4395     5
+iJOIFS:     -6942.259567083742     
+dN5743wV:     -4635.929317521781     5
+KI:     999999     random_value
+H7:     2422     random_value
+gLCRe:     4322.812144312818     true
+BofiBd7:     4625     true
+Xa:     not_a_number     
+hmKFKJ5:     -3727.6316000002807     
+mq6pXl8wP:     -4119     5
+g:     2506.7756451436344     
+DVHF:     7056.8653830864205     false
+U:     -9170.26035056621     true
+HCqvJRlV:     2619     false
+aTD4q3:     -256     5
+FgrM5MCFz:     9349.549260539177     5
+G8CT0:     514     5
+NPu0qN33J3:     999999     random_value
+KPi8j1QClq:     -4648     
+g:     -3922.762011829015     false
+SkBgkX_6g:     -8327.25375246377     false
+DKgoU:     3489     true
+c2wI:     3492.2660540696397     random_value
+QB:     -2025     
+KN:     7357.019276302668     5
+j:     7376.712194991607     
+UJI:     -7703.523685072416     true
+evI77cb:     -8654.997167351801     
+gKU1Wo89HA:     999999     false
+N7vX7bwEL:     999999     false
+F1n:     -3771     true
+fZbdwDc:     -5363.008438310215     false
+GwahdA:     not_a_number     true
+txmuceZQHa:     -7430.011743564722     false
+THJ:     not_a_number     random_value
+o39:     not_a_number     5
+l8:     999999     true
+IQ70gNcly:     999999     true
+Fsnry:     -4520     
+w:     -2663     
+QlIr:     384     random_value
+VhIOfBS:     3100     5
+BRAczhf:     2877     false
+Zop:     999999     random_value
+VXJf4iwZ:     999999     5
+cuiJ:     999999     true
+r3:     999999     5
+gRHfvU7OE_:     999999     5
+G2y:     999999     
+d:     1313     false
+A:     999999     false
+XJ:     not_a_number     5
+IXC8Pc:     not_a_number     false
+gLyS:     -2708     false
+ibxiHKw_rM:     9128.72600706116     false
+SVbEn:     4013     false
+id:     not_a_number     random_value
+sBU:     -4475.95998056256     false
+iQHkJguhPA:     not_a_number     5
+m:     364     5
+NX1qh52Yt:     not_a_number     
+XGmTZH:     4313     random_value
+y:     7337.044408931528     random_value
+dKENMMz:     -50.74051383650476     false
+kA:     -7012.906613865029     true
+aLmZwiOiAX:     -5380.211554178482     true
+n6:     1798     
+vdf:     3364     
+n7t6e:     -215.75331279053353     5
+GVz6bJYt1C:     999999     
+Dl7BI48F:     -462.4751278480635     true
+VCY43:     1968     random_value
+Lr:     4853     
+QyNk5m9Dd:     4000     true
+MA0YssbV0W:     4653     random_value
+kRc6H:     8434.626603704142     
+BXhaYtt_:     999999     
+rmR40lY:     -1472     false
+ljE0:     -877     true
+dZmcne2i:     not_a_number     
+EXaug:     4650     random_value
+k25C80RdTH:     not_a_number     
+O:     5074.741807887654     5
+Q6dj7:     999999     random_value
+uggm8UZs:     not_a_number     
+hXSSDJCPO:     3954     false
+jTcpkmtH:     -3340     false
+HTM:     999999     5
+mu:     not_a_number     
+ic:     -3004     
+i:     999999     5
+Of:     -1715     
+C6U1KrD9f:     999999     false
+axhFU9sP1C:     3681     random_value
+J:     2706     5
+A9SuXrrv:     -1409     false
+JxZX2pHn:     4793     random_value
+UNxwM:     1911     
+cbU4jaOy:     -3299     
+c8_geHg0:     1304     true
+qT:     3750     false
+MI1C1:     -4223     
+yuq:     4921     5
+Q0Im:     -1686     true
+QZUpP2_W:     -2172     5
+bO7:     -2955     random_value
+JSZyb5Nzgv:     8958.814967468279     5
+g:     3404     false
+ZoKb:     -3762     true
+QpDZ8Y1n:     4734     random_value
+ssKcD49:     not_a_number     5
+w:     not_a_number     random_value
+j0D:     999999     true
+DOrGinQ:     not_a_number     true
+CzLS:     124     false
+tnBLYnwJz7:     -3562     true
+MB86h:     1932     false
+vLu:     -3866.770038926932     false
+wMNZ1Xmm:     4121     random_value
+k3DdZVT:     4776.962449344141     5
+o:     2403     
+rJn5c:     9212.293782142176     false
+MczLWs_:     -662     
+WRytruXg5e:     not_a_number     true
+c_kqAtzK:     999999     5
+LpV:     -816.0931907544327     5
+R21xM5qD:     3906     random_value
+qtU1:     8903.725890286696     
+KH:     -1137     5
+evKWstpd:     1440     true
+pI:     not_a_number     5
+Q1fv:     not_a_number     false
+HXUaheTqf:     4783     true
+R8gj5G:     999999     5
+B:     -4712     random_value
+JGSylSKU3:     999999     5
+Pib62y:     2461     5
+fvqROBf7Fu:     4000     random_value
+v0l:     999999     5
+BgFkd:     41     5
+UKkGI:     -3800.1577418946517     true
+DMfMpE8DrS:     -1526     
+HGJs:     -3178     5
+GHdZKK:     999999     5
+yFhXCFlTa:     not_a_number     
+dIAwF06:     3234     true
+H4lvLS_EP:     -4172     
+j0DV:     999999     5
+dWjq9I4t:     6844.105008489409     
+Epj:     9976.19735728516     
+NcUB97LDk:     999999     true
+EDkV97l8mm:     not_a_number     
+xOmSW4i:     564     false
+dsk7tK8zG:     not_a_number     5
+Qheb0Jvl:     -2745.9575650417455     random_value
+s0DJWxVI:     4423     false
+LHXZwJZL:     999999     false
+y:     -8838.370550639323     
+PWdYqe:     -4825     5
+v:     792     random_value
+AmMxaAuTs1:     468     false
+KjgUSiyB:     4045     
+FymOkkB:     2977     5
+JjGso:     999999     false
+wnIpzgjLUo:     2681     random_value
+PNs3km4:     2154     true
+xq:     2285     
+WtThq14:     -586     
+JZUI0Qjj:     not_a_number     false
+Gk4i4q:     999999     5
+JtgSswdnA:     not_a_number     random_value
+K:     not_a_number     
+N8UBKJ:     -3451     
+oUOk:     2258     true
+HY:     -1323     true
+VncKglzKw:     -3809     
+zq1oHqTD:     -2233     true
+W_SIkCzSQm:     not_a_number     random_value
+Lu6viM:     999999     random_value
+N:     999999     true
+iWySE3i:     not_a_number     true
+T9zZL227A:     4141.163725180222     random_value
+g:     999999     
+v4Q6:     -2213     
+hq:     999999     5
+h:     7606.885140338498     false
+PE5Ld:     -6380.718051589676     
+nY0fXc:     -3902.3990558163905     random_value
+CRmup:     3249.052694596865     random_value
+zR_U7cqX:     2840     5
+Q6wCP5oP:     248.71186346983632     5
+rp6NV2I:     not_a_number     true
+RDKD6jRyl:     999999     true
+BiBd:     -4778     true
+RTRZ:     3473     false
+WKN0UNZEx5:     not_a_number     false
+LSkJR6:     999999     random_value
+oy7H:     -1011     false
+e0f:     2222     random_value
+MbTi:     999999     5
+RRA7sPEy4C:     1570     
+Fa5T:     590     5
+jOY:     -270     
+ri8Qb8PCBS:     not_a_number     random_value
+UHI:     3432     false
+M8:     2047     false
+vlavA:     -2075     false
+wDEy4bL5:     -9353.38929750637     
+FEM2l:     -1311.6925681272314     
+NH:     not_a_number     
+qm5:     -1965     
+PsEPIqpcl:     -2161     random_value
+IdXdXSf:     4499.993518046445     random_value
+NneQ1a:     not_a_number     
+SWO:     -3396     random_value
+G1nK:     999999     false
+jijl753Da:     4505     random_value
+ifWh:     3671     
+W5YpV4gtEY:     not_a_number     true
+vD1W:     180     5
+h6:     3334     true
+w:     -1390     5
+PR:     4305     random_value
+Fh3e8:     -6765.67643922289     
+e2DbIYj3:     -914     5
+Mr8mnQhk:     4307     5
+RUNR8kLHa:     999999     false
+ch:     999999     true
+EUUojYdvpA:     3540.0088326644     random_value
+kOBLTV:     -1545     true
+oM5TUj8u:     2080     true
+itiJ:     1802.1256871817423     false
+Fa:     not_a_number     5
+E0X368cK:     353     
+hS1_kq:     1834     true
+N:     not_a_number     true
+NXN:     7276.113793404369     true
+ZTMSra_lIk:     -908     true
+MhM0YAjRnJ:     not_a_number     
+yJH:     -3131     random_value
+cnzUNt3Sh:     not_a_number     true
+wLyxV1HIUI:     -1150.835012176196     true
+XdVC8dZ1i:     5     
+i1WY2:     -4196     
+jVJDUQpu:     -1292.7506799342464     false
+U:     -4345     random_value
+W7:     -2717     false
+gGeexZnF:     -2661     random_value
+x:     7297.076258904388     
+CQ:     1853     false
+fzRthlTkua:     -4491     false
+LJ:     1469     
+Qoj8:     -1066     true
+R6gVXCzt:     1540     random_value
+G:     -3124     random_value
+b:     3255     true
+XMX0hQ7k:     3391     5
+JsTQL4N1:     999999     
+CO5rq25QCz:     1725     true
+eD5kB:     -2266     
+t:     -4598.784666678494     false
+AJuZMGRyt:     not_a_number     false
+yz1vDSt:     2095     5
+tBvPMqh2qo:     not_a_number     random_value
+tlL:     -3369     false
+Hd:     -3501     random_value
+HI9bV_VJlH:     1061     random_value
+a6:     999999     true
+mRfo3s:     408     5
+EYHvTGuX:     999999     
+WRyogcPksb:     -2362     
+lXEq47qXL:     471     random_value
+SCYKxWao:     not_a_number     false
+laDI:     999999     false
+B2Y3V2C:     not_a_number     false
+zHMKy0e:     2652     5
+KKFgap:     not_a_number     false
+qryFIs6:     -3690     random_value
+hoFF8SY:     not_a_number     5
+uDEp:     7687.055524840154     false
+FuNH:     -1440     true
+ATsADa:     -4219     5
+Y:     not_a_number     random_value
+UCgJmqKHca:     999999     false
+ixGo3y:     -2687.0017240183915     random_value
+esPa:     999999     random_value
+BU2:     -4580     random_value
+Yk8BY:     -1856.7989871376622     true
+nx2dbi:     -1769     false
+MHN_:     not_a_number     5
+Rm5ebf04nH:     -1770     random_value
+O95uItl4a:     4468     5
+lQ:     not_a_number     true
+vkREA:     -2145     true
+Lx9dY0STBw:     -4905     5
+VP0CAmtf:     -470     5
+AyJ5DhVL:     -879     
+FVUXWf:     not_a_number     5
+GokNKB8:     999999     random_value
+dP3Xo:     999999     false
+o32YKxhqT:     -5896.431595827232     true
+YKQ:     not_a_number     true
+J:     not_a_number     random_value
+WA5Eo:     9419.843540232836     true
+FEEX:     -7920.390083977489     random_value
+c9l1h:     574     5
+dMpFe2x:     999999     
+r6mth5:     4654     false
+OnYAR:     -2916     random_value
+oolnG:     not_a_number     random_value
+q9sZIT:     -1936     true
+zkAuy9:     not_a_number     random_value
+DC:     8806.848539877708     false
+P:     -2193     false
+p7uON7:     -8469.897922697857     
+SBM5oCuI:     486     
+Mr6h69jaQ:     862     
+c2t:     -105     false
+sLpZrlV:     9197.364721051534     true
+cwzCr:     -2786     false
+sd9OLVvHIL:     -2840.782090968448     5
+HpxmdUda:     -3263     
+Aocxm5nDV:     not_a_number     false
+FKOEvcu:     -524     random_value
+dni_c:     -4335     false
+uHqs2JCPI:     8613.744631566162     
+NKS_r1b:     -4107     random_value
+F8ZK86:     -3712     5
+NTQbBhsYW:     -3089     5
+z1t:     -3133     
+V:     443.393230723168     random_value
+Ja9:     -774.6806817691704     false
+wsJgZ1vUs:     -1236     5
+GbKTrIo:     -2664     true
+q:     -3407     5
+E9Leouobj:     1602     random_value
+iKdGZ:     not_a_number     random_value
+yh7eFsmOu:     -1835.1617789952516     5
+hc1nbN5S7J:     not_a_number     false
+YK6dBF1HkJ:     999999     false
+GKxe2:     515     5
+YaR3hamj7w:     -4751     5
+bdSjM6Sy8:     not_a_number     random_value
+dwXrBKf1pB:     4841     true
+WqmXTqcdA:     -2488     false
+BAW:     -3675     random_value
+SqC:     999999     false
+VGwKg:     9115.638413690816     false
+J5CEXoIVy:     not_a_number     random_value
+tu:     33     random_value
+FCmGqh:     not_a_number     5
+FzWb:     -3910     true
+Lf5:     6811.668658259474     5
+gu7mXv_d:     -124.08513324559135     random_value
+QTCsazoIUS:     999999     
+ptrcWK8A:     999999     true
+mx97:     -3473     true
+RU:     -1648     true
+r0yMGhzWq:     not_a_number     false
+tbh3myz70h:     999999     
+AA8O:     -4448     random_value
+dZYZkW:     not_a_number     random_value
+OerM6:     358     false
+gLj:     3675     
+EF:     657     5
+vX:     not_a_number     false
+Zq4AU:     4648.212845064454     true
+UjDe:     not_a_number     random_value
+CeZ:     751     true
+qwAe:     -2605     
+Kjpy2cJB:     3329     true
+ddl9_2xvbZ:     242     random_value
+tb8w:     not_a_number     
+wKvo1:     999999     5
+lXZUx:     4424     5
+vm:     4826     true
+Vz:     -2295     5
+jMCJKcF7:     -297     5
+u:     4888     random_value
+ADKG9Rc43K:     2641     
+Dwx:     3907     true
+dFWsf9X:     502     
+t:     -2467     5
+tvJeI:     not_a_number     random_value
+MLvrf:     6397.052577179187     true
+CS3L:     999999     random_value
+i2:     -4710     5
+o5rVg:     168     false
+u9:     4189     random_value
+n:     not_a_number     true
+GlyLr:     187     5
+eDiOypfKui:     999999     5
+NbGIG2hT:     425     false
+kEGQGS:     999999     5
+qGithEXblG:     -3926     false
+SE7Uv9D:     -2886     false
+sgTopH:     1776     true
+fiuZ8Xm:     not_a_number     
+anffi2:     999999     
+IWQ8L4Z3b:     2937     false
+yGLFi:     999999     false
+ZNS4v9cq4:     999999     
+Qkdq36X6:     -4676     5
+WuXJ:     999999     random_value
+Qi:     999999     true
+XeG2:     2283     false
+a_de:     119.9616806071208     random_value
+QxbFt:     not_a_number     false
+nKWMc:     not_a_number     5
+rS:     999999     
+iVTVSBCm6:     -3168     false
+nBOkT4SJs:     -7890.136360769067     5
+qwQ5O7:     -2446     
+elYP5giwg:     -1967     
+gNMHc0X:     not_a_number     
+oc6:     -724     random_value
+cLEcYQT2k:     1978.0134723122392     random_value
+MR:     9643.765899094247     true
+pvdIfmc_Bo:     1384     random_value
+Nces_2015e:     999999     random_value
+W:     1495     false
+wqELbr5WtB:     999999     
+c2POoM1Uq:     -1528.3217306934403     random_value
+zKJRjaXV:     -4906.722884033738     false
+SCQGq:     not_a_number     random_value
+H:     999999     
+WwoXCRN:     4056     
+fTfA3n:     3009     5
+zkvMWE_f:     4687.193184227242     5
+UB9YZu:     4154     true
+ZKu7YMzG:     999999     false
+a:     not_a_number     false
+qe:     4717.9752453690035     true
+z:     137     5
+N6Ew9:     -208     
+gs:     not_a_number     true
+mhFzXxnqH:     1591     true
+DAax7L:     271     true
+ZDk1P:     -2345     
+RBH1WGe:     83     5
+XCD:     -954.195384097804     5
+T:     -581.9475468895962     
+sqZg:     999999     true
+t4g8Q:     999999     true
+fIeJqVjM0y:     not_a_number     true
+H0DnEkj:     -4580     true
+A:     not_a_number     5
+qJ7G:     118     random_value
+h9n7:     -2333     
+wzYWjpqP0:     not_a_number     
+Hb:     -2588     random_value
+XC:     -903     5
+AB:     not_a_number     false
+h:     999999     true
+RgmvwHW:     983     false
+Q5vDO5IwM:     3749     true
+dmt4:     999999     false
+nASPy0it:     999999     false
+NAH:     4023     
+XNsXRDQG:     6221.428168222796     true
+Pt_x4iS:     not_a_number     
+sSc3hx70:     -3318     
+qB8:     -2002     false
+vH2r:     3392.8823131413246     true
+W:     3026     false
+MwPgNDsza1:     -2792     random_value
+B5UIpSVmUL:     -2400     random_value
+lZl:     999999     false
+VKPDP2QiR:     -8318.619958524265     random_value
+Nak:     not_a_number     5
+p:     not_a_number     
+CC4m:     -1201     random_value
+QwYthXD2aQ:     999999     random_value
+WXXZs88:     not_a_number     true
+xndHSvA:     7909.060885875493     true
+BclwY:     -88     random_value
+pji0j:     530     5
+H6OJ5r9:     3272     false
+jrJLyVldk1:     3051     true
+loyP:     143     
+KVO2Td:     -1708     random_value
+QL6:     -6268.43637183329     false
+plLMfRY:     not_a_number     5
+L6y:     not_a_number     true
+U:     2981     
+WaIb:     1932     5
+pFc_Q:     -2928     
+T5F:     999999     false
+ElU2kXJ:     2972     true
+o15Kcv:     3248     
+sOZTv:     -669     random_value
+Z7JSYc:     -4782     5
+cHoXR3uY_b:     -931     
+h49rP:     -817     random_value
+m3:     999999     true
+tSQ4AuaB8h:     not_a_number     random_value
+vg:     3878     random_value
+ZZCS:     -232.0844253754276     5
+H:     411     random_value
+hLmGUBzFT4:     999999     false
+js:     2894     5
+aFozM7aFn:     not_a_number     5
+QlxX:     -3972     true
+IDb:     -2949     5
+p:     -3191     random_value
+OnK7:     not_a_number     
+xd1Wp:     4703     false
+N_0sc:     3995     true
+yO7Ei:     -796     random_value
+DPRk5yrsvU:     8409.503385163276     true
+DN56SSq:     999999     random_value
+K2vE0uQRGz:     -377     false
+a:     -3269     
+nxmw:     1595     5
+J1fFMKDieQ:     2878     random_value
+UkZzDDak:     -4852.535352443064     false
+Q:     not_a_number     
+MDLT3Q:     not_a_number     random_value
+ku:     -1143     
+v:     1858     false
+xCcBH:     -9207.427547331234     5
+eBP2Q:     9531.325069964427     random_value
+iBHma:     -1569     5
+PjovgeZ7h:     4313     true
+ArsE7fTt:     718     true
+qbcitQF:     not_a_number     
+Kl52Q8vxS:     2722     
+L1UwyXQ0tI:     -6556.641779382633     5
+S4mJB8c6_:     not_a_number     
+LkQyEflX_:     2856     false
+otfGbl4:     -4451     true
+nksVwGdO:     -2887     false
+CqZ:     4661     random_value
+PXsYuM1aJp:     5953.9135471674435     
+FxH3di:     -3021     
+zc:     4298     random_value
+zcv7s2zuuD:     2473     true
+T4LD_UP:     not_a_number     
+M62JrEFlJ:     3210     random_value
+Yf4I:     999999     random_value
+RJ:     -433     random_value
+Lywxbooig:     999999     5
+Fhnuic:     not_a_number     false
+HS_1loIPZM:     -1585     false
+KU:     not_a_number     false
+WTuPkI:     999999     false
+G:     35     false
+dupNn5gyHj:     not_a_number     false
+tgstLbW9M3:     3002     true
+PS7Bw8bZGJ:     2208     true
+RaAIG0Y:     999999     5
+gS:     2445.033173976599     true
+mH5QrnFTDF:     -1241     
+KDJBODftmP:     4807     false
+B:     1935     false
+e1hO_k:     -2005     5
+TDBWSeZ_9:     999999     false
+pkpwamAd:     not_a_number     
+X:     -3145     random_value
+BQKpJ:     -4562     random_value
+PnymvRfI9E:     999999     true
+N:     955     random_value
+QHF7ED:     4549     5
+rWu2:     -4296     5
+f0:     3587     5
+PMEAuyCZ:     3145     random_value
+BgPk7zgJ:     -1963.0727487910926     random_value
+z:     999999     
+IFK9aLcje:     not_a_number     true
+vS20Jek3G:     4267     5
+W6nBTm:     -9387.150115034721     5
+m8Op6:     -2348     false
+Yo5OjT:     368     false
+YI7rR:     799     random_value
+IFp6fT:     1693     false
+jZEM_9GSh:     -3595     
+E:     not_a_number     random_value
+m:     -3430     random_value
+qMWt:     not_a_number     random_value
+HXM:     45     
+g:     -1095     random_value
+gQ:     -6037.880789875369     
+Q9KPd:     -2778     5
+tzhrQ:     3347     
+x2CVQ3s:     999999     5
+QqWrX:     -1109.0821523300237     
+hme3ME_Zq:     999999     true
+LujAIXAYcj:     999999     true
+ZRn7qlAPkx:     3250     5
+GWF:     3011.553688867323     false
+gCQUDF5:     999999     false
+YA43jN:     -2250     
+bDs69YcMk:     -679     5
+CLEO:     180     false
+o:     1787     false
+QdzlPiRIf:     999999     false
+JO:     9773.867993884687     5
+wtyI:     2697     random_value
+kZsLwmKA:     -4004     5
+OWiU4fWZ3:     1353     5
+DwkyMQjq:     -7806.549220473498     true
+klBJ:     2329     random_value
+ApIb7k3LkH:     1532     true
+uM:     -4431.655046057524     5
+pFsJGA:     602     5
+KNYmCQf:     -3188     
+CWZZ8rO3eQ:     not_a_number     false
+utJ9iL:     not_a_number     5
+Ks3iHyPss:     2482     true
+wny:     8896.65381986386     
+qo:     -7223.60611634419     random_value
+K9WYDZZv4:     1883     false
+Minmk:     -3033     
+FSd:     -4347     
+nTUznZ:     4725     random_value
+hLrzE7:     not_a_number     false
+ST7MaQ:     -1119     5
+a_CNYTRJP3:     999999     
+HcvQDL_waI:     999999     false
+EdfAX:     not_a_number     true
+W8MP:     -2128.8651678191427     false
+m4Bx:     186     false
+YM7cT:     999999     random_value
+s84cNU_WZ:     999999     true
+Daw:     -4522     
+zzC2Yy:     not_a_number     true
+R8Ff:     1938     false
+rRdg0ZGGhx:     not_a_number     false
+rS6apAYS:     not_a_number     false
+o0Tmbzw:     not_a_number     true
+dce:     7184.708131054693     true
+S:     not_a_number     random_value
+dOwS:     999999     true
+m:     7412.824520528891     5
+BsW1:     999999     false
+c:     2500     true
+m9W:     -3450     random_value
+Ab0jon:     999999     
+HfBV4S9:     999999     true
+E7DqhWT:     -6782.732309213165     
+K0:     -2505     
+gIsb:     -4209     5
+oR9:     999999     
+hCZ1khYir7:     1293     false
+bsnSXw:     -1380     5
+BS:     -2038     false
+qdcwI:     1181     true
+joe:     999999     5
