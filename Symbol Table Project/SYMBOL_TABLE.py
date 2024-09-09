@@ -221,7 +221,7 @@ class FileExplorer:
     def find_file(self, file_name):
         """
         Checks if the specified file exists in the same directory as the script.
-        If not found, prompts the user for input or to use the system file explorer.
+        Prompts the user to use the file found, or proceed to manually input the file path or use the system file explorer.
         Returns the valid file path to the file.
         """
         # Get the directory where the script is running from
@@ -230,13 +230,15 @@ class FileExplorer:
         
         # Check if the file exists in the script's directory
         if os.path.isfile(default_path):
-            print(f"Found {file_name} in the script directory: {default_path}")
-            return default_path
+            print(f"\nFound {file_name} in the script directory ({script_directory}).")
+            use_found_file = input(f"Do you want to use this {file_name}? (y/n): ").strip().lower()
 
-        # If not found, prompt the user for a file path
-        print(f"{file_name} file not found in the script directory.")
+            if use_found_file == "y" or use_found_file == "":
+                print(f"Using {file_name} from script directory ({script_directory}).")
+                return default_path  # Use the file found in the script directory
+
+        # If the file is not found or user says 'no', proceed to manually find it
         return self.prompt_for_file(file_name)
-
 
 
     def prompt_for_file(self, file_name):
@@ -479,13 +481,14 @@ class SymbolTableDriver:
         self.file_explorer = FileExplorer()
         self.validator = Validator()
 
+
     def process_syms_file(self, file_path):
         """
         Process SYMS.DAT file, validate symbols, and insert valid symbols into the symbol table.
         """
         try:
-            print(f"Processing {file_path} for symbol insertion...")
-            lines = self.file_explorer.process_file(file_path)
+            print(f"\nProcessing SYMS.DAT for symbol insertion...\n")
+            lines = self.file_explorer.process_file("SYMS.DAT")
             if lines is None:
                 print(f"Error: Unable to read {file_path}.")
                 return
@@ -494,20 +497,25 @@ class SymbolTableDriver:
             invalid_count = 0   # Number of invalid lines encountered
 
             # Process each line from the file
-            for line in lines:
+            for line_num, line in enumerate(lines, start=1):
                 validation_result = self.validator.validate_syms_line(line)
                 if isinstance(validation_result, SymbolData):
                     self.symbol_table.insert(validation_result)
                     valid_count += 1
+                    print(f"- Symbol '{validation_result.symbol}' Inserted")
                 else:
-                    print(f"Invalid line: {validation_result}")
+                    print(f"\nError in Line {line_num}: '{line}'")
+                    print(f"  Reason: {validation_result}")
                     invalid_count += 1
 
             # Summary
-            print(f"\nSummary: {valid_count} valid symbols inserted, {invalid_count} invalid lines encountered.")
+            print(f"\nSummary:")
+            print(f"- {valid_count} valid symbols inserted")
+            print(f"- {invalid_count} invalid lines encountered")
         
         except Exception as e:
             print(f"An error occurred while processing the SYMS file: {e}")
+
 
     def process_search_file(self, file_path):
         """
@@ -556,7 +564,11 @@ class SymbolTableDriver:
         Display the given symbols in a table format with pagination.
         Pauses every 20 lines to prevent output scrolling.
         """
-        print(f"\n{'Symbol':<10} {'Value':<5} {'RFlag':<5} {'IFlag':<5} {'MFlag':<5}")
+        print("\n\n")
+        print("-" * 35)  # Table header
+        print("Displaying found symbols:")
+        print("-" * 35)  # Table header
+        print(f"{'Symbol':<10} {'Value':<5} {'RFlag':<5} {'IFlag':<5} {'MFlag':<5}")
         print("-" * 35)
         
         counter = 0
@@ -576,8 +588,11 @@ class SymbolTableDriver:
             if self.symbol_table.root is None:
                 print("The symbol table is empty.")
             else:
-                print("Displaying symbol table:")
+                print("-" * 35)  # Table header
+                print("\n\nDisplaying symbol table:")
+                print("-" * 35)  # Table header
                 self.symbol_table.view()
+                print("-" * 35)  # Table header
         except Exception as e:
             print(f"An error occurred while displaying the symbol table: {e}")
 
@@ -587,20 +602,24 @@ class SymbolTableDriver:
         """
         try:
             # Step 1: Process SYMS.DAT file
-            syms_file = self.file_explorer.find_file("SYMS.DAT")
-            if syms_file:
-                self.process_syms_file(syms_file)
+            print("\nProcessing SYMS.DAT file...")
+            print("_" * 50)                
+            self.process_syms_file("SYMS.DAT")
+                
+            #Step 2: Display the contents of the symbol table
+            self.view()
+            print("\n")
 
-            # Step 2: Process the search file
-            search_file = self.file_explorer.find_file("SEARCH.TXT")
-            if search_file:
-                self.process_search_file(search_file)
-
-            # Step 3: Display the final symbol table
-            # self.view()
+            # Step 3: Process the search file
+            print("\nProcessing SEARCH.TXT file...")
+            print("_" * 50)
+            self.process_search_file("SEARCH.TXT")
+            print("\n")
 
         except Exception as e:
             print(f"An unexpected error occurred: {e}")
+
+
 
    
         
@@ -609,7 +628,7 @@ def main():
     """
     The main function that initializes and runs the SymbolTableDriver.
     """
-    print("Welcome to the Symbol Table Manager!")
+    print("Welcome to the Symbol Table Manager!\n")
     driver = SymbolTableDriver()
     driver.run()
 
