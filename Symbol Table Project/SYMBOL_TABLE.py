@@ -242,7 +242,8 @@ class FileExplorer:
         This approach avoids reading all lines into memory at once.
         """
         try:
-            with open(file_path, "r") as file:
+            # Specify UTF-8 encoding while opening the file
+            with open(file_path, "r", encoding="utf-8") as file:
                 for line in file:
                     yield line  # Yield line to the caller (used in 'read_file')
         except FileNotFoundError:
@@ -251,7 +252,6 @@ class FileExplorer:
             print(f"Error: Permission denied for {file_path}. @ open_file")
         except Exception as e:
             print(f"An unexpected error occurred while opening {file_path}: {e} @ open_file")
-
 
     def read_file(self, file):
         """
@@ -297,12 +297,16 @@ class FileExplorer:
     def read_line_from_file(self, line):
         """
         Cleans and processes a single line from the file.
-        Removes leading/trailing spaces.
-        Skips empty lines and comments (lines starting with '//').
+        - Removes leading/trailing spaces.
+        - Removes anything after '//' (including the '//' itself).
+        - Skips empty lines and comments.
         """
-        line = line.strip()
-        if not line or line.startswith("//"):
-            return None  # Skip empty lines and comments
+        # Remove everything after '//' if present
+        line = line.split("//", 1)[0].strip()  # Split at '//' and take the first part, then strip spaces
+        
+        if not line:  # Skip empty lines
+            return None
+        
         return line
 
 
