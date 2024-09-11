@@ -624,10 +624,20 @@ class SymbolTableDriver:
             print("\nProcessing SYMS.DAT file...")
             print("_" * 50)                
             self.process_syms_file("SYMS.DAT")
-                
-            #Step 2: Display the contents of the symbol table
-            self.view()
-            print("\n")
+
+            # Step 2: Ask the user if they want to view the contents of the symbol table
+            while True:
+                print("\n")
+                user_choice = input("Do you want to view the current symbol table? (y/n): ").strip().lower()
+                if user_choice == 'y':
+                    self.view()
+                    print("\n")
+                    break
+                elif user_choice == 'n':
+                    print("Continuing without viewing the symbol table.")
+                    break
+                else:
+                    print("Invalid input. Please enter 'y' for yes or 'n' for no.")
 
             # Step 3: Process the search file
             print("\nProcessing SEARCH.TXT file...")
