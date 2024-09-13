@@ -307,11 +307,15 @@ class SymbolTable:
         if self.root is None:
             print("No symbols in the table.")
             return
-        print("-" * 45)  # Table header
-        print(f"{'Symbol':<10}| {'Value':<6}| {'RFlag':<6}| {'IFlag':<6}| {'MFlag':<6}")
-        print("-" * 45)
+        print("┏" + ("━" * 47) + "┓")
+        print(f"┃ {'Symbols currently in symbol table':<46}┫")
+        print("┣" + ("━" * 47) + "┫")
+        # print("┏" + ("━" * 11) + "┯" + ("━" * 11) + "┯" + ("━" * 7) + "┯" + ("━" * 7) + "┯" + ("━" * 7) + "┓")
+        print("┣" + ("━" * 11) + "┯" + ("━" * 11) + "┯" + ("━" * 7) + "┯" + ("━" * 7) + "┯" + ("━" * 7) + "┫")
+        print(f"┃ {'Symbol':<10}│ {'Value':<10}│ {'RFlag':<6}│ {'IFlag':<6}│ {'MFlag':<6}┃")
+        print("┣" + ("━" * 11) + "┿" + ("━" * 11) + "┿" + ("━" * 7) + "┿" + ("━" * 7) + "┿" + ("━" * 7) + "┫")
         self.inorder_traversal(self.root, counter=0)
-        print("-" * 45)  # end of table
+        print("┗" + ("━" * 11) + "┷" + ("━" * 11) + "┷" + ("━" * 7) + "┷" + ("━" * 7) + "┷" + ("━" * 7) + "┛") # end of table
 
     def pressContinue(self):
         """
@@ -350,9 +354,9 @@ class SymbolTable:
         """
         if node is not None:
             counter = self.inorder_traversal(node.left, counter)
-            print(f"{node.symbol_data.symbol:<10}| {node.symbol_data.value:<10} "
-                  f"{int(node.symbol_data.rflag):<5}| {int(node.symbol_data.iflag):<5}| "
-                  f"{int(node.symbol_data.mflag):<5}")
+            print(f"┃ {node.symbol_data.symbol:<10}│ {node.symbol_data.value:<10}│ "
+                  f"{int(node.symbol_data.rflag):<6}│ {int(node.symbol_data.iflag):<6}│ "
+                  f"{int(node.symbol_data.mflag):<6}┃")
             counter += 1
             if counter % 20 == 0:
                 self.pressContinue()  # Pause after every 20 symbols
@@ -1044,20 +1048,22 @@ class SymbolTableDriver:
         ********************************************************************/
         """
         print("\n\n")
-        print("-" * 45)
-        print("Displaying found symbols:")
-        print("-" * 45)
-        print(f"{'Symbol':<10}| {'Value':<10}| {'RFlag':<6}| {'IFlag':<6}| {'MFlag':<6}")
-        print("-" * 45)
+        print("┏" + ("━" * 47) + "┓")
+        print(f"┃ {'Displaying found symbols':<46}┫")
+        print("┣" + ("━" * 47) + "┫")
+        # print("┏" + ("━" * 11) + "┯" + ("━" * 11) + "┯" + ("━" * 7) + "┯" + ("━" * 7) + "┯" + ("━" * 7) + "┓")
+        print("┣" + ("━" * 11) + "┯" + ("━" * 11) + "┯" + ("━" * 7) + "┯" + ("━" * 7) + "┯" + ("━" * 7) + "┫")
+        print(f"┃ {'Symbol':<10}│ {'Value':<10}│ {'RFlag':<6}│ {'IFlag':<6}│ {'MFlag':<6}┃")
+        print("┣" + ("━" * 11) + "┿" + ("━" * 11) + "┿" + ("━" * 7) + "┿" + ("━" * 7) + "┿" + ("━" * 7) + "┫")
         
         counter = 0
         for sym in symbols:
-            print(f"{sym.symbol:<10}| {sym.value:<10}| {int(sym.rflag):<6}| {int(sym.iflag):<6}| {int(sym.mflag):<6}")
+            print(f"┃ {sym.symbol:<10}│ {sym.value:<10}│ {int(sym.rflag):<6}│ {int(sym.iflag):<6}│ {int(sym.mflag):<6}┃")
             counter += 1
             if counter % 20 == 0:
                 self.symbol_table.pressContinue()
 
-        print("-" * 45)
+        print("┗" + ("━" * 11) + "┷" + ("━" * 11) + "┷" + ("━" * 7) + "┷" + ("━" * 7) + "┷" + ("━" * 7) + "┛") # end of table
 
     def view(self):
         """
@@ -1083,10 +1089,10 @@ class SymbolTableDriver:
 
     def run(self):
         """
-        /********************************************************************
-        ***  FUNCTION : run                                                 ***
-        ***  CLASS  : SymbolTableDriver                                     ***
-        *********************************************************************
+        /*********************************************************************
+        ***  FUNCTION : run                                                ***
+        ***  CLASS  : SymbolTableDriver                                    ***
+        **********************************************************************
         ***  DESCRIPTION : Main method to run the program, which processes ***
         ***  the SYMS.DAT file and a search file. Also asks the user if    ***
         ***  they want to view the symbol table.                           ***
