@@ -1,3 +1,15 @@
+"""
+SYMS Generator
+Author: John Akujobi
+Date: Sept 8 2024
+Description: This program generates two files, 'test_SYMS.DAT' and 'test_SEARCH.TXT',
+with random valid and invalid symbol entries to challenge edge cases.
+The 'test_SYMS.DAT' file contains lines with symbols, values, and RFlag statuses,
+while the 'test_SEARCH.TXT' file contains a mix of valid and invalid symbols based on the entries in 'test_SYMS.DAT'.
+
+The number of lines in each file is determined by user input.
+"""
+
 import os
 import random
 import string
@@ -23,16 +35,16 @@ class SYMSGenerator:
         If valid=True, generates a valid symbol, otherwise generates invalid.
         """
         if valid:
-            # Generate a valid symbol (starts with a letter, max 10 chars, alphanumeric or underscore)
+            # Generate a valid symbol (starts with a letter, max 20 chars, alphanumeric or underscore)
             first_char = random.choice(string.ascii_letters)  # Must start with a letter
-            rest = ''.join(random.choices(string.ascii_letters + string.digits + '_', k=random.randint(0, 9)))
+            rest = ''.join(random.choices(string.ascii_letters + string.digits + '_', k=random.randint(0, 19)))
             symbol = first_char + rest
         else:
             # Generate an invalid symbol (incorrect length, bad characters, etc.)
             symbol = random.choice([
                 random.choice(string.digits) + ''.join(random.choices(string.ascii_letters + string.digits, k=9)),  # Starts with a digit
                 ''.join(random.choices(string.ascii_letters + "!@#$%^&*", k=random.randint(1, 11))),  # Special characters
-                ''.join(random.choices(string.ascii_letters, k=random.randint(11, 15))),  # Over 10 characters
+                ''.join(random.choices(string.ascii_letters, k=random.randint(21, 25))),  # Over 20 characters
                 '    ' + ''.join(random.choices(string.ascii_letters + string.digits + '_', k=8)) + ':    ',  # Excessive spaces
                 ''
             ])
