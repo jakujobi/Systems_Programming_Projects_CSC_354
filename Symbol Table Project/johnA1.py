@@ -604,7 +604,7 @@ class FileExplorer:
                 if os.path.isfile(file_path):
                     return file_path
                 else:
-                    print(f"Error: Invalid typed file path for {file_name}. Please try again.")
+                    print(f"Error: Invalid typed file path for {file_name}. Please try again. Please try again.\n Make sure you type the system full path to the file.\n For example: c:/Users/wolverine/SDSU-Courses/Systems_Programming_Projects_CSC_354/Symbol Table Project/SYMS.DAT")
             
             elif choice == "2" and tkinter_available:
                 try:
