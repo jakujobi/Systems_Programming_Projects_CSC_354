@@ -537,6 +537,8 @@ class FileExplorer:
             return None
         
         return self.read_file(file_generator)
+    
+    def process_arg_file(self, file_name):
 
     
     def find_file(self, file_name):
@@ -1247,19 +1249,9 @@ def main():
     driver = SymbolTableDriver()
 
     # Check if the user provided command-line arguments for SYMS.DAT and SEARCH.TXT
-    if len(sys.argv) >= 3:
-        syms_file = sys.argv[1]  # First argument is SYMS.DAT
-        search_file = sys.argv[2]  # Second argument is SEARCH.TXT
-        print(f"Processing SYMS.DAT file from argument: {syms_file}")
-        driver.process_syms_file(syms_file)
-        
+    if len(sys.argv) >= 2:
         print("\nProcessing SEARCH.TXT file from argument: {search_file}")
         driver.process_search_file(search_file)
-    elif len(sys.argv) >= 2:
-        # If only one argument provided, assume it is SYMS.DAT
-        syms_file = sys.argv[1]
-        print(f"Processing SYMS.DAT file from argument: {syms_file}")
-        driver.process_syms_file(syms_file)
     else:
         # If no arguments provided, fall back to interactive file finding
         driver.run()
