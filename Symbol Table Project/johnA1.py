@@ -773,27 +773,31 @@ class Validator:
         ***  DESCRIPTION : Validates a symbol based on the following rules: ***
         ***  - Must be at most 10 characters.                               ***
         ***  - Must start with a letter.                                    ***
+        ***  - Cannot be just an underscore.                                ***
         ***  - Can contain only letters, digits, and underscores.           ***
-        ***                                                                 ***
-        ***  INPUTS :                                                       ***
-        ***    - symbol (str): The symbol to be validated.                  ***
-        ***  RETURNS :                                                      ***
-        ***    - str: "Success" if valid, otherwise an error message.       ***
         ********************************************************************/
         """
         symbol = symbol.strip().rstrip(":").upper()
 
+        # Check if the symbol length exceeds 10 characters
         if len(symbol) > 10:
             return f"Error: Symbol '{symbol}' length exceeds 10 characters."
         
+        # Check if the symbol starts with a letter
         if not symbol[0].isalpha():
             return f"Error: Symbol '{symbol}' must start with a letter."
 
+        # Check if the entire symbol is "_"
+        if symbol == "_":
+            return "Error: Symbol cannot be an underscore ('_') only."
+
+        # Check for invalid characters
         for char in symbol:
             if not (char.isalnum() or char == "_"):
                 return f"Error: Symbol '{symbol}' contains invalid character '{char}'."
         
         return "Success"
+
 
     def validate_value(self, value):
         """
