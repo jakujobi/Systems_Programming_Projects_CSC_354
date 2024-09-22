@@ -1,8 +1,0 @@
-# Minimum Python version requirement
-python_version >= "3.7"
-
-
-# Tkinter is part of the Python Standard Library but may require manual installation on some systems.
-# On Debian/Ubuntu, you can install it using: sudo apt-get install python3-tk
-# For macOS, if not installed, use: brew install python-tk
-# On Windows, Tkinter is included with Python by default or use: pip install tk

@@ -1,5 +1,0 @@
-ABCD					//  Found – display symbol ABCD and all attributes
-     A1b2C3_xYz			//  Found – display symbol A1B2 and all attributes
-CDEF					//  ERROR – CDEF not found in symbol table
-          abc~def				//  ERROR – symbols contain letters, digits and underscore:  abc~def
-a1b2c3d4e5f6				//  ERROR – symbols contain 10 characters maximum:  a1b2c3d4e5f6
