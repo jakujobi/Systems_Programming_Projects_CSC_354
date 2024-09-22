@@ -96,6 +96,7 @@ class SymbolData:
         self.mflag = mflag
 
 
+
 class SymbolNode:
     """
     /********************************************************************
@@ -137,6 +138,7 @@ class SymbolNode:
         self.symbol_data = symbol_data  # SymbolData object containing symbol info
         self.left = None  # Left child node
         self.right = None  # Right child node
+
 
 
 class SymbolTable:
@@ -526,20 +528,32 @@ class FileExplorer:
         ***    - list or None: List of cleaned lines or None on error.      ***
         ********************************************************************/
         """
+        try:
+            file_path = self.find_file(file_name)
+            if file_path is None:
+                print(f"Error: Could not find the file '{file_name}'.")
+                return None
+
+            file_generator = self.open_file(file_path)
+            if file_generator is None:
+                print(f"Error: Could not open the file '{file_name}'.")
+                return None
+            
+            return self.read_file(file_generator)
+        except FileNotFoundError:
+            print(f"File not found: {file_name}. Error: {fnf_error}")
+        except Exception as e:
+            print(f"An error occurred: {e}")
+            return None
+
+
+    def process_arg_file(self, file_name):
+        print("Processing file:", file_name , " from argument")
         file_path = self.find_file(file_name)
         if file_path is None:
             print(f"Error: Could not find the file '{file_name}'.")
             return None
-
         file_generator = self.open_file(file_path)
-        if file_generator is None:
-            print(f"Error: Could not open the file '{file_name}'.")
-            return None
-        
-        return self.read_file(file_generator)
-    
-    def process_arg_file(self, file_name):
-
     
     def find_file(self, file_name):
         """
@@ -1031,116 +1045,13 @@ class SymbolTableDriver:
 
             if not_found_symbols:
                 print(f"\nSymbols not found: {', '.join(not_found_symbols)}")
-            
+        except FileNotFoundError as fnf_error:
+            print(f"Error: {file_path} not found: {fnf_error}")
+    
         except Exception as e:
             print(f"An error occurred while processing the search file: {e}")
 
             
-    def process_syms_file_from_argument(self, file_path):
-        """
-        /********************************************************************
-        ***  FUNCTION : process_syms_file_from_argument                     ***
-        ***  CLASS  : SymbolTableDriver                                     ***
-        *********************************************************************
-        ***  DESCRIPTION : Processes the SYMS.DAT file passed as a command- ***
-        ***  line argument. This method reads the file, validates each line,***
-        ***  and inserts valid symbols into the symbol table. It directly   ***
-        ***  calls methods from FileExplorer to open and read the file.     ***
-        ***                                                                 ***
-        ***  INPUTS :                                                       ***
-        ***    - file_path (str): Path to the SYMS.DAT file.                ***
-        ***                                                                 ***
-        ***  RETURNS :                                                      ***
-        ***    - None                                                       ***
-        ********************************************************************/
-        """
-        try:
-            print(f"Processing SYMS.DAT file from argument: {file_path}")
-            file_generator = self.file_explorer.open_file(file_path)  # Open file directly
-            if file_generator is None:
-                print(f"Error: Unable to open the file '{file_path}'.")
-                return
-
-            # Now validate and insert each line from the file
-            valid_count = 0
-            invalid_count = 0
-
-            for line in file_generator:
-                cleaned_line = self.file_explorer.read_line_from_file(line)
-                if cleaned_line:
-                    validation_result = self.validator.validate_syms_line(cleaned_line)
-                    if isinstance(validation_result, SymbolData):
-                        self.symbol_table.insert(validation_result)
-                        valid_count += 1
-                        print(f"- Symbol '{validation_result.symbol}' Inserted")
-                    else:
-                        print(f"Error: {validation_result}")
-                        invalid_count += 1
-                else:
-                    print("Warning: No valid lines found in the file.")
-
-            print(f"\nSummary for {file_path}:")
-            print(f"- {valid_count} valid symbols inserted")
-            print(f"- {invalid_count} invalid lines encountered")
-        except Exception as e:
-            print(f"An error occurred while processing the syms file from your arguement: {e}")
-
-
-    def process_search_file_from_argument(self, file_path):
-        """
-        /********************************************************************
-        ***  FUNCTION : process_search_file_from_argument                   ***
-        ***  CLASS  : SymbolTableDriver                                     ***
-        *********************************************************************
-        ***  DESCRIPTION : Processes the SEARCH.TXT file passed as a command***
-        ***  -line argument. This method reads the file, validates each line,***
-        ***  searches for the symbols in the symbol table, and displays the ***
-        ***  found symbols in a paginated table format. It also lists any   ***
-        ***  symbols that were not found in the table.                      ***
-        ***                                                                 ***
-        ***  INPUTS :                                                       ***
-        ***    - file_path (str): Path to the SEARCH.TXT file.              ***
-        ***                                                                 ***
-        ***  RETURNS :                                                      ***
-        ***    - None                                                       ***
-        ********************************************************************/
-        """
-        try:
-            print(f"Processing SEARCH.TXT file from argument: {file_path}")
-            file_generator = self.file_explorer.open_file(file_path)  # Open file directly
-            if file_generator is None:
-                print(f"Error: Unable to open the file '{file_path}'.")
-                return
-
-            found_symbols = []
-            not_found_symbols = []
-
-            for line in file_generator:
-                cleaned_line = self.file_explorer.read_line_from_file(line)
-                if cleaned_line:
-                    validation_result = self.validator.validate_search_line(cleaned_line)
-                    if "Error" not in validation_result:
-                        symbol = validation_result
-                        result = self.symbol_table.search(symbol)
-                        if result:
-                            found_symbols.append(result)
-                        else:
-                            not_found_symbols.append(symbol)
-                    else:
-                        print(f"Invalid search line: {validation_result}")
-
-            # Display found symbols in a paginated table format
-            if found_symbols:
-                self.display_symbols_paginated(found_symbols)
-            else:
-                print("No symbols were found in the search.")
-
-            # Display not found symbols
-            if not_found_symbols:
-                print(f"\nSymbols not found: {', '.join(not_found_symbols)}")
-        except Exception as e:
-            print(f"An error occurred while processing the search file from your arguement: {e}")
-
 
     def display_symbols_paginated(self, symbols):
         """
@@ -1195,22 +1106,30 @@ class SymbolTableDriver:
         except Exception as e:
             print(f"An error occurred while displaying the symbol table: {e}")
 
-    def run(self):
+    def run(self, search_file=None):
         """
         /*********************************************************************
         ***  FUNCTION : run                                                ***
         ***  CLASS  : SymbolTableDriver                                    ***
         **********************************************************************
         ***  DESCRIPTION : Main method to run the program, which processes ***
-        ***  the SYMS.DAT file and a search file. Also asks the user if    ***
-        ***  they want to view the symbol table.                           ***
+        ***  the SYMS.DAT file and optionally asks the user for the search  ***
+        ***  file if not provided as an argument. Also asks if the user     ***
+        ***  wants to view the symbol table after processing SYMS.DAT.      ***
         ********************************************************************/
         """
         try:
             print("\nProcessing SYMS.DAT file...")
             print("_" * 50)                
             self.process_syms_file("SYMS.DAT")
+        except FileNotFoundError as fnf_error:
+            print(f"Error: SYMS.DAT file not found: {fnf_error}")
+            return
+        except Exception as e:
+            print(f"An unexpected error occurred while processing SYMS.DAT: {e}")
+            return
 
+        try:
             while True:
                 print("\n")
                 user_choice = input("Do you want to view the current symbol table? (y/n): ").strip().lower()
@@ -1223,15 +1142,27 @@ class SymbolTableDriver:
                     break
                 else:
                     print("Invalid input. Please enter 'y' for yes or 'n' for no.")
-
-            print("\nProcessing SEARCH.TXT file...")
-            print("_" * 50)
-            self.process_search_file("SEARCH.TXT")
-            print("\n")
-
         except Exception as e:
-            print(f"An unexpected error occurred: {e}")
-        
+            print(f"Error in user input: {e}")
+            return
+
+        try:
+            # Check if search_file was provided as an argument
+            if not search_file:
+                print("\nPlease provide the search file name (e.g., SEARCH.TXT) if it is in the same directory as the script:")
+                search_file = input("Search file name: ").strip()
+
+            print(f"\nProcessing {search_file} file...")
+            print("_" * 50)
+            self.process_search_file(search_file)
+            print("\n")
+        except FileNotFoundError as fnf_error:
+            print(f"Error: {search_file} not found: {fnf_error}")
+        except Exception as e:
+            print(f"An unexpected error occurred while processing {search_file}: {e}")
+
+
+      
 
 def main():
     """
@@ -1240,21 +1171,25 @@ def main():
     ***  CLASS  :                                                     ***
     *********************************************************************
     ***  DESCRIPTION: Main function that initializes and runs the app ***
+    ***  with optional command-line arguments. If a search file is     ***
+    ***  provided as a command-line argument, it is used; otherwise,   ***
+    ***  the program asks for the search file name interactively.      ***
     ********************************************************************/
     """
-    """
-    Main function that initializes and runs the app with optional command-line arguments.
-    """
-    print("Welcome to the Symbol Table Manager!\n")
-    driver = SymbolTableDriver()
+    try:
+        print("Welcome to the Symbol Table Manager!\n")
+        driver = SymbolTableDriver()
 
-    # Check if the user provided command-line arguments for SYMS.DAT and SEARCH.TXT
-    if len(sys.argv) >= 2:
-        print("\nProcessing SEARCH.TXT file from argument: {search_file}")
-        driver.process_search_file(search_file)
-    else:
-        # If no arguments provided, fall back to interactive file finding
-        driver.run()
+        # Check if the user provided a command-line argument for the search file
+        if len(sys.argv) > 1:
+            search_file = sys.argv[1]  # First argument is the search file
+            driver.run(search_file)
+        else:
+            # If no argument provided, fallback to interactive file finding
+            driver.run()
+    except Exception as e:
+        print(f"An unexpected error occurred: {e}")
 
 if __name__ == "__main__":
     main()
+
