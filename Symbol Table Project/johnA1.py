@@ -1,6 +1,8 @@
 ## CSC 354 - Systems Programming
 # Project: Symbol Table Manager
 # File: SYMBOL_TABLE.py
+# Version 3.0
+#   - Fixed teh arguement finding
 
 # Author: John Akujobi
 # Date: 9/8/2024
