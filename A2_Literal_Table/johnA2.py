@@ -45,7 +45,6 @@ except ImportError:
     tkinter_available = False
 
 
-
 class SymbolData:
     """
     /********************************************************************
@@ -727,13 +726,13 @@ class FileExplorer:
 
     def read_line_from_file(self, line):
         """
-        /********************************************************************
+        /**********************************************************************
         ***  FUNCTION : read_line_from_file                                 ***
         ***  CLASS  : FileExplorer                                          ***
         ***  INSTRUCTOR : George Hamer                                      ***
         ***  ASSIGNMENT : Assignment 1 - Symbol Table Manager               ***
         ***  DUE DATE : September 18, 2024                                  ***
-        *********************************************************************
+        ***********************************************************************
         ***  DESCRIPTION : Cleans and processes a single line from the file.***
         ***  Removes leading/trailing spaces and everything after '//' to   ***
         ***  skip comments. Skips empty lines.                              ***
@@ -742,7 +741,7 @@ class FileExplorer:
         ***    - line (str): A single line from the file.                   ***
         ***  RETURNS :                                                      ***
         ***    - str or None: The cleaned line or None if invalid.          ***
-        ********************************************************************/
+        **********************************************************************/
         """
         line = line.split("//", 1)[0].strip()
         
@@ -1205,6 +1204,147 @@ class SymbolTableDriver:
         except Exception as e:
             print(f"Error in user input: {e}")
             return
+
+
+class LiteralData:
+    """
+    Represents a literal in the literal table, storing its name, value, length, and address.
+    """
+
+    def __init__(self, name, value, length):
+        """
+        Initializes the LiteralData object with the given name, value, and length.
+        
+        :param name: The literal's name (e.g., =0X5A).
+        :param value: The hexadecimal value of the literal.
+        :param length: The length of the literal in bytes.
+        """
+        self.name = name
+        self.value = value
+        self.length = length
+        self.address = None  # Address is assigned later during processing
+
+    def set_address(self, address):
+        """
+        Sets the address for the literal.
+        
+        :param address: The address to assign to this literal.
+        """
+        self.address = address
+
+    def __repr__(self):
+        """
+        Provides a string representation of the literal data for easy debugging.
+        
+        :return: A string showing the literal's details.
+        """
+        return f"LiteralData(name={self.name}, value={self.value}, length={self.length}, address={self.address})"
+
+
+class LiteralNode:
+    """
+    Represents a node in the literal table linked list, containing a LiteralData object.
+    """
+
+    def __init__(self, literal_data):
+        """
+        Initializes the LiteralNode with the given LiteralData object.
+        
+        :param literal_data: The LiteralData object to be stored in this node.
+        """
+        self.literal_data = literal_data
+        self.next = None  # Points to the next node in the linked list
+
+    def __repr__(self):
+        """
+        Provides a string representation of the literal node for easy debugging.
+        
+        :return: A string showing the literal node's details.
+        """
+        return f"LiteralNode(literal_data={self.literal_data}, next={self.next is not None})"
+
+
+
+class LiteralTableList:
+    """
+    Represents a linked list for storing literals in the literal table.
+    Provides methods to insert literals, search for them, and display the list.
+    """
+
+    def __init__(self):
+        """
+        Initializes an empty literal table list.
+        """
+        self.head = None  # Head node of the literal list
+        self.log_entries = []  # List to store log messages
+
+    def insert(self, literal_data):
+        """
+        Inserts a new literal into the linked list.
+        Checks for duplicates before insertion.
+        
+        :param literal_data: The LiteralData object to insert.
+        """
+        # Check if the list is empty
+        if self.head is None:
+            self.head = LiteralNode(literal_data)
+            self.log_action(f"Literal inserted as head: {literal_data.name}")
+        else:
+            current = self.head
+            while current is not None:
+                # Check for duplicate literal names
+                if current.literal_data.name == literal_data.name:
+                    self.log_action(f"Duplicate literal found: {literal_data.name}")
+                    return  # Do not insert duplicates
+                if current.next is None:
+                    break
+                current = current.next
+            # Insert the new literal at the end of the list
+            current.next = LiteralNode(literal_data)
+            self.log_action(f"Literal inserted: {literal_data.name}")
+
+    def search(self, name):
+        """
+        Searches for a literal in the linked list by its name.
+        :param name: The name of the literal to search for.
+        :return: The LiteralData if found, or None if not found.
+        """
+        current = self.head
+        while current is not None:
+            if current.literal_data.name == name:
+                return current.literal_data
+            current = current.next
+        return None
+
+    def display_literals(self):
+        """
+        Displays all literals in the linked list.
+        """
+        current = self.head
+        if current is None:
+            print("Literal table is empty.")
+            return
+
+        print("Literal Table:")
+        while current is not None:
+            print(current.literal_data)
+            current = current.next
+
+    def log_action(self, message):
+        """
+        Logs an action message for auditing or debugging purposes.
+        
+        :param message: The action message to log.
+        """
+        self.log_entries.append(message)
+
+    def display_log(self):
+        """
+        Displays all logged actions.
+        """
+        print("Log Entries:")
+        for entry in self.log_entries:
+            print(entry)
 
 
 

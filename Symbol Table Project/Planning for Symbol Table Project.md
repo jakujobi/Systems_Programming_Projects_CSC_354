@@ -1,5 +1,4 @@
 # Planning for Symbol Table Project
-
 CSc 354 – Assignment #1 – Hamer – Due: 09-18-24
 (Implement using python)
 Write a complete module used to maintain the symbol table for the SIC/XE assembler:
@@ -15,12 +14,10 @@ Write a complete module used to maintain the symbol table for the SIC/XE assembl
 
 ---
 
-## Files
+# Files
 
-### SYMS.DAT
-
+## SYMS.DAT
 used to populate the symbol table.
-
 - file format (each line):	SYMBOL     VALUE     RFLAG
 - zero or more leading spaces in front of the SYMBOL attribute – ends with a colon (:)
 - one or more leading spaces in front of the VALUE and RFLAG attributes.
@@ -46,14 +43,12 @@ a1234:  3.5   FALSE         //  ERROR – symbol a1234 invalid value:  3
 
 ```
 
-(*) no message displayed for valid symbols with valid attributes – set IFLAG to true – set MFLAG to false
+( * ) no message displayed for valid symbols with valid attributes – set IFLAG to true – set MFLAG to false
 (+) set MFLAG attribute to true for symbol ABCD
 
-### Search File
-
+## Search File
 search file
 Used to search the symbol table
-
 - search file name obtained from the command line.
 - file format (each line):	SYMBOL
 - zero or more leading spaces in front of the SYMBOL attribute – no colon
