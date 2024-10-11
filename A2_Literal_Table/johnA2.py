@@ -452,12 +452,6 @@ class ExpressionEvaluator:
         )
 
     def evaluate_operand(self, operand: str) -> dict | None:
-        """
-        Evaluate a single operand, determining its value and addressing mode.
-
-        :param operand: The operand to evaluate (e.g., symbol, literal, or constant).
-        :return: A dictionary with value, relocatability, and addressing mode information.
-        """
         try:
             # Determine the addressing mode
             addressing_mode_info = self.determine_addressing_mode(operand)
@@ -475,13 +469,25 @@ class ExpressionEvaluator:
             elif operand_name.startswith('='):
                 return self.get_value_from_literal(operand_name, addressing_mode_info)
 
-            # Otherwise, assume it's a symbol
-            return self.get_value_from_symbol(operand_name, addressing_mode_info)
-
+            # Otherwise, assume it's a symbol and search the symbol table
+            else:
+                symbol_data = self.symbol_table.search(operand_name)
+                if symbol_data is not None:
+                    return {
+                        'value': symbol_data.value,
+                        'is_relocatable': symbol_data.rflag,
+                        'addressing_mode_info': addressing_mode_info
+                    }
+                else:
+                    self.log_handler.log_error(
+                        f"Undefined symbol: '{operand_name}'. Please ensure the symbol is defined before use.",
+                        "ExpressionEvaluator - evaluate_operand"
+                    )
+                    return None
         except Exception as e:
             self.log_handler.log_error(
-                f"Error evaluating operand '{operand}': {str(e)}",
-                context_info="ExpressionEvaluator - evaluate_operand"
+                f"Unexpected error while evaluating operand '{operand}': {str(e)}",
+                "ExpressionEvaluator - evaluate_operand"
             )
             return None
 
@@ -531,27 +537,32 @@ class ExpressionEvaluator:
             'addressing_mode_info': addressing_mode_info
         }
 
-    def get_value_from_symbol(self, symbol: str, addressing_mode_info: dict) -> dict | None:
+    def get_value_from_literal(self, literal: str, addressing_mode_info: dict) -> dict | None:
         """
-        Retrieve the value of a symbol from the symbol table.
-
-        :param symbol: The symbol to evaluate.
+        Get the value of a literal.
+        
+        :param literal: The literal string.
         :param addressing_mode_info: Addressing mode information.
-        :return: A dictionary with symbol evaluation details or None if the symbol is undefined.
+        :return: A dictionary with literal evaluation details or None if the literal is invalid.
         """
-        symbol_data = self.symbol_table.search(symbol)
-        if symbol_data:
-            self.symbol_table.increment_reference(symbol)
+        literal_data = self.handle_literal(literal)
+        if not literal_data:
+            return None
+
+        try:
+            # Ensure the literal value is converted from string to integer correctly
+            literal_value = int(str(literal_data.value), 16)
             return {
-                'value': symbol_data.value,
-                'is_relocatable': symbol_data.rflag,
+                'value': literal_value,
+                'is_relocatable': False,
                 'addressing_mode_info': addressing_mode_info
             }
-        self.log_handler.log_error(
-            f"Undefined symbol: '{symbol}'. Ensure it is defined before use.",
-            context_info="ExpressionEvaluator - get_value_from_symbol"
-        )
-        return None
+        except ValueError:
+            self.log_handler.log_error(
+                f"Invalid literal format for '{literal_data.value}'. Expected a hexadecimal string.",
+                "ExpressionEvaluator - get_value_from_literal"
+            )
+            return None
 
     def apply_operator(self, value1: int, operator: str, value2: int) -> int | None:
         """
@@ -649,8 +660,8 @@ class ExpressionEvaluator:
         try:
             if literal.startswith('='):
                 value_str = literal[1:]
-                value = int(value_str, 16)
-                length = len(value_str) // 2  # Length in bytes
+                value = int(value_str, 16)  # Convert hexadecimal to integer
+                length = (len(value_str) + 1) // 2  # Length in bytes, rounded up if odd length
                 return value, length
             self.log_handler.log_error(
                 f"Invalid literal format: '{literal}'",
