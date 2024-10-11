@@ -88,7 +88,7 @@ class LiteralTableList:
         :raises ValueError: If the literal_data has invalid fields.
         """
         if not isinstance(literal_data, LiteralData):
-            self._log_error(f"Cannot insert: Invalid LiteralData object. Please ensure the data passed is a LiteralData object.")
+            self._log_error("Cannot insert: Invalid LiteralData object. Please ensure the data passed is a LiteralData object.")
             return
         
         # Validate the literal data before inserting
@@ -110,9 +110,8 @@ class LiteralTableList:
             while current.next is not None:
                 # Check for duplicates
                 if current.literal_data.name == literal_data.name:
-                    self._log_error(f"Duplicate literal insertion error: "
-                                    f"The literal '{literal_data.name}' already exists in the table. "
-                                    "Duplicate entries are not allowed.")
+                    self._log_error(f"Error! I can't allow duplicate entries. "
+                                    f"The literal '{literal_data.name}' already exists in the table. ")
                     return
                 current = current.next
             
@@ -122,7 +121,7 @@ class LiteralTableList:
                                 f"The literal '{literal_data.name}' already exists in the table.")
             else:
                 current.next = LiteralNode(literal_data)
-                self._log_action(f"Inserted literal '{literal_data.name}' into the table.")
+                self._log_action(f"Inserted literal '{literal_data.name}' into the table. Yay!")
 
     def update_addresses(self, start_address=0):
         """
@@ -210,7 +209,63 @@ class LiteralTableList:
         :param error_message: The error message to be logged.
         """
         self.errors.append(error_message)
+        # Add an action entry for easier tracking in log history
         self._log_action(f"Error encountered: {error_message}")
+
+
+
+class ErrorHandler:
+    """
+    Class to handle errors throughout the program, providing mechanisms to log, retrieve,
+    and display error messages in a user-friendly manner.
+    """
+    def __init__(self):
+        """
+        Initialize the ErrorHandler with an empty list of error messages.
+        """
+        self.error_log = []  # Stores error messages
+
+    def log_error(self, error_message, context_info=None):
+        """
+        Log an error message with optional context information for better clarity.
+
+        :param error_message: The error message to be logged.
+        :param context_info: Additional context about where the error occurred (optional).
+        """
+        if context_info:
+            full_message = f"Error in {context_info}: {error_message}"
+        else:
+            full_message = f"Error: {error_message}"
+
+        # Add the formatted error message to the log
+        self.error_log.append(full_message)
+        print(f"[ERROR] {full_message}")  # Immediate feedback to the user for critical errors
+
+    def display_errors(self):
+        """
+        Display all logged error messages in a user-friendly format.
+        """
+        if not self.error_log:
+            print("No errors have been logged.")
+        else:
+            print("\nError Log:")
+            print("============")
+            for index, error in enumerate(self.error_log, start=1):
+                print(f"{index}. {error}")
+
+    def clear_errors(self):
+        """
+        Clear all logged errors.
+        """
+        self.error_log = []
+
+    def has_errors(self):
+        """
+        Check if there are any logged errors.
+
+        :return: True if there are errors, False otherwise.
+        """
+        return len(self.error_log) > 0
 
 
 
@@ -381,58 +436,313 @@ class ExpressionParser:
         self.error_handler.display_errors()
 
 
-class ErrorHandler:
+class ExpressionEvaluator:
     """
-    Class to handle errors throughout the program, providing mechanisms to log, retrieve,
-    and display error messages in a user-friendly manner.
+    Class to evaluate parsed expressions and determine their values, addressing modes, and relocatability.
+    Utilizes the symbol table, literal table, and validator for comprehensive expression evaluation.
     """
-    def __init__(self):
+    def __init__(self, symbol_table, literal_table, validator, error_handler):
         """
-        Initialize the ErrorHandler with an empty list of error messages.
-        """
-        self.error_log = []  # Stores error messages
+        Initialize the ExpressionEvaluator with symbol and literal tables, validation tools, and error handling.
 
-    def log_error(self, error_message, context_info=None):
+        :param symbol_table: An instance of SymbolTable for symbol lookup.
+        :param literal_table: An instance of LiteralTableList for managing literals.
+        :param validator: An instance of Validator for validating expressions.
+        :param error_handler: An instance of ErrorHandler for logging errors.
         """
-        Log an error message with optional context information for better clarity.
+        self.symbol_table = symbol_table
+        self.literal_table = literal_table
+        self.validator = validator
+        self.error_handler = error_handler
+        self.log_entries = []  # Stores logs of evaluation actions
+
+    def evaluate_expressions(self, parsed_expressions):
+        """
+        Evaluate a list of parsed expressions.
+
+        :param parsed_expressions: A list of dictionaries with parsed expression components.
+        :return: A list of evaluation results, including value, addressing mode, and relocatability.
+        """
+        evaluation_results = []
+
+        for expression in parsed_expressions:
+            try:
+                result = self.evaluate_expression(expression)
+                if result:
+                    evaluation_results.append(result)
+                    self.log_action(f"Successfully evaluated expression: {expression['original_expression']}")
+                else:
+                    self.error_handler.log_error(f"Failed to evaluate expression: '{expression['original_expression']}'. Please check the expression format and referenced symbols.", context_info="ExpressionEvaluator - evaluate_expressions")
+            except Exception as e:
+                self.error_handler.log_error(f"Unexpected error while evaluating expression: {str(e)}", context_info="ExpressionEvaluator - evaluate_expressions")
+
+        return evaluation_results
+
+    def evaluate_expression(self, parsed_expression):
+        """
+        Evaluate a single parsed expression.
+
+        :param parsed_expression: A dictionary containing parsed components of an expression.
+        :return: A dictionary with evaluated value, addressing mode, and relocatability information.
+        """
+        operand1 = parsed_expression['operand1']
+        operator = parsed_expression.get('operator')
+        operand2 = parsed_expression.get('operand2')
+
+        # Evaluate the first operand
+        operand1_info = self.evaluate_operand(operand1)
+        if not operand1_info:
+            return None
+
+        # If there's no operator, return the value of operand1
+        if not operator:
+            return self.format_result(parsed_expression['original_expression'], operand1_info['value'], operand1_info['is_relocatable'], operand1_info['addressing_mode_info'])
+
+        # Evaluate the second operand if an operator is present
+        operand2_info = self.evaluate_operand(operand2)
+        if not operand2_info:
+            return None
+
+        # Determine the result value and relocatability
+        value = self.apply_operator(operand1_info['value'], operator, operand2_info['value'])
+        if value is None:
+            self.error_handler.log_error(f"Unsupported operator '{operator}' in expression: '{parsed_expression['original_expression']}'. Only '+' and '-' are supported.", context_info="ExpressionEvaluator - evaluate_expression")
+            return None
+
+        is_relocatable = self.determine_relocatability(operand1_info, operator, operand2_info)
+        if is_relocatable is None:
+            return None
+
+        # Format and return the final result
+        return self.format_result(parsed_expression['original_expression'], value, is_relocatable, operand1_info['addressing_mode_info'])
+
+    def evaluate_operand(self, operand):
+        """
+        Evaluate a single operand, determining its value and addressing mode.
+
+        :param operand: The operand to evaluate (e.g., symbol, literal, or constant).
+        :return: A dictionary with value, relocatability, and addressing mode information.
+        """
+        try:
+            # Determine the addressing mode
+            addressing_mode_info = self.determine_addressing_mode(operand)
+            operand_name = addressing_mode_info['operand_name']
+
+            # Check if the operand is a numeric constant
+            if operand_name.isdigit() or (operand_name.startswith('-') and operand_name[1:].isdigit()):
+                return {
+                    'value': int(operand_name),
+                    'is_relocatable': False,
+                    'addressing_mode_info': addressing_mode_info
+                }
+
+            # Check if the operand is a literal
+            elif operand_name.startswith('='):
+                literal_data = self.handle_literal(operand_name)
+                if not literal_data:
+                    return None
+                return {
+                    'value': int(literal_data.value, 16),
+                    'is_relocatable': False,
+                    'addressing_mode_info': addressing_mode_info
+                }
+
+            # Otherwise, assume it's a symbol and search the symbol table
+            else:
+                symbol_data = self.symbol_table.search(operand_name)
+                if symbol_data is not None:
+                    self.symbol_table.increment_reference(operand_name)
+                    return {
+                        'value': symbol_data.value,
+                        'is_relocatable': symbol_data.rflag,
+                        'addressing_mode_info': addressing_mode_info
+                    }
+                else:
+                    self.error_handler.log_error(f"Undefined symbol: '{operand_name}'. Please ensure the symbol is defined before use.", context_info="ExpressionEvaluator - evaluate_operand")
+                    return None
+
+        except Exception as e:
+            self.error_handler.log_error(f"Unexpected error while evaluating operand '{operand}': {str(e)}", context_info="ExpressionEvaluator - evaluate_operand")
+            return None
+
+    def determine_addressing_mode(self, operand):
+        """
+        Determine the addressing mode of an operand.
+
+        :param operand: The operand to analyze.
+        :return: A dictionary with operand name, addressing mode, and relevant bits.
+        """
+        try:
+            n_bit, i_bit, x_bit = 1, 1, 0  # Default bits for simple addressing
+            operand_name = operand
+
+            if operand.startswith('#'):
+                i_bit, n_bit = 1, 0  # Immediate addressing
+                operand_name = operand[1:]
+            elif operand.startswith('@'):
+                i_bit, n_bit = 0, 1  # Indirect addressing
+                operand_name = operand[1:]
+            if operand.endswith(',X'):
+                x_bit = 1  # Indexed addressing
+                operand_name = operand_name.replace(',X', '')
+
+            return {
+                'operand_name': operand_name,
+                'addressing_mode': 'Immediate' if i_bit == 1 and n_bit == 0 else 'Indirect' if n_bit == 1 and i_bit == 0 else 'Simple',
+                'n_bit': n_bit,
+                'i_bit': i_bit,
+                'x_bit': x_bit
+            }
+        except Exception as e:
+            self.error_handler.log_error(f"Unexpected error while determining addressing mode for operand '{operand}': {str(e)}", context_info="ExpressionEvaluator - determine_addressing_mode")
+            return None
+
+    def apply_operator(self, value1, operator, value2):
+        """
+        Apply an arithmetic operator to two values.
+
+        :param value1: The first value.
+        :param operator: The operator ('+' or '-').
+        :param value2: The second value.
+        :return: The result of the operation, or None if the operator is unsupported.
+        """
+        try:
+            if operator == '+':
+                return value1 + value2
+            elif operator == '-':
+                return value1 - value2
+            else:
+                self.error_handler.log_error(f"Unsupported operator '{operator}'. Please use either '+' or '-'.", context_info="ExpressionEvaluator - apply_operator")
+                return None
+        except Exception as e:
+            self.error_handler.log_error(f"Unexpected error while applying operator '{operator}': {str(e)}", context_info="ExpressionEvaluator - apply_operator")
+            return None
+
+    def determine_relocatability(self, operand1_info, operator, operand2_info):
+        """
+        Determine the relocatability of an expression based on its operands and operator.
+
+        :param operand1_info: The information for the first operand.
+        :param operator: The operator used in the expression.
+        :param operand2_info: The information for the second operand.
+        :return: True if the result is relocatable, False if absolute, or None if there's an error.
+        """
+        try:
+            if operand1_info['is_relocatable'] and operand2_info['is_relocatable']:
+                if operator == '+':
+                    self.error_handler.log_error("Cannot add two relocatable operands. Please revise the expression.", context_info="ExpressionEvaluator - determine_relocatability")
+                    return None
+                elif operator == '-':
+                    return False  # Relocatable - Relocatable results in Absolute
+            elif operand1_info['is_relocatable']:
+                return True  # Relocatable + Absolute or Relocatable - Absolute
+            else:
+                return False  # Absolute + Absolute or Absolute - Absolute
+        except Exception as e:
+            self.error_handler.log_error(f"Unexpected error while determining relocatability: {str(e)}", context_info="ExpressionEvaluator - determine_relocatability")
+            return None
+
+    def handle_literal(self, literal):
+        """
+        Handle a literal by either retrieving it from the literal table or adding it if it's new.
+
+        :param literal: The literal to handle.
+        :return: The LiteralData object for the literal, or None if there's an error.
+        """
+        try:
+            literal_data = self.literal_table.search(literal)
+            if not literal_data:
+                value, length = self.parse_literal(literal)
+                if value is None or length is None:
+                    self.error_handler.log_error(f"Failed to parse literal: '{literal}'. Please ensure it is in a valid format.", context_info="ExpressionEvaluator - handle_literal")
+                    return None
+                literal_data = LiteralData(literal, value, length)
+                self.literal_table.insert(literal_data)
+            return literal_data
+        except Exception as e:
+            self.error_handler.log_error(f"Unexpected error while handling literal '{literal}': {str(e)}", context_info="ExpressionEvaluator - handle_literal")
+            return None
+
+    def parse_literal(self, literal):
+        """
+        Parse a literal to extract its value and length.
+
+        :param literal: The literal to parse (e.g., '=5').
+        :return: A tuple (value, length).
+        """
+        try:
+            # For simplicity, assume literals are hexadecimal values prefixed with '='
+            if literal.startswith('='):
+                value_str = literal[1:]
+                value = int(value_str, 16)  # Convert hexadecimal string to an integer
+                length = len(value_str) // 2  # Assume length in bytes
+                return value, length
+            else:
+                self.error_handler.log_error(f"Invalid literal format: '{literal}'. Expected format: '=hex_value'.", context_info="ExpressionEvaluator - parse_literal")
+                return None, None
+        except ValueError:
+            self.error_handler.log_error(f"Failed to parse literal value: '{literal}'. Ensure the value is a valid hexadecimal.", context_info="ExpressionEvaluator - parse_literal")
+            return None, None
+        except Exception as e:
+            self.error_handler.log_error(f"Unexpected error while parsing literal '{literal}': {str(e)}", context_info="ExpressionEvaluator - parse_literal")
+            return None, None
+
+    def format_result(self, expression, value, is_relocatable, addressing_mode_info):
+        """
+        Format the result of an expression evaluation for output.
+
+        :param expression: The original expression.
+        :param value: The evaluated value.
+        :param is_relocatable: Boolean indicating if the result is relocatable.
+        :param addressing_mode_info: Addressing mode details.
+        :return: A dictionary containing the formatted result.
+        """
+        return {
+            'expression': expression,
+            'value': value,
+            'is_relocatable': is_relocatable,
+            'addressing_mode': addressing_mode_info['addressing_mode'],
+            'n_bit': addressing_mode_info['n_bit'],
+            'i_bit': addressing_mode_info['i_bit'],
+            'x_bit': addressing_mode_info['x_bit']
+        }
+
+    def log_action(self, message):
+        """
+        Log a successful evaluation action.
+
+        :param message: The message to be logged.
+        """
+        self.log_entries.append(f"[ACTION]: {message}")
+
+    def log_error(self, error_message):
+        """
+        Log an error encountered during expression evaluation.
 
         :param error_message: The error message to be logged.
-        :param context_info: Additional context about where the error occurred (optional).
         """
-        if context_info:
-            full_message = f"Error in {context_info}: {error_message}"
-        else:
-            full_message = f"Error: {error_message}"
+        self.error_handler.log_error(f"[ERROR]: {error_message}")
+        self.log_entries.append(f"[ERROR]: {error_message}")
 
-        # Add the formatted error message to the log
-        self.error_log.append(full_message)
-        print(f"[ERROR] {full_message}")  # Immediate feedback to the user for critical errors
+    def display_log(self):
+        """
+        Display the log of actions performed during evaluation.
+        """
+        if not self.log_entries:
+            print("No evaluation actions have been logged.")
+        else:
+            print("Expression Evaluation Log:")
+            for entry in self.log_entries:
+                print(entry)
 
     def display_errors(self):
         """
-        Display all logged error messages in a user-friendly format.
+        Display any errors encountered during evaluation.
         """
-        if not self.error_log:
-            print("No errors have been logged.")
-        else:
-            print("\nError Log:")
-            print("============")
-            for index, error in enumerate(self.error_log, start=1):
-                print(f"{index}. {error}")
+        self.error_handler.display_errors()
 
-    def clear_errors(self):
-        """
-        Clear all logged errors.
-        """
-        self.error_log = []
 
-    def has_errors(self):
-        """
-        Check if there are any logged errors.
 
-        :return: True if there are errors, False otherwise.
-        """
-        return len(self.error_log) > 0
 
 
 def main():
