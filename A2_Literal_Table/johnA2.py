@@ -19,7 +19,8 @@
 **************************************************************************************/
 """
 
-from symbol_table_builder import SymbolTableDriver, SymbolData, SymbolTable
+from symbol_table_builder import SymbolTableDriver, SymbolData, SymbolTable, Validator, FileExplorer
+
 
 
 class LiteralData:
@@ -213,6 +214,227 @@ class LiteralTableList:
 
 
 
+class ExpressionParser:
+    """
+    Class to parse expressions from a file and break them down into operands and operators.
+    Handles different addressing modes and logs actions or errors encountered during parsing.
+    """
+    def __init__(self, file_explorer, validator, error_handler):
+        """
+        Initialize the ExpressionParser with file handling and validation tools.
+
+        :param file_explorer: An instance of FileExplorer to handle file operations.
+        :param validator: An instance of Validator for validating expressions.
+        :param error_handler: An instance of ErrorHandler for logging errors.
+        """
+        self.file_explorer = file_explorer
+        self.validator = validator
+        self.error_handler = error_handler
+        self.log_entries = []  # Stores logs of parsing actions
+
+    def parse_expressions(self, file_path):
+        """
+        Parse all expressions from a given file and return a list of structured expression data.
+
+        :param file_path: The path to the file containing expressions (e.g., EXPRESS.DAT).
+        :return: A list of dictionaries with parsed expression components.
+        """
+        try:
+            # Read lines from the provided file path using FileExplorer
+            lines = self.file_explorer.process_file(file_path)
+            if not lines:
+                self.log_error(f"The file '{file_path}' is empty. Please provide a valid file with expressions.")
+                return []
+
+            parsed_expressions = []
+
+            for line_number, line in enumerate(lines, start=1):
+                result = self.parse_expression(line, line_number)
+                if result:
+                    parsed_expressions.append(result)
+                    self.log_action(f"Successfully parsed expression on line {line_number}: {line.strip()}")
+                else:
+                    self.log_error(f"Failed to parse expression on line {line_number}: '{line.strip()}'. Please check the syntax.")
+
+            return parsed_expressions
+
+        except FileNotFoundError:
+            self.log_error(f"File '{file_path}' not found. Please provide a valid file path.")
+            return []
+        except PermissionError:
+            self.log_error(f"Permission denied for file '{file_path}'. Please check your file permissions.")
+            return []
+        except Exception as e:
+            self.log_error(f"An unexpected error occurred while parsing expressions: {str(e)}")
+            return []
+
+    def parse_expression(self, expression_line, line_number):
+        """
+        Parse a single line of expression into operands and operators.
+
+        :param expression_line: A single line containing an expression (e.g., 'A + B').
+        :param line_number: The line number in the file for reference in error handling.
+        :return: A dictionary with the parsed components (e.g., {'operand1': 'A', 'operator': '+', 'operand2': 'B'}).
+        """
+        expression_line = expression_line.strip()
+
+        if not expression_line:
+            self.log_error(f"Empty expression line at line {line_number}. Skipping...")
+            return None
+
+        try:
+            # Tokenize the expression into operands and operators
+            operand1, operator, operand2 = self.tokenize_expression(expression_line, line_number)
+
+            # Validate the parsed operands and operators
+            if not self.validator.validate_symbol(operand1):
+                self.log_error(f"Invalid operand1 '{operand1}' at line {line_number}. Check for correct syntax.")
+                return None
+
+            if operand2 and not (self.validator.validate_symbol(operand2) or operand2.isnumeric()):
+                self.log_error(f"Invalid operand2 '{operand2}' at line {line_number}. Check for correct syntax.")
+                return None
+
+            return {
+                'original_expression': expression_line,
+                'operand1': operand1,
+                'operator': operator,
+                'operand2': operand2
+            }
+
+        except ValueError as e:
+            self.log_error(f"Error while parsing expression on line {line_number}: {str(e)}")
+            return None
+        except Exception as e:
+            self.log_error(f"Unexpected error while parsing line {line_number}: {str(e)}")
+            return None
+
+    def tokenize_expression(self, expression_line, line_number):
+        """
+        Tokenize an expression line into its components (operands and operator).
+        Handles special cases for addressing modes (#, @, ,X).
+
+        :param expression_line: The expression line to be tokenized.
+        :param line_number: The line number in the file for reference in error handling.
+        :return: Tuple (operand1, operator, operand2).
+        """
+        try:
+            # Split the line into tokens based on whitespace and operator symbols
+            tokens = expression_line.replace(',', ' ,').split()
+
+            if len(tokens) == 1:
+                # Single operand (e.g., '#5' or '@VAR')
+                return tokens[0], None, None
+
+            elif len(tokens) == 3:
+                # Expression with an operator (e.g., 'A + B')
+                return tokens[0], tokens[1], tokens[2]
+
+            elif len(tokens) == 2 and tokens[1] == ',X':
+                # Handle indexed addressing mode (e.g., 'VAR, X')
+                return tokens[0] + tokens[1], None, None
+
+            elif len(tokens) == 2:
+                # Handle cases like '#NUM'
+                return tokens[0], None, tokens[1]
+
+            else:
+                raise ValueError(f"Unrecognized expression format at line {line_number}. Ensure correct syntax with operands and operators.")
+
+        except IndexError:
+            raise ValueError(f"Malformed expression at line {line_number}. Missing operands or operator.")
+        except Exception as e:
+            raise ValueError(f"Unexpected error during tokenization at line {line_number}: {str(e)}")
+
+    def log_action(self, message):
+        """
+        Log a successful parsing action.
+
+        :param message: The message to be logged.
+        """
+        self.log_entries.append(f"[ACTION]: {message}")
+
+    def log_error(self, error_message):
+        """
+        Log an error encountered during expression parsing.
+
+        :param error_message: The error message to be logged.
+        """
+        self.error_handler.log_error(f"[ERROR]: {error_message}")
+        self.log_entries.append(f"[ERROR]: {error_message}")
+
+    def display_log(self):
+        """
+        Display the log of actions performed during parsing.
+        """
+        if not self.log_entries:
+            print("No parsing actions have been logged.")
+        else:
+            print("\nExpression Parsing Log:")
+            for entry in self.log_entries:
+                print(entry)
+
+    def display_errors(self):
+        """
+        Display any errors encountered during parsing.
+        """
+        self.error_handler.display_errors()
+
+
+class ErrorHandler:
+    """
+    Class to handle errors throughout the program, providing mechanisms to log, retrieve,
+    and display error messages in a user-friendly manner.
+    """
+    def __init__(self):
+        """
+        Initialize the ErrorHandler with an empty list of error messages.
+        """
+        self.error_log = []  # Stores error messages
+
+    def log_error(self, error_message, context_info=None):
+        """
+        Log an error message with optional context information for better clarity.
+
+        :param error_message: The error message to be logged.
+        :param context_info: Additional context about where the error occurred (optional).
+        """
+        if context_info:
+            full_message = f"Error in {context_info}: {error_message}"
+        else:
+            full_message = f"Error: {error_message}"
+
+        # Add the formatted error message to the log
+        self.error_log.append(full_message)
+        print(f"[ERROR] {full_message}")  # Immediate feedback to the user for critical errors
+
+    def display_errors(self):
+        """
+        Display all logged error messages in a user-friendly format.
+        """
+        if not self.error_log:
+            print("No errors have been logged.")
+        else:
+            print("\nError Log:")
+            print("============")
+            for index, error in enumerate(self.error_log, start=1):
+                print(f"{index}. {error}")
+
+    def clear_errors(self):
+        """
+        Clear all logged errors.
+        """
+        self.error_log = []
+
+    def has_errors(self):
+        """
+        Check if there are any logged errors.
+
+        :return: True if there are errors, False otherwise.
+        """
+        return len(self.error_log) > 0
+
+
 def main():
     """
     /********************************************************************
@@ -230,6 +452,32 @@ def main():
         driver.build_symbol_table()
     except Exception as e:
         print(f"An unexpected error occurred: {e}")
+    readfile = FileExplorer()
+    expression_lines = readfile.process_file("Express.DAT")
+    # print expression_lines
+    for line in expression_lines:
+        print(line)
+        # Assuming FileExplorer, Validator, and ErrorHandler classes are implemented elsewhere
+    
+    file_explorer = FileExplorer()
+    validator = Validator()
+    error_handler = ErrorHandler()
+
+    # Create the ExpressionParser instance
+    expression_parser = ExpressionParser(file_explorer, validator, error_handler)
+
+    # Parse expressions from EXPRESS.DAT
+    parsed_expressions = expression_parser.parse_expressions("EXPRESS.DAT")
+
+    # Display the parsed expressions
+    for expr in parsed_expressions:
+        print(expr)
+
+    # Display logs and errors
+    expression_parser.display_log()
+    expression_parser.display_errors()
+    
+    
 
 if __name__ == "__main__":
     main()
