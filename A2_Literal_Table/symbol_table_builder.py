@@ -62,6 +62,7 @@ class SymbolData:
         self.mflag = mflag
 
 
+
 class SymbolNode:
     """
     /********************************************************************
@@ -103,6 +104,7 @@ class SymbolNode:
         self.symbol_data = symbol_data  # SymbolData object containing symbol info
         self.left = None  # Left child node
         self.right = None  # Right child node
+
 
 
 class SymbolTable:
@@ -455,6 +457,7 @@ class SymbolTable:
             self._destroy_nodes(node.left)
             self._destroy_nodes(node.right)
             del node
+
 
 
 class FileExplorer:
