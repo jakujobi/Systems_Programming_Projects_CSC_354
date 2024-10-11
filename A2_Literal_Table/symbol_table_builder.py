@@ -419,6 +419,22 @@ class SymbolTable:
             self._destroy()
             print("Symbol Table Destroyed")
             
+
+    def increment_reference(self, symbol_name: str):
+        """
+        Increment the reference count for a symbol.
+        
+        :param symbol_name: The name of the symbol whose reference count should be incremented.
+        :raises KeyError: If the symbol does not exist in the table.
+        """
+        if symbol_name in self.symbols:
+            symbol_data = self.symbols[symbol_name]
+            symbol_data.references += 1  # Increment reference count (assumes 'references' attribute exists)
+            self.log_handler.log_action(f"Incremented reference count for symbol '{symbol_name}'.")
+        else:
+            self.log_handler.log_error(f"Symbol '{symbol_name}' not found while trying to increment reference.")
+
+            
     def _destroy(self):
         """
         /********************************************************************
