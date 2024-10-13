@@ -158,42 +158,30 @@ class LiteralTableList:
         self.log_handler.log_action(f"Literal '{literal_name}' not found in the table.")
         return None
 
-    def update_addresses(self, start_address: int = 1):
+    def update_addresses(self, start_address: int = 0):
         """
-        Assign addresses to literals sequentially after sorting them alphabetically.
-        If the table is empty, log an error.
+        Assign addresses to literals sequentially without sorting, retaining the order 
+        in which they were encountered in the linked list.
         
-        :param start_address: The starting address for the first literal.
+        :param start_address: The starting address for the first literal (default is 0).
         """
-        if start_address < 1:
-            self.log_handler.log_error("Invalid starting address. Addresses must start from 1 or higher.")
+        if start_address < 0:
+            self.log_handler.log_error("Invalid starting address. Addresses cannot be negative.")
             return
 
         if self.head is None:
             self.log_handler.log_error("Update failed: The literal table is empty.")
             return
 
-        # Collect literals into a list
-        literals_list = []
         current = self.head
+        current_address = start_address
+
         while current:
-            literals_list.append(current.literal_data)
+            current.literal_data.address = current_address
+            self.log_handler.log_action(f"Assigned address {current_address} to literal '{current.literal_data.name}'.")
+            current_address += 1  # Increment address by 1 regardless of length
             current = current.next
 
-        # Sort the literals alphabetically by name
-        literals_list.sort(key=lambda x: x.name)
-
-        # Assign addresses
-        current_address = start_address
-        for literal in literals_list:
-            literal.address = current_address
-            self.log_handler.log_action(f"Assigned address {current_address} to literal '{literal.name}'.")
-            current_address += 1  # Increment address by 1 regardless of length
-
-        # Rebuild the linked list in sorted order
-        self.head = None
-        for literal_data in literals_list:
-            self.insert_sorted(literal_data)
 
     def display_literals(self):
         """
@@ -394,12 +382,12 @@ class ExpressionParser:
             parsed_expr['addressing_mode'] = 'IMMEDIATE'
             line = line[1:].strip()
 
-        # Check for indexed addressing mode (e.g., "GREEN,X")
-        if ',X' in line:
+        # Check for indexed addressing mode (e.g., "GREEN,X") but only if ',X' is at the end of the line.
+        if line.endswith(',X'):
             parsed_expr['indexing'] = True
-            line = line.replace(',X', '').strip()
+            line = line[:-2].strip()  # Remove ',X' from the end
 
-            # Handle literals (e.g., "=0X5A")
+        # Handle literals (e.g., "=0X5A")
         if line.startswith('='):
             literal_name = line
             literal = self.literal_table.search(literal_name)
@@ -408,8 +396,7 @@ class ExpressionParser:
                     # Handle hexadecimal literals
                     if literal_name.upper().startswith("=0X"):
                         literal_value = literal_name[3:]  # Remove the "=0X" part
-                        literal_value = literal_value.upper()
-                        # Assuming hexadecimal literal, length is two characters per byte
+                        # Don't convert to uppercase, keep as provided
                         literal_length = len(literal_value) // 2  # Two characters per byte
 
                     # Handle character literals
@@ -467,6 +454,7 @@ class ExpressionParser:
             parsed_expr['error'] = "Missing second operand."
 
         return parsed_expr
+
 
     def get_parsed_expressions(self):
         """
@@ -628,32 +616,35 @@ class ExpressionEvaluator:
         Evaluates the RFLAG (relocatability) based on the operation and RFLAGS of the operands.
         
         Args:
-            rflag1 (bool): RFLAG of the first operand.
-            operator (str): Operation ('+' or '-').
-            rflag2 (bool): RFLAG of the second operand.
-        
+            rflag1 (bool): RFLAG of the first operand (True if relocatable, False if absolute).
+            operator (str): The operation being performed ('+' or '-').
+            rflag2 (bool): RFLAG of the second operand (True if relocatable, False if absolute).
+            
         Returns:
-            tuple: (relocatable_flag, error_message) - returns error_message if an error occurs.
+            tuple: (relocatable_flag, error_message) 
+                relocatable_flag (bool): The relocatability of the result.
+                error_message (str): Error message if the operation is invalid.
         """
         if operator == '+':
             if not rflag1 and not rflag2:
-                return False, None
-            elif not rflag1 and rflag2:
-                return True, None
-            elif rflag1 and not rflag2:
-                return True, None
-            else:
-                return None, "Error: Cannot add two relocatable values."
+                return False, None  # Absolute + Absolute = Absolute
+            elif (rflag1 and not rflag2) or (not rflag1 and rflag2):
+                return True, None  # Relocatable + Absolute or Absolute + Relocatable = Relocatable
+            elif rflag1 and rflag2:
+                return None, "T  +  T ERROR"  # Error: Cannot add two relocatable values
+
         elif operator == '-':
             if not rflag1 and not rflag2:
-                return False, None
-            elif not rflag1 and rflag2:
-                return None, "Error: Cannot subtract relocatable value from absolute."
+                return False, None  # Absolute - Absolute = Absolute
             elif rflag1 and not rflag2:
-                return True, None
+                return True, None  # Relocatable - Absolute = Relocatable
+            elif not rflag1 and rflag2:
+                return None, "F  -  T ERROR"  # Error: Cannot subtract relocatable value from absolute
             elif rflag1 and rflag2:
-                return False, None
-        return None, "Error: Invalid operation."
+                return False, None  # Relocatable - Relocatable = Absolute
+
+        return None, "Error: Invalid operation."  # Catch-all for invalid operations
+
 
     def get_evaluated_expressions(self):
         """
@@ -935,7 +926,7 @@ def main():
     results_display.display_results(include_literals=False)
 
     # Step 4: Update the literal table addresses (before displaying the table)
-    literal_table.update_addresses(start_address=1)
+    literal_table.update_addresses(start_address=0)
     print("\nLiteral Table:")
     literal_table.display_literals()
 
