@@ -523,23 +523,6 @@ class ExpressionEvaluator:
     def get_value_from_literal(self, literal: str, addressing_mode_info: dict) -> dict | None:
         """
         Get the value of a literal.
-
-        :param literal: The literal string.
-        :param addressing_mode_info: Addressing mode information.
-        :return: A dictionary with literal evaluation details or None if the literal is invalid.
-        """
-        literal_data = self.handle_literal(literal)
-        if not literal_data:
-            return None
-        return {
-            'value': int(literal_data.value, 16),
-            'is_relocatable': False,
-            'addressing_mode_info': addressing_mode_info
-        }
-
-    def get_value_from_literal(self, literal: str, addressing_mode_info: dict) -> dict | None:
-        """
-        Get the value of a literal.
         
         :param literal: The literal string.
         :param addressing_mode_info: Addressing mode information.
@@ -651,12 +634,6 @@ class ExpressionEvaluator:
             return None
 
     def parse_literal(self, literal: str) -> tuple[int | None, int | None]:
-        """
-        Parse a literal to extract its value and length.
-
-        :param literal: The literal to parse (e.g., '=0x5A').
-        :return: A tuple containing the value and its length or (None, None) if parsing fails.
-        """
         try:
             if literal.startswith('='):
                 value_str = literal[1:]
@@ -697,14 +674,29 @@ class LiteralTableDriver:
         """
         try:
             self.build_symbol_table()
+            self.log_handler.log_action("Symbol table building complete.")
+
             expression_file = expression_file or self.get_expression_file()
             expressions = self.load_expressions(expression_file)
+            self.log_handler.log_action("\nExpressions loaded successfully.\n")
 
             if expressions:
                 parsed_expressions = self.parse_expressions(expressions)
+                self.log_handler.log_action("\nExpressions parsed successfully.\n")
+                print("\nExpressions parsed successfully.")
+
                 self.evaluate_and_insert_literals(parsed_expressions)
+                self.log_handler.log_action("\nLiterals evaluated and inserted successfully.\n")
+                print("\nLiterals evaluated and inserted successfully.")
+
                 self.update_addresses()
+                self.log_handler.log_action("\nAddresses updated successfully.\n")
+                print("\nAddresses updated successfully.")
+
                 self.display_results()
+                self.log_handler.log_action("\nResults displayed successfully.\n")
+                print("\nResults displayed successfully.")
+                
         except Exception as e:
             self.log_handler.log_error(f"Unexpected error occurred: {e}")
 
@@ -775,10 +767,14 @@ class LiteralTableDriver:
 
         for result in evaluation_results:
             if result['expression'].startswith('='):
-                literal = LiteralData(result['expression'], result['value'], result['length'])
+                # Ensure 'length' is properly extracted before creating the LiteralData object
+                value = result['value']
+                length = len(hex(value)[2:]) // 2  # Calculate the length in bytes
+                literal = LiteralData(result['expression'], result['value'], length)
                 self.literal_table.insert(literal)
 
         self.log_handler.log_action("Expressions evaluated and literal table updated.")
+
 
     def update_addresses(self):
         """
@@ -817,3 +813,4 @@ if __name__ == "__main__":
     expression_file = sys.argv[1] if len(sys.argv) > 1 else None
     driver = LiteralTableDriver()
     driver.run(expression_file)
+    print("Got to end of Main")
