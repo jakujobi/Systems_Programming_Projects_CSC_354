@@ -111,6 +111,23 @@ class LiteralTableList:
             current.next = new_node
             self.log_handler.log_action(f"Inserted literal '{literal_data.name}' into the table.")
 
+    def insert_sorted(self, literal_data: LiteralData):
+        """
+        Insert a literal into the linked list in sorted order.
+        
+        :param literal_data: LiteralData object to insert.
+        """
+        new_node = LiteralNode(literal_data)
+        if self.head is None or self.head.literal_data.name >= new_node.literal_data.name:
+            new_node.next = self.head
+            self.head = new_node
+        else:
+            current = self.head
+            while current.next and current.next.literal_data.name < new_node.literal_data.name:
+                current = current.next
+            new_node.next = current.next
+            current.next = new_node
+
     def _find_literal(self, name: str) -> bool:
         """
         Check if a literal with the given name exists in the table.
@@ -141,28 +158,42 @@ class LiteralTableList:
         self.log_handler.log_action(f"Literal '{literal_name}' not found in the table.")
         return None
 
-    def update_addresses(self, start_address: int = 0):
+    def update_addresses(self, start_address: int = 1):
         """
-        Assign addresses to literals sequentially. If the table is empty, log an error.
-
+        Assign addresses to literals sequentially after sorting them alphabetically.
+        If the table is empty, log an error.
+        
         :param start_address: The starting address for the first literal.
         """
-        if start_address < 0:
-            self.log_handler.log_error("Invalid starting address. Addresses cannot be negative.")
+        if start_address < 1:
+            self.log_handler.log_error("Invalid starting address. Addresses must start from 1 or higher.")
             return
 
         if self.head is None:
             self.log_handler.log_error("Update failed: The literal table is empty.")
             return
 
+        # Collect literals into a list
+        literals_list = []
         current = self.head
-        current_address = start_address
-
         while current:
-            current.literal_data.address = current_address
-            self.log_handler.log_action(f"Assigned address {current_address} to literal '{current.literal_data.name}'.")
-            current_address += current.literal_data.length
+            literals_list.append(current.literal_data)
             current = current.next
+
+        # Sort the literals alphabetically by name
+        literals_list.sort(key=lambda x: x.name)
+
+        # Assign addresses
+        current_address = start_address
+        for literal in literals_list:
+            literal.address = current_address
+            self.log_handler.log_action(f"Assigned address {current_address} to literal '{literal.name}'.")
+            current_address += 1  # Increment address by 1 regardless of length
+
+        # Rebuild the linked list in sorted order
+        self.head = None
+        for literal_data in literals_list:
+            self.insert_sorted(literal_data)
 
     def display_literals(self):
         """
@@ -656,15 +687,18 @@ class ExpressionResults:
         self.evaluated_expressions = evaluated_expressions
         self.log_handler = log_handler
 
-    def display_results(self):
+    def display_results(self, include_literals=True):
         """
         Formats and outputs the expression evaluation results in a table-like format.
-        Logs actions when results are displayed.
+        Allows toggling the inclusion of literals in the display.
+        
+        Args:
+            include_literals (bool): If False, literals are excluded from the results.
         """
         if not self.evaluated_expressions:
             print("No expressions to evaluate.")
             return
-    
+
         # Table Header
         Ex = 20
         Va = 14
@@ -672,19 +706,24 @@ class ExpressionResults:
         Ns = 7
         Is = 7
         Xs = 7
-        print("┏" + ("━" * (Ex + Va + Re + Ns + Is + Xs + 5)) + "┓")
-        print(f"┃{'EXPRESSION RESULTS':^{Ex + Va + Re + Ns + Is + Xs + 5}}┃")
+        total_width = Ex + Va + Re + Ns + Is + Xs + 5
+        print("┏" + ("━" * total_width) + "┓")
+        print(f"┃{'EXPRESSION RESULTS':^{total_width}}┃")
         print("┣" + ("━" * Ex) + "┯" + ("━" * Va) + "┯" + ("━" * Re) + "┯" + ("━" * Ns) + "┯" + ("━" * Is) + "┯" + ("━" * Xs) + "┫")
         print(f"┃ {'Expression':^{Ex - 2}} │ {'Value':^{Va - 2}} │ {'Relocatable':^{Re - 2}} │ {'N-Bit':^{Ns - 2}} │ {'I-Bit':^{Is - 2}} │ {'X-Bit':^{Xs - 2}} ┃")
         print("┣" + ("━" * Ex) + "┿" + ("━" * Va) + "┿" + ("━" * Re) + "┿" + ("━" * Ns) + "┿" + ("━" * Is) + "┿" + ("━" * Xs) + "┫")
-    
+
         # Table Body
         for expr in self.evaluated_expressions:
+            # Skip literals if include_literals is False
+            if not include_literals and expr['original_expression'].startswith('='):
+                continue
             result_line = self.format_expression_result(expr, Ex, Va, Re, Ns, Is, Xs)
             print(result_line)
-    
+
         # Table Footer
         print("┗" + ("━" * Ex) + "┷" + ("━" * Va) + "┷" + ("━" * Re) + "┷" + ("━" * Ns) + "┷" + ("━" * Is) + "┷" + ("━" * Xs) + "┛")
+
     
     def format_expression_result(self, evaluated_expr, Ex, Va, Re, Ns, Is, Xs):
         """
@@ -877,7 +916,7 @@ def main():
     literal_table = LiteralTableList(log_handler)
 
     file_explorer = FileExplorer()
-    filename = sys.argv[1] if len(sys.argv) > 1 else "EXPRESS.DAT"
+    filename = sys.argv[1] if len(sys.argv) > 1 else "EXPR.DAT"
     expressions_lines = file_explorer.process_file(filename)
 
     # Step 1: Parse the expressions
@@ -892,9 +931,9 @@ def main():
 
     # Step 3: Display the evaluation results
     results_display = ExpressionResults(evaluated_expressions, log_handler)
-    results_display.display_results()
+    # Set include_literals to False to exclude literals from the output
+    results_display.display_results(include_literals=False)
 
-    # Step 4: Display the literal table
     # Step 4: Update the literal table addresses (before displaying the table)
     literal_table.update_addresses(start_address=1)
     print("\nLiteral Table:")
@@ -906,6 +945,7 @@ def main():
 
     print("\nError Logs:")
     log_handler.display_errors()
+
 
 
 if __name__ == "__main__":
