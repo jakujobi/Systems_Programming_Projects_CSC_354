@@ -203,6 +203,14 @@ class SymbolTable:
             else:
                 self._insert(current_node.right, symbol_data)
 
+    def get(self, operand):
+        # Symbol lookup from the symbol table
+        symbol = self.search(operand)  # Search the table for the symbol
+        if symbol:
+            return symbol.value, symbol.rflag, None
+        else:
+            return None, None, f"Undefined symbol: {operand}"
+
     def search(self, symbol):
         """
         /********************************************************************
@@ -225,7 +233,9 @@ class SymbolTable:
         result = self._search(self.root, symbol.upper()[:4])
         if result is None:
             print(f"Symbol '{symbol.upper()[:4]}' not found.")
+            return None
         return result
+        # return {'value': result.value, 'rflag': result.rflag}
 
     
     def _search(self, current_node, symbol):
@@ -418,22 +428,6 @@ class SymbolTable:
         else:
             self._destroy()
             print("Symbol Table Destroyed")
-            
-
-    def increment_reference(self, symbol_name: str):
-        """
-        Increment the reference count for a symbol.
-        
-        :param symbol_name: The name of the symbol whose reference count should be incremented.
-        :raises KeyError: If the symbol does not exist in the table.
-        """
-        if symbol_name in self.symbols:
-            symbol_data = self.symbols[symbol_name]
-            symbol_data.references += 1  # Increment reference count (assumes 'references' attribute exists)
-            self.log_handler.log_action(f"Incremented reference count for symbol '{symbol_name}'.")
-        else:
-            self.log_handler.log_error(f"Symbol '{symbol_name}' not found while trying to increment reference.")
-
             
     def _destroy(self):
         """
@@ -1163,6 +1157,7 @@ class SymbolTableDriver:
         ***  wants to view the symbol table after processing SYMS.DAT.      ***
         ********************************************************************/
         """
+        self.symbol_table = SymbolTable()
         try:
             print("\nProcessing SYMS.DAT file...")
             print("_" * 50)                
@@ -1178,7 +1173,7 @@ class SymbolTableDriver:
             while True:
                 print("\n")
                 user_choice = input("Do you want to view the current symbol table? (y/n): ").strip().lower()
-                if user_choice == 'y':
+                if user_choice == 'y' or user_choice == "":
                     self.view()
                     print("\n")
                     break
