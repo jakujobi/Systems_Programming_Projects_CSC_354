@@ -298,7 +298,7 @@ class ExpressionParser:
         parsed_expressions = []
 
         for line_number, line in enumerate(lines, start=1):
-            result = self.parse_expression(line.strip(), line_number)
+            result = self.parse_expression_line(line.strip(), line_number)
             if result:
                 parsed_expressions.append(result)
                 self.log_handler.log_action(f"Successfully parsed expression on line {line_number}: {line.strip()}")
@@ -307,7 +307,7 @@ class ExpressionParser:
 
         return parsed_expressions
 
-    def parse_expression(self, expression_line, line_number):
+    def parse_expression_line(self, expression_line, line_number):
         """
         Parse a single line of expression into operands and operators.
 
@@ -801,6 +801,7 @@ class LiteralTableDriver:
         Display all the results including literals, logs, and errors with paginated output.
         """
         self.paginate_output(self.literal_table.display_literals, "Displaying Literal Table:")
+        print ("\n\nLog Summary")
         self.paginate_output(self.log_handler.display_log, "Displaying Log Entries:")
         self.paginate_output(self.log_handler.display_errors, "Displaying Errors:")
 
@@ -815,6 +816,9 @@ class LiteralTableDriver:
         print("=" * len(header))
         display_function()
         input("Press Enter to continue...")
+        print("\033[F\033[K", end='')
+
+
 
 # Main function
 if __name__ == "__main__":
