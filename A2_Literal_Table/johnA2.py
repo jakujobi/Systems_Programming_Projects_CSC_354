@@ -95,9 +95,6 @@ class LiteralTableList:
         if not isinstance(literal_data, LiteralData):
             self.log_handler.log_error("Cannot insert: Invalid LiteralData object.")
             return
-        
-        # Normalize literal name to uppercase
-        literal_data.name = literal_data.name.upper()
 
         if self._find_literal(literal_data.name):
             self.log_handler.log_error(f"Duplicate literal insertion error: The literal '{literal_data.name}' already exists.")
@@ -120,9 +117,6 @@ class LiteralTableList:
         
         :param literal_data: LiteralData object to insert.
         """
-        # Normalize literal name to uppercase
-        literal_data.name = literal_data.name.upper()
-        
         new_node = LiteralNode(literal_data)
         if self.head is None or self.head.literal_data.name >= new_node.literal_data.name:
             new_node.next = self.head
@@ -150,14 +144,11 @@ class LiteralTableList:
 
     def search(self, literal_name: str) -> LiteralData | None:
         """
-        Search for a literal by its name in the literal table after normalizing the name.
-        
+        Search for a literal by its name in the literal table.
+
         :param literal_name: The name of the literal to search for.
         :return: The LiteralData object if found, or None if not found.
         """
-        # Normalize the literal name to uppercase for consistent search
-        literal_name = literal_name.upper()
-        
         current = self.head
         while current is not None:
             if current.literal_data.name == literal_name:
@@ -410,22 +401,26 @@ class ExpressionParser:
 
             # Handle literals (e.g., "=0X5A")
         if line.startswith('='):
-            literal_name = line.upper()  # Normalize to uppercase
+            literal_name = line
             literal = self.literal_table.search(literal_name)
             if not literal:
                 try:
                     # Handle hexadecimal literals
                     if literal_name.upper().startswith("=0X"):
-                        literal_value = literal_name[3:].upper()  # Convert value to uppercase
+                        literal_value = literal_name[3:]  # Remove the "=0X" part
+                        literal_value = literal_value.upper()
+                        # Assuming hexadecimal literal, length is two characters per byte
                         literal_length = len(literal_value) // 2  # Two characters per byte
 
                     # Handle character literals
                     elif literal_name.upper().startswith("=0C"):
-                        char_sequence = literal_name[3:]  # Extract char sequence
-                        literal_value = ''.join(f"{ord(c):02X}" for c in char_sequence.upper())
+                        char_sequence = literal_name[3:]  # Remove the "=0C" part
+                        literal_value = ''.join(f"{ord(c):02X}" for c in char_sequence)
+                        # Length is number of characters
                         literal_length = len(char_sequence)
 
                     else:
+                        # Invalid literal format
                         parsed_expr['error'] = f"Invalid literal format: {literal_name}"
                         return parsed_expr
 
@@ -921,7 +916,7 @@ def main():
     literal_table = LiteralTableList(log_handler)
 
     file_explorer = FileExplorer()
-    filename = sys.argv[1] if len(sys.argv) > 1 else "EXPR.DAT"
+    filename = sys.argv[1] if len(sys.argv) > 1 else "EXPRESS.DAT"
     expressions_lines = file_explorer.process_file(filename)
 
     # Step 1: Parse the expressions
