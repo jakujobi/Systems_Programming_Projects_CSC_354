@@ -625,18 +625,27 @@ class ExpressionResults:
 
     def display_results(self):
         """
-        Formats and outputs the expression evaluation results.
+        Formats and outputs the expression evaluation results in a table-like format.
         Logs actions when results are displayed.
         """
-        print("Expression evaluation results:")
-        print("EXPRESSION | VALUE | RELOCATABLE | N-Bit | I-Bit | X-Bit")
+        if not self.evaluated_expressions:
+            print("No expressions to evaluate.")
+            return
+        
+        # Table Header
+        print("┏" + ("━" * 66) + "┓")
+        print(f"┃{'EXPRESSION RESULTS':^66}┃")
+        print("┣" + ("━" * 20) + "┯" + ("━" * 7) + "┯" + ("━" * 13) + "┯" + ("━" * 7) + "┯" + ("━" * 7) + "┯" + ("━" * 7) + "┫")
+        print(f"┃ {'Expression':^18} │ {'Value':^5} │ {'Relocatable':^10} │ {'N-Bit':^3} │ {'I-Bit':^3} │ {'X-Bit':^3} ┃")
+        print("┣" + ("━" * 20) + "┿" + ("━" * 7) + "┿" + ("━" * 13) + "┿" + ("━" * 7) + "┿" + ("━" * 7) + "┿" + ("━" * 7) + "┫")
 
+        # Table Body
         for expr in self.evaluated_expressions:
             result_line = self.format_expression_result(expr)
             print(result_line)
-            self.log_handler.log_action(f"Displayed result for: {expr['original_expression']}")
-            if expr['error']:
-                print(f"Error: {expr['error']}")
+
+        # Table Footer
+        print("┗" + ("━" * 20) + "┷" + ("━" * 7) + "┷" + ("━" * 13) + "┷" + ("━" * 7) + "┷" + ("━" * 7) + "┷" + ("━" * 7) + "┛")
 
     def format_expression_result(self, evaluated_expr):
         """
@@ -649,12 +658,12 @@ class ExpressionResults:
             str: Formatted string for display.
         """
         if evaluated_expr['error']:
-            return f"{evaluated_expr['original_expression']} | ERROR | - | - | - | -"
+            return f"┃ {evaluated_expr['original_expression']:^18} │ {'ERROR':^5} │ {'-':^11} │ {'-':^5} │ {'-':^5} │ {'-':^5} ┃"
         else:
-            value_hex = hex(evaluated_expr['value']).upper()
+            value = evaluated_expr['value']
             relocatable = 'RELATIVE' if evaluated_expr['relocatable'] else 'ABSOLUTE'
-            return (f"{evaluated_expr['original_expression']} | {value_hex} | {relocatable} | "
-                    f"{evaluated_expr['n_bit']} | {evaluated_expr['i_bit']} | {evaluated_expr['x_bit']}")
+            return (f"┃ {evaluated_expr['original_expression']:^18} │ {value:^5} │ {relocatable:^11} │ "
+                    f"{evaluated_expr['n_bit']:^5} │ {evaluated_expr['i_bit']:^5} │ {evaluated_expr['x_bit']:^5} ┃")
 
 
 
@@ -813,12 +822,6 @@ def main():
 
     symbol_table_driver.build_symbol_table()
     symbol_table = symbol_table_driver.symbol_table
-    # # Initialize a simulated symbol table
-    # symbol_table = {
-    #     'RED': {'value': 13, 'rflag': True},
-    #     'WHITE': {'value': 5, 'rflag': False},
-    #     'GREEN': {'value': 20, 'rflag': True}
-    # }
 
     # Initialize the literal table
     literal_table = LiteralTableList(log_handler)
@@ -826,23 +829,6 @@ def main():
     file_explorer = FileExplorer()
     filename = sys.argv[1] if len(sys.argv) > 1 else "EXPRESS.DAT"
     expressions_lines = file_explorer.process_file(filename)
-    # Sample expressions (some with literals and symbols)
-    # expressions_lines = [
-    # "RED  ",
-    # "PURPLE + #17",
-    # "@BLACK",
-    # "#WHITE",
-    # "WHITE,X",
-    # "22",
-    # "=0X5A",
-    # "PINK + #3",
-    # "=0X5A",
-    # "PINK - #3",
-    # "@#25 + RED",
-    # "=0C5A",
-    # "#7"
-    # ]
-    
 
     # Step 1: Parse the expressions
     parser = ExpressionParser(expressions_lines, literal_table, log_handler)
