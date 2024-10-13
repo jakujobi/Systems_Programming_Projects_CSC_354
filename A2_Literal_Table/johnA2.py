@@ -907,7 +907,7 @@ def main():
     literal_table = LiteralTableList(log_handler)
 
     file_explorer = FileExplorer()
-    filename = sys.argv[1] if len(sys.argv) > 1 else "EXPRESS.DAT"
+    filename = sys.argv[1] if len(sys.argv) > 1 else "EXPR.DAT"
     expressions_lines = file_explorer.process_file(filename)
 
     # Step 1: Parse the expressions
