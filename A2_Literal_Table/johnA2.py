@@ -197,7 +197,6 @@ class LiteralTableList:
 
 
 
-
 class ErrorLogHandler:
     """
     Class to handle both logging actions and error messages throughout the program.
