@@ -144,7 +144,7 @@ Below is a detailed breakdown of the expression types and their addressing modes
   - Describe each error clearly and indicate the component that caused it.
   - **Continue processing** after encountering an error; handle each line of the data file.
 ---
-## Expression Processing Example
+## Expression Processing Expected results
 ### SYMS.DAT File
 
 | **SYMBOL** | **VALUE** | **RFLAG** |
@@ -196,7 +196,7 @@ When a symbol is found, its attribute values are fetched from the **symbol table
 | #7             | 7         | ABSOLUTE        | 0         | 1         | 0         |
 
 ---
-## Literal Table Example
+## Literal Table Result
 
 | **NAME**  | **VALUE** | **LENGTH** | **ADDRESS** |
 |-----------|-----------|-----------|-------------|
