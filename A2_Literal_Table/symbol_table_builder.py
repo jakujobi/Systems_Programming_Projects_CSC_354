@@ -203,6 +203,14 @@ class SymbolTable:
             else:
                 self._insert(current_node.right, symbol_data)
 
+    def get(self, operand):
+        # Symbol lookup from the symbol table
+        symbol = self.search(operand)  # Search the table for the symbol
+        if symbol:
+            return symbol.value, symbol.rflag, None
+        else:
+            return None, None, f"Undefined symbol: {operand}"
+
     def search(self, symbol):
         """
         /********************************************************************
@@ -225,7 +233,9 @@ class SymbolTable:
         result = self._search(self.root, symbol.upper()[:4])
         if result is None:
             print(f"Symbol '{symbol.upper()[:4]}' not found.")
+            return None
         return result
+        # return {'value': result.value, 'rflag': result.rflag}
 
     
     def _search(self, current_node, symbol):
@@ -1147,6 +1157,7 @@ class SymbolTableDriver:
         ***  wants to view the symbol table after processing SYMS.DAT.      ***
         ********************************************************************/
         """
+        self.symbol_table = SymbolTable()
         try:
             print("\nProcessing SYMS.DAT file...")
             print("_" * 50)                
