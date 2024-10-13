@@ -18,6 +18,10 @@
 ***                                                                                 ***
 **************************************************************************************/
 """
+
+# run 
+# cd .\Systems_Programming_Projects_CSC_354\A2_Literal_Table; python johnA2.py Express.DAT
+
 import sys
 import os
 from symbol_table_builder import SymbolTableDriver, SymbolData, SymbolTable, Validator, FileExplorer
@@ -121,6 +125,22 @@ class LiteralTableList:
             current = current.next
         return False
 
+    def search(self, literal_name: str) -> LiteralData | None:
+        """
+        Search for a literal by its name in the literal table.
+
+        :param literal_name: The name of the literal to search for.
+        :return: The LiteralData object if found, or None if not found.
+        """
+        current = self.head
+        while current is not None:
+            if current.literal_data.name == literal_name:
+                self.log_handler.log_action(f"Found literal '{literal_name}' in the table.")
+                return current.literal_data
+            current = current.next
+        self.log_handler.log_action(f"Literal '{literal_name}' not found in the table.")
+        return None
+
     def update_addresses(self, start_address: int = 0):
         """
         Assign addresses to literals sequentially. If the table is empty, log an error.
@@ -151,33 +171,29 @@ class LiteralTableList:
         if self.head is None:
             print("Literal table is empty. No literals to display.")
             return
-
-        print("LITERAL TABLE:")
-        print(f"{'Literal':<15} {'Value':<15} {'Length':<10} {'Address':<10}")
-        print("="*50)
-
+        print("┏" + ("━" * 50) + "┓")
+        print(f"┃{' LITERAL TABLE':^50}┃")
+        print("┣" + ("━" * 15) + "┯" + ("━" * 15) + "┯" + ("━" * 8) + "┯" + ("━" * 9) + "┫")
+        print(f"┃ {'Literal':^13} │ {'Value':^13} │ {'Length':^6} │ {'Address':^7} ┃")
+        print("┣" + ("━" * 15) + "┿" + ("━" * 15) + "┿" + ("━" * 8) + "┿" + ("━" * 9) + "┫")        
         current = self.head
+        counter = 0
         while current:
             literal = current.literal_data
-            print(f"{literal.name:<15} {literal.value:<15} {literal.length:<10} {literal.address:<10}")
+            print(f"┃ {literal.name:^13} │ {literal.value:^13} │ {literal.length:^6} │ {literal.address:^7} ┃")
+            counter += 1
+            if counter % 18 == 0:
+                self.press_continue()
             current = current.next
+        print("┗" + ("━" * 15) + "┷" + ("━" * 15) + "┷" + ("━" * 8) + "┷" + ("━" *9) + "┛")
 
-
-    def search(self, literal_name: str) -> LiteralData | None:
+    def press_continue(self):
         """
-        Search for a literal by its name in the literal table.
-
-        :param literal_name: The name of the literal to search for.
-        :return: The LiteralData object if found, or None if not found.
+        Pause the program and wait for the user to press Enter before continuing.
         """
-        current = self.head
-        while current is not None:
-            if current.literal_data.name == literal_name:
-                self.log_handler.log_action(f"Found literal '{literal_name}' in the table.")
-                return current.literal_data
-            current = current.next
-        self.log_handler.log_action(f"Literal '{literal_name}' not found in the table.")
-        return None
+        input("Press Enter to continue...")
+        print("\033[F\033[K", end='')
+
 
 
 
