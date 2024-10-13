@@ -1173,7 +1173,7 @@ class SymbolTableDriver:
             while True:
                 print("\n")
                 user_choice = input("Do you want to view the current symbol table? (y/n): ").strip().lower()
-                if user_choice == 'y':
+                if user_choice == 'y' or user_choice == "":
                     self.view()
                     print("\n")
                     break
