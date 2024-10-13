@@ -421,7 +421,7 @@ class ExpressionEvaluator:
     
     Attributes:
         parsed_expressions (list): List of parsed expressions from ExpressionParser.
-        symbol_table (dict): A dictionary representing the symbol table.
+        symbol_table (SymbolTable): Reference to the symbol table.
         literal_table (LiteralTableList): An object handling literal management.
         evaluated_expressions (list): List of evaluated expressions with their results.
         log_handler (ErrorLogHandler): Reference to the error log handler.
@@ -433,7 +433,7 @@ class ExpressionEvaluator:
         
         Args:
             parsed_expressions (list): List of parsed expressions.
-            symbol_table (dict): Symbol table containing symbols and their values.
+            symbol_table (SymbolTable): Reference to the symbol table.
             literal_table (LiteralTableList): Literal table for managing literals.
             log_handler (ErrorLogHandler): Reference to the error log handler.
         """
@@ -553,12 +553,11 @@ class ExpressionEvaluator:
             else:
                 return None, None, f"Literal '{operand}' not found in the literal table."
         else:
-            # Symbol lookup
-            symbol = self.symbol_table.get(operand)
-            if symbol:
-                return symbol['value'], symbol['rflag'], None
-            else:
-                return None, None, f"Undefined symbol: {operand}"
+            # Symbol lookup using SymbolTable.get()
+            value, rflag, error = self.symbol_table.get(operand)
+            if error:
+                return None, None, error
+            return value, rflag, None
 
     def evaluate_rflag(self, rflag1, operator, rflag2):
         """
@@ -600,6 +599,7 @@ class ExpressionEvaluator:
             list: List of evaluated expressions with results.
         """
         return self.evaluated_expressions
+
 
 
 
@@ -809,28 +809,40 @@ class LiteralTableDriver:
 def main():
     # Initialize the error log handler
     log_handler = ErrorLogHandler()
+    symbol_table_driver = SymbolTableDriver()  # Use SymbolTableDriver to manage symbol table
 
-    # Initialize a simulated symbol table
-    symbol_table = {
-        'RED': {'value': 13, 'rflag': True},
-        'WHITE': {'value': 5, 'rflag': False},
-        'GREEN': {'value': 20, 'rflag': True}
-    }
+    symbol_table_driver.build_symbol_table()
+    symbol_table = symbol_table_driver.symbol_table
+    # # Initialize a simulated symbol table
+    # symbol_table = {
+    #     'RED': {'value': 13, 'rflag': True},
+    #     'WHITE': {'value': 5, 'rflag': False},
+    #     'GREEN': {'value': 20, 'rflag': True}
+    # }
 
     # Initialize the literal table
     literal_table = LiteralTableList(log_handler)
 
+    file_explorer = FileExplorer()
+    filename = sys.argv[1] if len(sys.argv) > 1 else "EXPRESS.DAT"
+    expressions_lines = file_explorer.process_file(filename)
     # Sample expressions (some with literals and symbols)
-    expressions_lines = [
-        "RED",              # Symbol only
-        "WHITE + #17",      # Symbol + immediate value
-        "@GREEN",           # Indirect addressing mode
-        "GREEN,X",          # Indexed addressing mode
-        "=0X5A",            # Hexadecimal literal
-        "RED + =0CABC",     # Symbol + character literal
-        "=0X5A + WHITE",    # Literal + symbol
-        "INVALID_EXPR + 15" # Invalid symbol
-    ]
+    # expressions_lines = [
+    # "RED  ",
+    # "PURPLE + #17",
+    # "@BLACK",
+    # "#WHITE",
+    # "WHITE,X",
+    # "22",
+    # "=0X5A",
+    # "PINK + #3",
+    # "=0X5A",
+    # "PINK - #3",
+    # "@#25 + RED",
+    # "=0C5A",
+    # "#7"
+    # ]
+    
 
     # Step 1: Parse the expressions
     parser = ExpressionParser(expressions_lines, literal_table, log_handler)
