@@ -171,23 +171,46 @@ class LiteralTableList:
         if self.head is None:
             print("Literal table is empty. No literals to display.")
             return
-        print("┏" + ("━" * 50) + "┓")
-        print(f"┃{' LITERAL TABLE':^50}┃")
-        print("┣" + ("━" * 15) + "┯" + ("━" * 15) + "┯" + ("━" * 8) + "┯" + ("━" * 9) + "┫")
-        print(f"┃ {'Literal':^13} │ {'Value':^13} │ {'Length':^6} │ {'Address':^7} ┃")
-        print("┣" + ("━" * 15) + "┿" + ("━" * 15) + "┿" + ("━" * 8) + "┿" + ("━" * 9) + "┫")        
+    
+        # Define column widths
+        Lit = 15
+        Val = 15
+        Len = 8
+        Addr = 9
+    
+        self.display_literals_header(Lit, Val, Len, Addr)
+        self.display_literals_body(Lit, Val, Len, Addr)
+    
+    def display_literals_header(self, Lit, Val, Len, Addr):
+        """
+        Display the header for the literal table.
+        """
+        total_width = Lit + Val + Len + Addr + 3
+        print("┏" + ("━" * total_width) + "┓")
+        print(f"┃{' LITERAL TABLE':^{total_width}}┃")
+        print("┣" + ("━" * Lit) + "┯" + ("━" * Val) + "┯" + ("━" * Len) + "┯" + ("━" * Addr) + "┫")
+        print(f"┃ {'Literal':^{Lit - 2}} │ {'Value':^{Val - 2}} │ {'Length':^{Len - 2}} │ {'Address':^{Addr - 2}} ┃")
+        print("┣" + ("━" * Lit) + "┿" + ("━" * Val) + "┿" + ("━" * Len) + "┿" + ("━" * Addr) + "┫")
+    
+    def display_literals_body(self, Lit, Val, Len, Addr):
+        """
+        Display the body of the literal table, pausing every 18 lines.
+        """
         current = self.head
         counter = 0
+    
         while current:
             literal = current.literal_data
             address_display = literal.address if literal.address is not None else "N/A"  # Handle NoneType address
-            print(f"┃ {literal.name:^13} │ {literal.value:^13} │ {literal.length:^6} │ {address_display:^7} ┃")
+            print(f"┃ {literal.name:^{Lit - 2}} │ {literal.value:^{Val - 2}} │ {literal.length:^{Len - 2}} │ {address_display:^{Addr - 2}} ┃")
             counter += 1
             if counter % 18 == 0:
                 self.press_continue()
             current = current.next
-        print("┗" + ("━" * 15) + "┷" + ("━" * 15) + "┷" + ("━" * 8) + "┷" + ("━" * 9) + "┛")
-
+    
+        total_width = Lit + Val + Len + Addr + 3
+        print("┗" + ("━" * Lit) + "┷" + ("━" * Val) + "┷" + ("━" * Len) + "┷" + ("━" * Addr) + "┛")
+    
     def press_continue(self):
         """
         Pause the program and wait for the user to press Enter before continuing.
@@ -345,20 +368,30 @@ class ExpressionParser:
             parsed_expr['indexing'] = True
             line = line.replace(',X', '').strip()
 
-        # Handle literals (e.g., "=0X5A")
+            # Handle literals (e.g., "=0X5A")
         if line.startswith('='):
             literal_name = line
             literal = self.literal_table.search(literal_name)
             if not literal:
                 try:
-                    # Extract the value part after '=0X' or '=0x'
+                    # Handle hexadecimal literals
                     if literal_name.upper().startswith("=0X"):
                         literal_value = literal_name[3:]  # Remove the "=0X" part
-                    else:
-                        literal_value = literal_name[1:]  # Handle other possible cases
+                        literal_value = literal_value.upper()
+                        # Assuming hexadecimal literal, length is two characters per byte
+                        literal_length = len(literal_value) // 2  # Two characters per byte
 
-                    # Assuming hexadecimal literal, length is two characters per byte
-                    literal_length = len(literal_value) // 2  # Two characters per byte
+                    # Handle character literals
+                    elif literal_name.upper().startswith("=0C"):
+                        char_sequence = literal_name[3:]  # Remove the "=0C" part
+                        literal_value = ''.join(f"{ord(c):02X}" for c in char_sequence)
+                        # Length is number of characters
+                        literal_length = len(char_sequence)
+
+                    else:
+                        # Invalid literal format
+                        parsed_expr['error'] = f"Invalid literal format: {literal_name}"
+                        return parsed_expr
 
                     # Insert literal into the literal table
                     new_literal = LiteralData(name=literal_name, value=literal_value, length=literal_length)
@@ -545,9 +578,8 @@ class ExpressionEvaluator:
             # Literal handling using the literal table
             literal = self.literal_table.search(operand)
             if literal:
-                # Convert the hexadecimal literal value (stored as string) to an integer
                 try:
-                    return int(literal.value, 16), False, None  # Literal values are absolute
+                    return int(literal.value, 16), False, None  # Convert from hex to decimal
                 except ValueError as e:
                     return None, None, f"Invalid literal value '{literal.value}': {str(e)}"
             else:
@@ -558,6 +590,7 @@ class ExpressionEvaluator:
             if error:
                 return None, None, error
             return value, rflag, None
+
 
     def evaluate_rflag(self, rflag1, operator, rflag2):
         """
@@ -631,39 +664,56 @@ class ExpressionResults:
         if not self.evaluated_expressions:
             print("No expressions to evaluate.")
             return
-        
+    
         # Table Header
-        print("┏" + ("━" * 66) + "┓")
-        print(f"┃{'EXPRESSION RESULTS':^66}┃")
-        print("┣" + ("━" * 20) + "┯" + ("━" * 7) + "┯" + ("━" * 13) + "┯" + ("━" * 7) + "┯" + ("━" * 7) + "┯" + ("━" * 7) + "┫")
-        print(f"┃ {'Expression':^18} │ {'Value':^5} │ {'Relocatable':^10} │ {'N-Bit':^3} │ {'I-Bit':^3} │ {'X-Bit':^3} ┃")
-        print("┣" + ("━" * 20) + "┿" + ("━" * 7) + "┿" + ("━" * 13) + "┿" + ("━" * 7) + "┿" + ("━" * 7) + "┿" + ("━" * 7) + "┫")
-
+        Ex = 20
+        Va = 14
+        Re = 13
+        Ns = 7
+        Is = 7
+        Xs = 7
+        print("┏" + ("━" * (Ex + Va + Re + Ns + Is + Xs + 5)) + "┓")
+        print(f"┃{'EXPRESSION RESULTS':^{Ex + Va + Re + Ns + Is + Xs + 5}}┃")
+        print("┣" + ("━" * Ex) + "┯" + ("━" * Va) + "┯" + ("━" * Re) + "┯" + ("━" * Ns) + "┯" + ("━" * Is) + "┯" + ("━" * Xs) + "┫")
+        print(f"┃ {'Expression':^{Ex - 2}} │ {'Value':^{Va - 2}} │ {'Relocatable':^{Re - 2}} │ {'N-Bit':^{Ns - 2}} │ {'I-Bit':^{Is - 2}} │ {'X-Bit':^{Xs - 2}} ┃")
+        print("┣" + ("━" * Ex) + "┿" + ("━" * Va) + "┿" + ("━" * Re) + "┿" + ("━" * Ns) + "┿" + ("━" * Is) + "┿" + ("━" * Xs) + "┫")
+    
         # Table Body
         for expr in self.evaluated_expressions:
-            result_line = self.format_expression_result(expr)
+            result_line = self.format_expression_result(expr, Ex, Va, Re, Ns, Is, Xs)
             print(result_line)
-
+    
         # Table Footer
-        print("┗" + ("━" * 20) + "┷" + ("━" * 7) + "┷" + ("━" * 13) + "┷" + ("━" * 7) + "┷" + ("━" * 7) + "┷" + ("━" * 7) + "┛")
-
-    def format_expression_result(self, evaluated_expr):
+        print("┗" + ("━" * Ex) + "┷" + ("━" * Va) + "┷" + ("━" * Re) + "┷" + ("━" * Ns) + "┷" + ("━" * Is) + "┷" + ("━" * Xs) + "┛")
+    
+    def format_expression_result(self, evaluated_expr, Ex, Va, Re, Ns, Is, Xs):
         """
         Formats a single evaluated expression into a readable string.
         
         Args:
             evaluated_expr (dict): Evaluated expression with its results.
+            Ex (int): Width for the Expression column.
+            Va (int): Width for the Value column.
+            Re (int): Width for the Relocatable column.
+            Ns (int): Width for the N-Bit column.
+            Is (int): Width for the I-Bit column.
+            Xs (int): Width for the X-Bit column.
         
         Returns:
             str: Formatted string for display.
         """
         if evaluated_expr['error']:
-            return f"┃ {evaluated_expr['original_expression']:^18} │ {'ERROR':^5} │ {'-':^11} │ {'-':^5} │ {'-':^5} │ {'-':^5} ┃"
+            return f"┃ {evaluated_expr['original_expression']:^{Ex - 2}} │ {'ERROR':^{Va - 2}} │ {'-':^{Re - 2}} │ {'-':^{Ns - 2}} │ {'-':^{Is - 2}} │ {'-':^{Xs - 2}} ┃"
         else:
-            value = evaluated_expr['value']
+            # Check if the expression is a literal to display value in hex
+            if evaluated_expr['original_expression'].startswith('='):
+                value = f"0x{evaluated_expr['value']:X}"
+            else:
+                value = evaluated_expr['value']
             relocatable = 'RELATIVE' if evaluated_expr['relocatable'] else 'ABSOLUTE'
-            return (f"┃ {evaluated_expr['original_expression']:^18} │ {value:^5} │ {relocatable:^11} │ "
-                    f"{evaluated_expr['n_bit']:^5} │ {evaluated_expr['i_bit']:^5} │ {evaluated_expr['x_bit']:^5} ┃")
+            return (f"┃ {evaluated_expr['original_expression']:<{Ex - 2}} │ {value:^{Va - 2}} │ {relocatable:^{Re - 2}} │ "
+                    f"{evaluated_expr['n_bit']:<{Ns - 2}} │ {evaluated_expr['i_bit']:<{Is - 2}} │ {evaluated_expr['x_bit']:<{Xs - 2}} ┃")
+
 
 
 
@@ -846,7 +896,7 @@ def main():
 
     # Step 4: Display the literal table
     # Step 4: Update the literal table addresses (before displaying the table)
-    literal_table.update_addresses(start_address=0)
+    literal_table.update_addresses(start_address=1)
     print("\nLiteral Table:")
     literal_table.display_literals()
 
