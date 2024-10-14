@@ -347,8 +347,8 @@ Here’s a markdown version of the contents from **Assignment 2 Key**:
 | @three     | 7       | Relative    | 1   | 0   | 0   |
 | #Five      | 9       | Absolute    | 0   | 1   | 0   |
 | #three_123 | 7       | Relative    | 0   | 1   | 0   |
-| zx         | -25     | Absolute    | 1   | 1   | 1   |
-| threex     | 7       | Relative    | 1   | 1   | 1   |
+| z,x        | -25     | Absolute    | 1   | 1   | 1   |
+| three,x    | 7       | Relative    | 1   | 1   | 1   |
 | #5         | 5       | Absolute    | 0   | 1   | 0   |
 | #15        | 15      | Absolute    | 0   | 1   | 0   |
 | four-two   | -11     | Relative    | 1   | 1   | 0   |
@@ -358,14 +358,14 @@ Here’s a markdown version of the contents from **Assignment 2 Key**:
 | #17+four   | 12      | Relative    | 1   | 1   | 0   |
 | @four-two  | -11     | Relative    | 1   | 0   | 0   |
 | #two+#34   | 40      | Absolute    | 0   | 1   | 0   |
-| four-twox  | -11     | Relative    | 1   | 1   | 1   |
+| four-two,x | -11     | Relative    | 1   | 1   | 1   |
 | #32-#7     | 25      | Absolute    | 0   | 1   | 0   |
 | #32-#7     | 25      | Absolute    | 0   | 1   | 0   |
 | one+four   | T  +  T | ERROR       |     |     |     |
 | #20-four   | F  -  T | ERROR       |     |     |     |
-| @onex      | @ and x | ERROR       |     |     |     |
-| #onex      | # and x | ERROR       |     |     |     |
-| z!         | !       | ERROR       |     |     |     |
+| @one,x     | @ and x | ERROR       |     |     |     |
+| #one,x     | # and x | ERROR       |     |     |     |
+| z,!        | ,!      | ERROR       |     |     |     |
 | =C’123’    | C’123’  | ERROR       |     |     |     |
 | =0X123     | 123     | ERROR       |     |     |     |
 | =0XOUCH    | OUCH    | ERROR       |     |     |     |
