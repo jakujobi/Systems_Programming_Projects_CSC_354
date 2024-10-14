@@ -198,11 +198,11 @@ When a symbol is found, its attribute values are fetched from the **symbol table
 ---
 ## Literal Table Result
 
-| **NAME**  | **VALUE** | **LENGTH** | **ADDRESS** |
-|-----------|-----------|-----------|-------------|
-| =0CDEFG   | 44454647  | 4         | 1           |
-| =0X5A     | 5A        | 1         | 2           |
-| =0C5A     | 3541      | 2         | 3           |
+| **NAME** | **VALUE** | **LENGTH** | **ADDRESS** |
+| -------- | --------- | ---------- | ----------- |
+| =0C5A    | 3541      | 2          | 3           |
+| =0CDEFG  | 44454647  | 4          | 1           |
+| =0X5A    | 5A        | 1          | 2           |
 
 ---
 ## Notes
@@ -318,3 +318,70 @@ When a symbol is found, its attribute values are fetched from the **symbol table
         - Convert results to **hexadecimal** for output.
         - Example: The decimal value `25` should be displayed as `0x19`.
 ---
+
+
+# Test 2
+Here’s a markdown version of the contents from **Assignment 2 Key**:
+
+---
+
+# CSc 354 – Assignment #2 – Hamer – Due: 10-9-24
+
+### Grading
+- **Command Line Argument Usage**: 2
+- **Expressions (15 + 2)**: 17 (*)
+- **Invalid Expressions**: 8
+- **Literal Table (5 + 2)** – 5 Valid and 2 Duplicates: 7
+- **Error Message Detail**: 1
+- **Total**: 35
+
+---
+
+### Expressions Table
+
+| Expression | Value   | Relocatable | N   | I   | X   |
+| ---------- | ------- | ----------- | --- | --- | --- |
+| one        | 18      | Relative    | 1   | 1   | 0   |
+| Five_Six   | 9       | Absolute    | 1   | 1   | 0   |
+| @two       | 6       | Absolute    | 1   | 0   | 0   |
+| @three     | 7       | Relative    | 1   | 0   | 0   |
+| #Five      | 9       | Absolute    | 0   | 1   | 0   |
+| #three_123 | 7       | Relative    | 0   | 1   | 0   |
+| zx         | -25     | Absolute    | 1   | 1   | 1   |
+| threex     | 7       | Relative    | 1   | 1   | 1   |
+| #5         | 5       | Absolute    | 0   | 1   | 0   |
+| #15        | 15      | Absolute    | 0   | 1   | 0   |
+| four-two   | -11     | Relative    | 1   | 1   | 0   |
+| one-four   | 23      | Absolute    | 1   | 1   | 0   |
+| two+#34    | 40      | Absolute    | 1   | 1   | 0   |
+| four+#17   | 12      | Relative    | 1   | 1   | 0   |
+| #17+four   | 12      | Relative    | 1   | 1   | 0   |
+| @four-two  | -11     | Relative    | 1   | 0   | 0   |
+| #two+#34   | 40      | Absolute    | 0   | 1   | 0   |
+| four-twox  | -11     | Relative    | 1   | 1   | 1   |
+| #32-#7     | 25      | Absolute    | 0   | 1   | 0   |
+| #32-#7     | 25      | Absolute    | 0   | 1   | 0   |
+| one+four   | T  +  T | ERROR       |     |     |     |
+| #20-four   | F  -  T | ERROR       |     |     |     |
+| @onex      | @ and x | ERROR       |     |     |     |
+| #onex      | # and x | ERROR       |     |     |     |
+| z!         | !       | ERROR       |     |     |     |
+| =C’123’    | C’123’  | ERROR       |     |     |     |
+| =0X123     | 123     | ERROR       |     |     |     |
+| =0XOUCH    | OUCH    | ERROR       |     |     |     |
+
+---
+
+### Literal Table
+
+| Name        | Value        | Length | Address |
+| ----------- | ------------ | ------ | ------- |
+| =0Cfaces    | 6661636573   | 5      | 0       |
+| =0XE8       | E8           | 1      | 1       |
+| =0XCBA987   | CBA987       | 3      | 2       |
+| =0CFACES    | 4641434553   | 5      | 3       |
+| =0C{=””}    | 7B3D22227D   | 5      | 4       |
+
+---
+
+Let me know if you need further explanations or formatting adjustments!
