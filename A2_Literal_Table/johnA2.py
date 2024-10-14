@@ -259,6 +259,10 @@ class ErrorLogHandler:
         self.log_entries.append(f"[ACTION]: {message}")
         print(f"[ACTION]: {message}")
 
+        # Paginate after every 18 lines of actions
+        if len(self.log_entries) % 18 == 0:
+            self.paginate_output(self.log_entries, "Displaying Actions Log")
+
     def log_error(self, error_message: str, context_info: str = None):
         """
         Log an error message with optional context information for better clarity.
@@ -270,6 +274,11 @@ class ErrorLogHandler:
         self.error_log.append(full_message)
         print(full_message)  # Immediate feedback for critical errors
 
+        # Paginate after every 18 lines of errors
+        if len(self.error_log) % 18 == 0:
+            self.paginate_output(self.error_log, "Displaying Error Log")
+            
+            
     def display_log(self):
         """
         Ask the user if they want to view the log entries. Paginate if they agree.
@@ -474,7 +483,7 @@ class ExpressionParser:
                     parsed_expr['error'] = f"Failed to insert literal '{literal_name}': {str(e)}"
             else:
                 parsed_expr['operand1'] = literal_name
-                self.log_handler.log_action(f"Used existing literal '{literal_name}'")
+                self.log_handler.log_action(f"Literal '{literal_name}' already exists. Moving on...")
 
             return parsed_expr
 
