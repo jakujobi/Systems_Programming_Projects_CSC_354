@@ -272,25 +272,74 @@ class ErrorLogHandler:
 
     def display_log(self):
         """
-        Display all logged actions in a user-friendly format.
+        Ask the user if they want to view the log entries. Paginate if they agree.
         """
         if not self.log_entries:
             print("No actions have been logged.")
         else:
-            print("\nLog of Actions:")
-            print("=" * 50)
-            print("\n".join(self.log_entries))
+            if self.ask_to_display("Do you want to view the log entries?"):
+                print("\nLog of Actions:")
+                print("=" * 50)
+                self.paginate_output(self.log_entries, "Log of Actions")
 
     def display_errors(self):
         """
-        Display all logged error messages in a user-friendly format.
+        Ask the user if they want to view the error logs. Paginate if they agree.
         """
         if not self.error_log:
             print("No errors have been logged.")
         else:
-            print("\nError Log:")
-            print("=" * 50)
-            print("\n".join(f"{index + 1}. {error}" for index, error in enumerate(self.error_log)))
+            if self.ask_to_display("Do you want to view the error log?"):
+                print("\nError Log:")
+                print("=" * 50)
+                self.paginate_output(self.error_log, "Error Log")
+
+    def ask_to_display(self, question: str) -> bool:
+        """
+        Ask the user if they want to display the logs/errors with retry logic for invalid inputs.
+
+        :param question: The question to ask the user.
+        :return: True if the user agrees to display, False otherwise.
+        """
+        valid_yes = {'y', 'yes', '', 'Y', 'YES', 'YeS'}
+        valid_no = {'n', 'no', 'N', 'NO'}
+        retry_limit = 5
+        retries = 0
+
+        while retries < retry_limit:
+            user_input = input(f"{question} (y/n): ").strip()
+            if user_input in valid_yes:
+                return True
+            elif user_input in valid_no:
+                return False
+            else:
+                print("Invalid input. Please type 'y' for yes or 'n' for no.")
+                retries += 1
+
+        # If the user reaches the retry limit, display an "annoyed" message and skip the logs/errors
+        print("Seriously? You can't just type 'y' or 'n'? Fine, I won't show it.")
+        return False
+
+    def paginate_output(self, log_entries, header: str):
+        """
+        Paginate the log/error output to prevent excessive scrolling.
+        
+        :param log_entries: The log or error entries to be displayed.
+        :param header: The header for the log/error output.
+        """
+        counter = 0
+        for entry in log_entries:
+            print(entry)
+            counter += 1
+            if counter % 18 == 0:
+                self.press_continue()
+
+    def press_continue(self):
+        """
+        Pause the program and wait for the user to press Enter before continuing.
+        """
+        input("Press Enter to continue...")
+        print("\033[F\033[K", end='')  # Clear the line after pressing enter to clean the screen
 
     def clear_logs(self):
         """
@@ -660,8 +709,6 @@ class ExpressionEvaluator:
         return self.evaluated_expressions
 
 
-
-
 class ExpressionResults:
     """
     Class responsible for formatting and outputting evaluated expression results.
@@ -684,8 +731,7 @@ class ExpressionResults:
 
     def display_results(self, include_literals=True):
         """
-        Formats and outputs the expression evaluation results in a table-like format.
-        Allows toggling the inclusion of literals in the display.
+        Display all the evaluated expression results in a paginated format.
         
         Args:
             include_literals (bool): If False, literals are excluded from the results.
@@ -694,35 +740,57 @@ class ExpressionResults:
             print("No expressions to evaluate.")
             return
 
-        # Table Header
+        # Define column widths
         Ex = 20
         Va = 14
         Re = 13
         Ns = 7
         Is = 7
         Xs = 7
+
+        # Display the header first
+        self.display_results_header(Ex, Va, Re, Ns, Is, Xs)
+
+        # Display body with pagination
+        self.display_results_body(Ex, Va, Re, Ns, Is, Xs, include_literals)
+    
+    def display_results_header(self, Ex, Va, Re, Ns, Is, Xs):
+        """
+        Display the header for the expression results.
+        """
         total_width = Ex + Va + Re + Ns + Is + Xs + 5
         print("┏" + ("━" * total_width) + "┓")
         print(f"┃{'EXPRESSION RESULTS':^{total_width}}┃")
         print("┣" + ("━" * Ex) + "┯" + ("━" * Va) + "┯" + ("━" * Re) + "┯" + ("━" * Ns) + "┯" + ("━" * Is) + "┯" + ("━" * Xs) + "┫")
         print(f"┃ {'Expression':<{Ex - 2}} │ {'Value':^{Va - 2}} │ {'Relocatable':^{Re - 2}} │ {'N-Bit':^{Ns - 2}} │ {'I-Bit':^{Is - 2}} │ {'X-Bit':^{Xs - 2}} ┃")
         print("┣" + ("━" * Ex) + "┿" + ("━" * Va) + "┿" + ("━" * Re) + "┿" + ("━" * Ns) + "┿" + ("━" * Is) + "┿" + ("━" * Xs) + "┫")
-
-        # Table Body
+    
+    def display_results_body(self, Ex, Va, Re, Ns, Is, Xs, include_literals):
+        """
+        Display the body of the results in paginated format.
+        Pauses every 18 lines.
+        """
+        counter = 0
+        
         for expr in self.evaluated_expressions:
             # Skip literals if include_literals is False
             if not include_literals and expr['original_expression'].startswith('='):
                 continue
+            
             result_line = self.format_expression_result(expr, Ex, Va, Re, Ns, Is, Xs)
             print(result_line)
+            counter += 1
 
-        # Table Footer
+            if counter % 18 == 0:
+                self.press_continue()
+
+        # Display footer
+        total_width = Ex + Va + Re + Ns + Is + Xs + 5
         print("┗" + ("━" * Ex) + "┷" + ("━" * Va) + "┷" + ("━" * Re) + "┷" + ("━" * Ns) + "┷" + ("━" * Is) + "┷" + ("━" * Xs) + "┛")
-
     
     def format_expression_result(self, evaluated_expr, Ex, Va, Re, Ns, Is, Xs):
         """
-        Formats a single evaluated expression into a readable string.
+        Format a single evaluated expression into a readable string.
         
         Args:
             evaluated_expr (dict): Evaluated expression with its results.
@@ -747,8 +815,13 @@ class ExpressionResults:
             relocatable = 'RELATIVE' if evaluated_expr['relocatable'] else 'ABSOLUTE'
             return (f"┃ {evaluated_expr['original_expression']:<{Ex - 2}} │ {value:^{Va - 2}} │ {relocatable:^{Re - 2}} │ "
                     f"{evaluated_expr['n_bit']:^{Ns - 2}} │ {evaluated_expr['i_bit']:^{Is - 2}} │ {evaluated_expr['x_bit']:^{Xs - 2}} ┃")
-
-
+    
+    def press_continue(self):
+        """
+        Pause the program and wait for the user to press Enter before continuing.
+        """
+        input("Press Enter to continue...")
+        print("\033[F\033[K", end='')
 
 
 
@@ -778,8 +851,7 @@ class LiteralTableDriver:
 
             if expressions:
                 parsed_expressions = self.parse_expressions(expressions)
-                self.evaluate_and_insert_literals(parsed_expressions)
-                self.update_addresses()
+                self.evaluate_expressions(parsed_expressions)
                 self.display_results()
         except Exception as e:
             self.log_handler.log_error(f"Unexpected error occurred: {e}")
@@ -791,6 +863,7 @@ class LiteralTableDriver:
         try:
             self.log_handler.log_action("Building symbol table from SYMS.DAT")
             self.symbol_table_driver.build_symbol_table()
+            self.symbol_table = self.symbol_table_driver.symbol_table
             self.log_handler.log_action("Symbol table building complete")
         except Exception as e:
             self.log_handler.log_error(f"Error while building symbol table: {e}")
@@ -801,7 +874,7 @@ class LiteralTableDriver:
         
         :return: The name of the expression file.
         """
-        return sys.argv[1] if len(sys.argv) > 1 else "EXPRESS.DAT"
+        return sys.argv[1] if len(sys.argv) > 1 else "EXPR.DAT"
 
     def load_expressions(self, file_name: str) -> list[str]:
         """
@@ -830,51 +903,30 @@ class LiteralTableDriver:
         :param expressions: List of raw expression strings.
         :return: A list of parsed expression dictionaries.
         """
-        parser = ExpressionParser(Validator(), self.log_handler)
-        parsed_expressions = parser.parse_expressions(expressions)
+        parser = ExpressionParser(expressions, self.literal_table, self.log_handler)
+        parser.parse_all()
+        parsed_expressions = parser.get_parsed_expressions()
         self.log_handler.log_action(f"Parsed {len(parsed_expressions)} expressions.")
         return parsed_expressions
 
-    def evaluate_and_insert_literals(self, parsed_expressions: list[dict]):
+    def evaluate_expressions(self, parsed_expressions: list[dict]):
         """
         Evaluate parsed expressions and update the literal table with new literals.
 
         :param parsed_expressions: A list of parsed expression components.
         """
         evaluator = ExpressionEvaluator(
+            parsed_expressions,
             self.symbol_table_driver.symbol_table,
             self.literal_table,
-            Validator(),
             self.log_handler
         )
-        evaluation_results = evaluator.evaluate_expressions(parsed_expressions)
+        evaluator.evaluate_all()
+        self.evaluated_expressions = evaluator.get_evaluated_expressions()
 
-        for result in evaluation_results:
-            if result['expression'].startswith('='):
-                literal = LiteralData(result['expression'], result['value'], result['length'])
-                self.literal_table.insert(literal)
-
+        # Update literal addresses
+        self.literal_table.update_addresses(start_address=0)
         self.log_handler.log_action("Expressions evaluated and literal table updated.")
-
-    def update_addresses(self):
-        """
-        Update the addresses of the literals in the table, starting from a base address.
-        """
-        try:
-            start_address = 0
-            self.literal_table.update_addresses(start_address)
-            self.log_handler.log_action(f"Updated addresses starting from {start_address}.")
-        except Exception as e:
-            self.log_handler.log_error(f"Unexpected error while updating addresses: {e}")
-
-    def display_results(self):
-        """
-        Display all the results including literals, logs, and errors with paginated output.
-        """
-        self.paginate_output(self.literal_table.display_literals, "Displaying Literal Table:")
-        print ("\n\nLog Summary")
-        self.paginate_output(self.log_handler.display_log, "Displaying Log Entries:")
-        self.paginate_output(self.log_handler.display_errors, "Displaying Errors:")
 
     def paginate_output(self, display_function, header: str):
         """
@@ -888,59 +940,31 @@ class LiteralTableDriver:
         display_function()
         input("Press Enter to continue...")
         print("\033[F\033[K", end='')
+        
 
 
-# # Main function
-# if __name__ == "__main__":
-#     # Create an instance of LiteralTableDriver and run it
-#     expression_file = sys.argv[1] if len(sys.argv) > 1 else None
-#     driver = LiteralTableDriver()
-#     driver.run(expression_file)
+    def display_results(self):
+        """
+        Display all the results including literals, logs, and errors with paginated output.
+        """
+        # Display evaluated expressions
+        results_display = ExpressionResults(self.evaluated_expressions, self.log_handler)
+        self.paginate_output(lambda: results_display.display_results(include_literals=False), "Displaying Evaluated Expressions:")
+
+        # Display the literal table
+        self.paginate_output(self.literal_table.display_literals, "Displaying Literal Table:")
+
+        # Display logs and errors
+        self.paginate_output(self.log_handler.display_log, "Displaying Log Entries:")
+        self.paginate_output(self.log_handler.display_errors, "Displaying Errors:")
 
 
 
 def main():
-    # Initialize the error log handler
-    log_handler = ErrorLogHandler()
-    symbol_table_driver = SymbolTableDriver()  # Use SymbolTableDriver to manage symbol table
-
-    symbol_table_driver.build_symbol_table()
-    symbol_table = symbol_table_driver.symbol_table
-
-    # Initialize the literal table
-    literal_table = LiteralTableList(log_handler)
-
-    file_explorer = FileExplorer()
-    filename = sys.argv[1] if len(sys.argv) > 1 else "EXPR.DAT"
-    expressions_lines = file_explorer.process_file(filename)
-
-    # Step 1: Parse the expressions
-    parser = ExpressionParser(expressions_lines, literal_table, log_handler)
-    parser.parse_all()
-    parsed_expressions = parser.get_parsed_expressions()
-
-    # Step 2: Evaluate the parsed expressions
-    evaluator = ExpressionEvaluator(parsed_expressions, symbol_table, literal_table, log_handler)
-    evaluator.evaluate_all()
-    evaluated_expressions = evaluator.get_evaluated_expressions()
-
-    # Step 3: Display the evaluation results
-    results_display = ExpressionResults(evaluated_expressions, log_handler)
-    # Set include_literals to False to exclude literals from the output
-    results_display.display_results(include_literals=False)
-
-    # Step 4: Update the literal table addresses (before displaying the table)
-    literal_table.update_addresses(start_address=0)
-    print("\nLiteral Table:")
-    literal_table.display_literals()
-
-    # Step 5: Display the logs (actions and errors)
-    print("\nLogs:")
-    log_handler.display_log()
-
-    print("\nError Logs:")
-    log_handler.display_errors()
-
+    # Create an instance of LiteralTableDriver and run it
+    expression_file = sys.argv[1] if len(sys.argv) > 1 else None
+    driver = LiteralTableDriver()
+    driver.run(expression_file)
 
 
 if __name__ == "__main__":
