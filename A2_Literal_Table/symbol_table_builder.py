@@ -260,7 +260,7 @@ class SymbolTable:
         if current_node is None:
             return None  # Symbol not found
         if symbol == current_node.symbol_data.symbol:
-            print("Symbol Found")
+            print(f"[TABLE] Symbol '{symbol}' found in symbol table")
             return current_node.symbol_data
         elif symbol < current_node.symbol_data.symbol:
             return self._search(current_node.left, symbol)
