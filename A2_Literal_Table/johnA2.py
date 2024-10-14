@@ -208,7 +208,7 @@ class LiteralTableList:
         print("┏" + ("━" * total_width) + "┓")
         print(f"┃{' LITERAL TABLE':^{total_width}}┃")
         print("┣" + ("━" * Lit) + "┯" + ("━" * Val) + "┯" + ("━" * Len) + "┯" + ("━" * Addr) + "┫")
-        print(f"┃ {'Literal':^{Lit - 2}} │ {'Value':^{Val - 2}} │ {'Length':^{Len - 2}} │ {'Address':^{Addr - 2}} ┃")
+        print(f"┃ {'Literal':<{Lit - 2}} │ {'Value':^{Val - 2}} │ {'Length':^{Len - 2}} │ {'Address':^{Addr - 2}} ┃")
         print("┣" + ("━" * Lit) + "┿" + ("━" * Val) + "┿" + ("━" * Len) + "┿" + ("━" * Addr) + "┫")
     
     def display_literals_body(self, Lit, Val, Len, Addr):
@@ -221,7 +221,7 @@ class LiteralTableList:
         while current:
             literal = current.literal_data
             address_display = literal.address if literal.address is not None else "N/A"  # Handle NoneType address
-            print(f"┃ {literal.name:^{Lit - 2}} │ {literal.value:^{Val - 2}} │ {literal.length:^{Len - 2}} │ {address_display:^{Addr - 2}} ┃")
+            print(f"┃ {literal.name:<{Lit - 2}} │ {literal.value:^{Val - 2}} │ {literal.length:^{Len - 2}} │ {address_display:^{Addr - 2}} ┃")
             counter += 1
             if counter % 18 == 0:
                 self.press_continue()
@@ -701,7 +701,7 @@ class ExpressionResults:
         print("┏" + ("━" * total_width) + "┓")
         print(f"┃{'EXPRESSION RESULTS':^{total_width}}┃")
         print("┣" + ("━" * Ex) + "┯" + ("━" * Va) + "┯" + ("━" * Re) + "┯" + ("━" * Ns) + "┯" + ("━" * Is) + "┯" + ("━" * Xs) + "┫")
-        print(f"┃ {'Expression':^{Ex - 2}} │ {'Value':^{Va - 2}} │ {'Relocatable':^{Re - 2}} │ {'N-Bit':^{Ns - 2}} │ {'I-Bit':^{Is - 2}} │ {'X-Bit':^{Xs - 2}} ┃")
+        print(f"┃ {'Expression':<{Ex - 2}} │ {'Value':^{Va - 2}} │ {'Relocatable':^{Re - 2}} │ {'N-Bit':^{Ns - 2}} │ {'I-Bit':^{Is - 2}} │ {'X-Bit':^{Xs - 2}} ┃")
         print("┣" + ("━" * Ex) + "┿" + ("━" * Va) + "┿" + ("━" * Re) + "┿" + ("━" * Ns) + "┿" + ("━" * Is) + "┿" + ("━" * Xs) + "┫")
 
         # Table Body
@@ -733,7 +733,7 @@ class ExpressionResults:
             str: Formatted string for display.
         """
         if evaluated_expr['error']:
-            return f"┃ {evaluated_expr['original_expression']:^{Ex - 2}} │ {'ERROR':^{Va - 2}} │ {'-':^{Re - 2}} │ {'-':^{Ns - 2}} │ {'-':^{Is - 2}} │ {'-':^{Xs - 2}} ┃"
+            return f"┃ {evaluated_expr['original_expression']:<{Ex - 2}} │ {'ERROR':^{Va - 2}} │ {'-':^{Re - 2}} │ {'-':^{Ns - 2}} │ {'-':^{Is - 2}} │ {'-':^{Xs - 2}} ┃"
         else:
             # Check if the expression is a literal to display value in hex
             if evaluated_expr['original_expression'].startswith('='):
@@ -742,7 +742,7 @@ class ExpressionResults:
                 value = evaluated_expr['value']
             relocatable = 'RELATIVE' if evaluated_expr['relocatable'] else 'ABSOLUTE'
             return (f"┃ {evaluated_expr['original_expression']:<{Ex - 2}} │ {value:^{Va - 2}} │ {relocatable:^{Re - 2}} │ "
-                    f"{evaluated_expr['n_bit']:<{Ns - 2}} │ {evaluated_expr['i_bit']:<{Is - 2}} │ {evaluated_expr['x_bit']:<{Xs - 2}} ┃")
+                    f"{evaluated_expr['n_bit']:^{Ns - 2}} │ {evaluated_expr['i_bit']:^{Is - 2}} │ {evaluated_expr['x_bit']:^{Xs - 2}} ┃")
 
 
 
