@@ -45,7 +45,7 @@ class LiteralData:
             raise ValueError("Invalid literal data: ensure the name is provided, value is not empty, and length is positive.")
         
         self.name: str = name
-        self.value: str = value
+        self.value: str = value.upper()  # Normalize value
         self.length: int = length
         self.address: int = None  # Address will be assigned later
 
@@ -99,6 +99,11 @@ class LiteralTableList:
         if self._find_literal(literal_data.name):
             self.log_handler.log_error(f"Duplicate literal insertion error: The literal '{literal_data.name}' already exists.")
             return
+        
+            # Check if a literal with the same value already exists
+        if self.exists_by_value(literal_data.value):
+            self.log_handler.log_action(f"Literal with value '{literal_data.value}' already exists. Skipping insertion.")
+            return
 
         new_node = LiteralNode(literal_data)
         if self.head is None:
@@ -110,6 +115,15 @@ class LiteralTableList:
                 current = current.next
             current.next = new_node
             self.log_handler.log_action(f"Inserted literal '{literal_data.name}' into the table.")
+
+    def exists_by_value(self, value: str) -> bool:
+        current = self.head
+        while current is not None:
+            if current.literal_data.value.upper() == value.upper():
+                return True
+            current = current.next
+        return False
+
 
     def insert_sorted(self, literal_data: LiteralData):
         """
@@ -454,6 +468,7 @@ class ExpressionParser:
                     # Handle hexadecimal literals
                     if literal_name.upper().startswith("=0X"):
                         literal_value = literal_name[3:]  # Remove the "=0X" part
+                        literal_value = literal_value.upper()  # Convert to uppercase
 
                         # Validate hexadecimal format
                         if not all(c in '0123456789ABCDEFabcdef' for c in literal_value):
@@ -845,8 +860,6 @@ class ExpressionResults:
         """
         input("Press Enter to continue...")
         print("\033[F\033[K", end='')
-
-
 
 
 class LiteralTableDriver:
