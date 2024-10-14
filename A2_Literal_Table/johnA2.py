@@ -470,6 +470,11 @@ class ExpressionParser:
             literal = self.literal_table.search(literal_name)
             if not literal:
                 try:
+                    # Check for illegal character literal format =C'123'
+                    if literal_name.upper().startswith("=C'"):
+                        raise ValueError(f"Illegal literal format: {literal_name}")
+
+                    
                     # Handle hexadecimal literals
                     if literal_name.upper().startswith("=0X"):
                         literal_value = literal_name[3:]  # Remove the "=0X" part
