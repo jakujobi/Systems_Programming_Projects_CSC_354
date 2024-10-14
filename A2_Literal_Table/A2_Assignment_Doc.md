@@ -374,14 +374,12 @@ Here’s a markdown version of the contents from **Assignment 2 Key**:
 
 ### Literal Table
 
-| Name        | Value        | Length | Address |
-| ----------- | ------------ | ------ | ------- |
-| =0Cfaces    | 6661636573   | 5      | 0       |
-| =0XE8       | E8           | 1      | 1       |
-| =0XCBA987   | CBA987       | 3      | 2       |
-| =0CFACES    | 4641434553   | 5      | 3       |
-| =0C{=””}    | 7B3D22227D   | 5      | 4       |
+| Name      | Value      | Length | Address |
+| --------- | ---------- | ------ | ------- |
+| =0Cfaces  | 6661636573 | 5      | 0       |
+| =0XE8     | E8         | 1      | 1       |
+| =0XCBA987 | CBA987     | 3      | 2       |
+| =0CFACES  | 4641434553 | 5      | 3       |
+| =0C{=””}  | 7B3D22227D | 5      | 4       |
 
 ---
-
-Let me know if you need further explanations or formatting adjustments!
