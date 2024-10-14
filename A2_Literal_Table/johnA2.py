@@ -383,9 +383,13 @@ class ExpressionParser:
             line = line[1:].strip()
 
         # Check for indexed addressing mode (e.g., "GREEN,X") but only if ',X' is at the end of the line.
-        if line.endswith(',X'):
+        # if line.endswith(',X'):
+        #     parsed_expr['indexing'] = True
+        #     line = line[:-2].strip()  # Remove ',X' from the end
+        if line[-2:].upper() == ',X': # Check for ',X' or ',x' at the end
             parsed_expr['indexing'] = True
-            line = line[:-2].strip()  # Remove ',X' from the end
+            line = line[:-2].strip()  # Remove ',X' or ',x' from the end
+
 
         # Handle literals (e.g., "=0X5A")
         if line.startswith('='):
