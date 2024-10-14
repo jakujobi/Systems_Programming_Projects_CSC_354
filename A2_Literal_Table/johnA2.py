@@ -458,6 +458,11 @@ class ExpressionParser:
         if line[-2:].upper() == ',X': 
             parsed_expr['indexing'] = True
             line = line[:-2].strip()
+            
+        # Error: Invalid combination of addressing mode and indexing
+        if parsed_expr['indexing'] and parsed_expr['addressing_mode'] in ['IMMEDIATE', 'INDIRECT']:
+            parsed_expr['error'] = f"{parsed_expr['addressing_mode'][0]} and x ERROR"
+            return parsed_expr
 
         # Handle literals
         if line.startswith('='):
