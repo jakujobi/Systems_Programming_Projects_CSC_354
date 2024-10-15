@@ -7,6 +7,77 @@
 # Description: 
 
 """
+/******************************************************************************************
+***                                                                                     ***
+***  CSc 354 - Systems Programming                                                      ***
+***  ASSIGNMENT : A2 - Literal Table and Expression Evaluator                           ***
+***  INSTRUCTOR : George Hamer                                                          ***
+***  DUE DATE : October 9, 2024                                                         ***
+***                                                                                     ***
+*******************************************************************************************
+***  PROGRAM NAME : Literal Table and Expression Evaluator                              ***
+***                                                                                     ***
+***  DESCRIPTION :                                                                      ***
+***      This program is designed to build a literal table and evaluate assembly        ***
+***      language expressions as part of a SIC/XE assembler. It processes assembly      ***
+***      language expressions, evaluates their operands, and manages literals in a      ***
+***      linked list-based literal table. The program supports various addressing       ***
+***      modes (direct, indirect, and immediate) and arithmetic operations              ***
+***      (addition and subtraction) for a maximum of two operands per expression.       ***
+***                                                                                     ***
+***      The program performs the following tasks:                                      ***
+***         - Reads symbols from a symbol table (SYMS.DAT)                              ***
+***         - Parses expressions from an input file (EXPR.DAT or provided via CLI)      ***
+***         - Evaluates the parsed expressions                                          ***
+***         - Manages the literal table with insertion and updates                      ***
+***         - Outputs the evaluation results, including relocatability flags            ***
+***         - Displays detailed error messages for invalid expressions                  ***
+***         - Handles paginated display for both expression results and literal table   ***
+***                                                                                     ***
+*******************************************************************************************
+***  MODULES INCLUDED :                                                                 ***
+***                                                                                     ***
+***      - LiteralData : Represents a literal with its name, value, length, and         ***
+***                     address.                                                        ***
+***      - LiteralNode : Represents a node in the linked list containing literal data.  ***
+***      - LiteralTableList : Manages the literal table using a linked list. Supports   ***
+***                          insertion, searching, address updates, and display.        ***
+***      - ErrorLogHandler : Handles logging of actions and errors, with support for    ***
+***                          pagination of logs and errors.                             ***
+***      - ExpressionParser : Responsible for parsing assembly expressions,             ***
+***                          identifying literals, and validating operands.             ***
+***      - ExpressionEvaluator : Evaluates parsed expressions and handles operand       ***
+***                              calculations and relocatability.                       ***
+***      - ExpressionResults : Formats and outputs evaluated expression results,        ***
+***                            including the N-bit, I-bit, and X-bit flags.             ***
+***      - LiteralTableDriver : Coordinates the overall flow of the program,            ***
+***                            including building the symbol table, parsing and         ***
+***                            evaluating expressions, and displaying results.          ***
+***                                                                                     ***
+*******************************************************************************************
+***  INPUTS :                                                                           ***
+***      - SYMS.DAT : Contains symbols and their attributes (symbol, value, rflag).     ***
+***      - EXPR.DAT : File containing assembly language expressions (can be provided    ***
+***                   via command line as an argument or defaults to EXPR.DAT).         ***
+***                                                                                     ***
+*******************************************************************************************
+***  OUTPUTS :                                                                          ***
+***      - Evaluated expression results with value, relocatability, N-bit, I-bit,       ***
+***        and X-bit information displayed.                                             ***
+***      - Literal table displayed with literal name, value, length, and address.       ***
+***      - Error logs and action logs displayed with detailed error information.        ***
+***                                                                                     ***
+*******************************************************************************************
+***  ERROR HANDLING :                                                                   ***
+***      The program provides detailed error messages for various invalid operations,   ***
+***      including unsupported symbols, invalid literals, and undefined symbols. It     ***
+***      continues processing despite errors, logging them for user reference.          ***
+***                                                                                     ***
+******************************************************************************************/
+
+"""
+
+"""
 /**************************************************************************************
 *** NAME : John Akujobi                                                             ***
 *** CLASS : CSc 354 - Systems Programming                                           ***
@@ -24,7 +95,7 @@
 
 import sys
 import os
-from symbol_table_builder import SymbolTableDriver, SymbolData, SymbolTable, Validator, FileExplorer
+from symbol_table_builder import SymbolTableDriver, FileExplorer
 
 
 
@@ -1271,15 +1342,33 @@ class ExpressionEvaluator:
 
 class ExpressionResults:
     """
+    /***************************************************************************************
+    ***  CLASS NAME : ExpressionResults                                                   ***
+    ***  DESCRIPTION :                                                                    ***
+    ***      Responsible for formatting and outputting evaluated expression results.      ***
+    ***      Manages display of expression evaluation results with pagination.            ***
+    ***************************************************************************************/
+
     Class responsible for formatting and outputting evaluated expression results.
     
     Attributes:
         evaluated_expressions (list): List of evaluated expressions.
         log_handler (ErrorLogHandler): Reference to the error log handler.
     """
-    
+
+
     def __init__(self, evaluated_expressions, log_handler):
         """
+        /***************************************************************************************
+        ***  METHOD : __init__                                                                ***
+        ***  DESCRIPTION :                                                                    ***
+        ***      Initializes the result handler with evaluated expressions and a log handler. ***
+        ***                                                                                   ***
+        ***  INPUT PARAMETERS :                                                               ***
+        ***      evaluated_expressions : list  : List of evaluated expressions.               ***
+        ***      log_handler           : ErrorLogHandler  : Logs actions and errors.          ***
+        ***************************************************************************************/
+
         Initializes the result handler with evaluated expressions and log handler.
         
         Args:
@@ -1289,8 +1378,19 @@ class ExpressionResults:
         self.evaluated_expressions = evaluated_expressions
         self.log_handler = log_handler
 
+
     def display_results(self, include_literals=True):
         """
+        /***************************************************************************************
+        ***  METHOD : display_results                                                         ***
+        ***  DESCRIPTION :                                                                    ***
+        ***      Displays all the evaluated expression results with pagination. Excludes      ***
+        ***      literals from the results if specified.                                      ***
+        ***                                                                                   ***
+        ***  INPUT PARAMETERS :                                                               ***
+        ***      include_literals : bool  : If False, excludes literals from the results.      ***
+        ***************************************************************************************/
+
         Display all the evaluated expression results in a paginated format.
         
         Args:
@@ -1313,9 +1413,24 @@ class ExpressionResults:
 
         # Display body with pagination
         self.display_results_body(Ex, Va, Re, Ns, Is, Xs, include_literals)
-    
+
+
     def display_results_header(self, Ex, Va, Re, Ns, Is, Xs):
         """
+        /***************************************************************************************
+        ***  METHOD : display_results_header                                                  ***
+        ***  DESCRIPTION :                                                                    ***
+        ***      Displays the header for the evaluated expression results.                    ***
+        ***                                                                                   ***
+        ***  INPUT PARAMETERS :                                                               ***
+        ***      Ex  : int  : Width for the 'Expression' column.                              ***
+        ***      Va  : int  : Width for the 'Value' column.                                   ***
+        ***      Re  : int  : Width for the 'Relocatable' column.                             ***
+        ***      Ns  : int  : Width for the 'N-Bit' column.                                   ***
+        ***      Is  : int  : Width for the 'I-Bit' column.                                   ***
+        ***      Xs  : int  : Width for the 'X-Bit' column.                                   ***
+        ***************************************************************************************/
+
         Display the header for the expression results.
         """
         total_width = Ex + Va + Re + Ns + Is + Xs + 5
@@ -1324,9 +1439,25 @@ class ExpressionResults:
         print("┣" + ("━" * Ex) + "┯" + ("━" * Va) + "┯" + ("━" * Re) + "┯" + ("━" * Ns) + "┯" + ("━" * Is) + "┯" + ("━" * Xs) + "┫")
         print(f"┃ {'Expression':<{Ex - 2}} │ {'Value':^{Va - 2}} │ {'Relocatable':^{Re - 2}} │ {'N-Bit':^{Ns - 2}} │ {'I-Bit':^{Is - 2}} │ {'X-Bit':^{Xs - 2}} ┃")
         print("┣" + ("━" * Ex) + "┿" + ("━" * Va) + "┿" + ("━" * Re) + "┿" + ("━" * Ns) + "┿" + ("━" * Is) + "┿" + ("━" * Xs) + "┫")
-    
+
+
     def display_results_body(self, Ex, Va, Re, Ns, Is, Xs, include_literals):
         """
+        /***************************************************************************************
+        ***  METHOD : display_results_body                                                    ***
+        ***  DESCRIPTION :                                                                    ***
+        ***      Displays the body of the evaluated expression results in paginated format.    ***
+        ***                                                                                   ***
+        ***  INPUT PARAMETERS :                                                               ***
+        ***      Ex  : int  : Width for the 'Expression' column.                              ***
+        ***      Va  : int  : Width for the 'Value' column.                                   ***
+        ***      Re  : int  : Width for the 'Relocatable' column.                             ***
+        ***      Ns  : int  : Width for the 'N-Bit' column.                                   ***
+        ***      Is  : int  : Width for the 'I-Bit' column.                                   ***
+        ***      Xs  : int  : Width for the 'X-Bit' column.                                   ***
+        ***      include_literals : bool  : If False, excludes literals from the results.      ***
+        ***************************************************************************************/
+
         Display the body of the results in paginated format.
         Pauses every 18 lines.
         """
@@ -1347,9 +1478,28 @@ class ExpressionResults:
         # Display footer
         total_width = Ex + Va + Re + Ns + Is + Xs + 5
         print("┗" + ("━" * Ex) + "┷" + ("━" * Va) + "┷" + ("━" * Re) + "┷" + ("━" * Ns) + "┷" + ("━" * Is) + "┷" + ("━" * Xs) + "┛")
-    
+
+
     def format_expression_result(self, evaluated_expr, Ex, Va, Re, Ns, Is, Xs):
         """
+        /***************************************************************************************
+        ***  METHOD : format_expression_result                                                ***
+        ***  DESCRIPTION :                                                                    ***
+        ***      Formats a single evaluated expression into a readable string for display.     ***
+        ***                                                                                   ***
+        ***  INPUT PARAMETERS :                                                               ***
+        ***      evaluated_expr : dict  : The evaluated expression with its results.           ***
+        ***      Ex  : int  : Width for the 'Expression' column.                              ***
+        ***      Va  : int  : Width for the 'Value' column.                                   ***
+        ***      Re  : int  : Width for the 'Relocatable' column.                             ***
+        ***      Ns  : int  : Width for the 'N-Bit' column.                                   ***
+        ***      Is  : int  : Width for the 'I-Bit' column.                                   ***
+        ***      Xs  : int  : Width for the 'X-Bit' column.                                   ***
+        ***                                                                                   ***
+        ***  RETURN : str                                                                     ***
+        ***      Returns a formatted string for the evaluated expression.                     ***
+        ***************************************************************************************/
+
         Format a single evaluated expression into a readable string.
         
         Args:
@@ -1375,9 +1525,16 @@ class ExpressionResults:
             relocatable = 'RELATIVE' if evaluated_expr['relocatable'] else 'ABSOLUTE'
             return (f"┃ {evaluated_expr['original_expression']:<{Ex - 2}} │ {value:^{Va - 2}} │ {relocatable:^{Re - 2}} │ "
                     f"{evaluated_expr['n_bit']:^{Ns - 2}} │ {evaluated_expr['i_bit']:^{Is - 2}} │ {evaluated_expr['x_bit']:^{Xs - 2}} ┃")
-    
+
+
     def press_continue(self):
         """
+        /***************************************************************************************
+        ***  METHOD : press_continue                                                          ***
+        ***  DESCRIPTION :                                                                    ***
+        ***      Pauses the program and waits for the user to press Enter before continuing.   ***
+        ***************************************************************************************/
+
         Pause the program and wait for the user to press Enter before continuing.
         """
         input("Press Enter to continue...")
@@ -1386,10 +1543,25 @@ class ExpressionResults:
 
 class LiteralTableDriver:
     """
+    /***************************************************************************************
+    ***  CLASS NAME : LiteralTableDriver                                                  ***
+    ***  DESCRIPTION :                                                                    ***
+    ***      Main driver class for handling literal table operations and the overall      ***
+    ***      program flow. Manages symbol tables, expression parsing, and evaluation.     ***
+    ***************************************************************************************/
+
     Main driver class to handle the literal table operations and overall program flow.
     """
+
+
     def __init__(self):
         """
+        /***************************************************************************************
+        ***  METHOD : __init__                                                                ***
+        ***  DESCRIPTION :                                                                    ***
+        ***      Initializes the LiteralTableDriver with all necessary components.            ***
+        ***************************************************************************************/
+
         Initialize the LiteralTableDriver with all necessary components.
         """
         self.log_handler = ErrorLogHandler()  # Combined error and action logging
@@ -1397,8 +1569,19 @@ class LiteralTableDriver:
         self.symbol_table_driver = SymbolTableDriver()  # Use SymbolTableDriver to manage symbol table
         self.file_explorer = FileExplorer()  # File handling for locating files
 
+
     def run(self, expression_file: str = None):
         """
+        /***************************************************************************************
+        ***  METHOD : run                                                                     ***
+        ***  DESCRIPTION :                                                                    ***
+        ***      Entry point for running the program. It builds the symbol table, loads and   ***
+        ***      parses expressions, evaluates them, and displays the results.                ***
+        ***                                                                                   ***
+        ***  INPUT PARAMETERS :                                                               ***
+        ***      expression_file : str  : Optional. The file containing expressions to parse. ***
+        ***************************************************************************************/
+
         The main entry point to drive the entire program.
         Coordinates the flow of building the symbol table, parsing, and evaluating expressions.
         """
@@ -1414,8 +1597,15 @@ class LiteralTableDriver:
         except Exception as e:
             self.log_handler.log_error(f"Unexpected error occurred: {e}")
 
+
     def build_symbol_table(self):
         """
+        /***************************************************************************************
+        ***  METHOD : build_symbol_table                                                      ***
+        ***  DESCRIPTION :                                                                    ***
+        ***      Builds the symbol table using the SymbolTableDriver and logs the actions.    ***
+        ***************************************************************************************/
+
         Build the symbol table using SymbolTableDriver.
         """
         try:
@@ -1426,16 +1616,40 @@ class LiteralTableDriver:
         except Exception as e:
             self.log_handler.log_error(f"Error while building symbol table: {e}")
 
+
     def get_expression_file(self) -> str:
         """
+        /***************************************************************************************
+        ***  METHOD : get_expression_file                                                     ***
+        ***  DESCRIPTION :                                                                    ***
+        ***      Determines the expression file to use, either from the command line or       ***
+        ***      defaulting to 'EXPR.DAT'.                                                    ***
+        ***                                                                                   ***
+        ***  RETURN : str                                                                     ***
+        ***      The name of the expression file.                                             ***
+        ***************************************************************************************/
+
         Determine the expression file to use, either from the command line or default to 'EXPRESS.DAT'.
         
         :return: The name of the expression file.
         """
         return sys.argv[1] if len(sys.argv) > 1 else "EXPR.DAT"
 
+
     def load_expressions(self, file_name: str) -> list[str]:
         """
+        /***************************************************************************************
+        ***  METHOD : load_expressions                                                        ***
+        ***  DESCRIPTION :                                                                    ***
+        ***      Loads expressions from the specified file and logs any errors encountered.   ***
+        ***                                                                                   ***
+        ***  INPUT PARAMETERS :                                                               ***
+        ***      file_name : str  : The name of the file containing expressions.              ***
+        ***                                                                                   ***
+        ***  RETURN : list                                                                    ***
+        ***      Returns a list of expressions loaded from the file.                          ***
+        ***************************************************************************************/
+
         Load expressions from the specified file.
 
         :param file_name: The name of the file containing expressions.
@@ -1454,8 +1668,21 @@ class LiteralTableDriver:
             self.log_handler.log_error(f"Error while loading expressions from {file_name}: {e}")
             return []
 
+
     def parse_expressions(self, expressions: list[str]) -> list[dict]:
         """
+        /***************************************************************************************
+        ***  METHOD : parse_expressions                                                       ***
+        ***  DESCRIPTION :                                                                    ***
+        ***      Parses raw expression strings into structured components and logs actions.   ***
+        ***                                                                                   ***
+        ***  INPUT PARAMETERS :                                                               ***
+        ***      expressions : list  : A list of raw expression strings.                      ***
+        ***                                                                                   ***
+        ***  RETURN : list                                                                    ***
+        ***      Returns a list of parsed expression dictionaries.                            ***
+        ***************************************************************************************/
+
         Parse expressions into structured components.
 
         :param expressions: List of raw expression strings.
@@ -1467,8 +1694,19 @@ class LiteralTableDriver:
         self.log_handler.log_action(f"Parsed {len(parsed_expressions)} expressions.")
         return parsed_expressions
 
+
     def evaluate_expressions(self, parsed_expressions: list[dict]):
         """
+        /***************************************************************************************
+        ***  METHOD : evaluate_expressions                                                    ***
+        ***  DESCRIPTION :                                                                    ***
+        ***      Evaluates parsed expressions, updates the literal table, and assigns         ***
+        ***      addresses to literals.                                                       ***
+        ***                                                                                   ***
+        ***  INPUT PARAMETERS :                                                               ***
+        ***      parsed_expressions : list  : List of parsed expression components.           ***
+        ***************************************************************************************/
+
         Evaluate parsed expressions and update the literal table with new literals.
 
         :param parsed_expressions: A list of parsed expression components.
@@ -1486,8 +1724,19 @@ class LiteralTableDriver:
         self.literal_table.update_addresses(start_address=0)
         self.log_handler.log_action("Expressions evaluated and literal table updated.")
 
+
     def paginate_output(self, display_function, header: str):
         """
+        /***************************************************************************************
+        ***  METHOD : paginate_output                                                         ***
+        ***  DESCRIPTION :                                                                    ***
+        ***      Paginates the output of a display function to prevent excessive scrolling.    ***
+        ***                                                                                   ***
+        ***  INPUT PARAMETERS :                                                               ***
+        ***      display_function : function  : The function to display paginated output.      ***
+        ***      header           : str       : Header text to display before the output.      ***
+        ***************************************************************************************/
+
         Paginate the output of a display function to prevent excessive scrolling.
 
         :param display_function: The function to call to display the output.
@@ -1503,6 +1752,13 @@ class LiteralTableDriver:
 
     def display_results(self):
         """
+        /***************************************************************************************
+        ***  METHOD : display_results                                                         ***
+        ***  DESCRIPTION :                                                                    ***
+        ***      Displays evaluated expressions, the literal table, and log entries/errors    ***
+        ***      with pagination.                                                             ***
+        ***************************************************************************************/
+
         Display all the results including literals, logs, and errors with paginated output.
         """
         # Display evaluated expressions
@@ -1519,6 +1775,14 @@ class LiteralTableDriver:
 
 
 def main():
+    """
+    /***************************************************************************************
+    ***  FUNCTION : main                                                                  ***
+    ***  DESCRIPTION :                                                                    ***
+    ***      Creates an instance of LiteralTableDriver and runs the program with the      ***
+    ***      expression file passed via command line or default.                          ***
+    ***************************************************************************************/
+    """
     # Create an instance of LiteralTableDriver and run it
     expression_file = sys.argv[1] if len(sys.argv) > 1 else None
     driver = LiteralTableDriver()
