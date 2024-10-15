@@ -413,6 +413,7 @@ class ExpressionParser:
         self.parsed_expressions = []
         self.literal_table = literal_table
         self.log_handler = log_handler
+        self.invalid_literals_set = set()  # Track invalid literals
 
     def parse_all(self):
         """
@@ -527,7 +528,17 @@ class ExpressionParser:
                 except ValueError as e:
                     # Capture any validation errors and mark them as "ERROR" in the expression table
                     parsed_expr['error'] = str(e)
-                    self.log_handler.log_error(parsed_expr['error'], context_info=literal_name)
+                    #self.log_handler.log_error(parsed_expr['error'], context_info=literal_name)
+                    
+                    # Check if this invalid literal has already been processed
+                    if literal_name in self.invalid_literals_set:
+                        return None  # Skip duplicate invalid literals
+                    else:
+                        # Add to invalid literal set
+                        self.invalid_literals_set.add(literal_name)
+                        self.log_handler.log_error(parsed_expr['error'], context_info=literal_name)
+                        return parsed_expr  # Return the invalid literal as an error
+
             else:
                 parsed_expr['operand1'] = literal_name
                 self.log_handler.log_action(f"Used existing literal '{literal_name}'")
@@ -831,8 +842,8 @@ class ExpressionResults:
         
         for expr in self.evaluated_expressions:
             # Skip literals if include_literals is False
-            if not include_literals and expr['original_expression'].startswith('='):
-                continue
+            if not include_literals and expr['original_expression'].startswith('=') and not expr.get('error'):
+                continue  # Skip valid literals
             
             result_line = self.format_expression_result(expr, Ex, Va, Re, Ns, Is, Xs)
             print(result_line)
