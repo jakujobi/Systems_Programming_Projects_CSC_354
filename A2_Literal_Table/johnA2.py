@@ -30,12 +30,37 @@ from symbol_table_builder import SymbolTableDriver, SymbolData, SymbolTable, Val
 
 class LiteralData:
     """
+    /***************************************************************************************
+    ***  CLASS NAME : LiteralData                                                        ***
+    ***  DESCRIPTION :                                                                   ***
+    ***      This class represents a literal with attributes such as its name, value,    ***
+    ***      length, and address. It stores hexadecimal literals and their associated    ***
+    ***      data.                                                                       ***
+    ***************************************************************************************/
+
     Class to represent a literal with its name, value, length, and address.
     """
+
+
     def __init__(self, name: str, value: str, length: int):
         """
-        Initialize a literal with its name, value, length, and address.
+        /***************************************************************************************
+        ***  METHOD : __init__                                                               ***
+        ***  DESCRIPTION :                                                                   ***
+        ***      Initializes a LiteralData object with its name, hexadecimal value, length   ***
+        ***      in bytes, and sets the address to None initially.                           ***
+        ***                                                                                  ***
+        ***  INPUT PARAMETERS :                                                              ***
+        ***      name   : str    : Name of the literal (e.g., '=X'05A'')                     ***
+        ***      value  : str    : Hexadecimal value of the literal                          ***
+        ***      length : int    : Length of the literal in bytes                            ***
+        ***                                                                                  ***
+        ***  EXCEPTIONS :                                                                    ***
+        ***      Raises ValueError if the name is missing, value is empty, or length is      ***
+        ***      invalid.                                                                    ***
+        ***************************************************************************************/
 
+        Initialize a literal with its name, value, length, and address.
         :param name: Name of the literal (e.g., '=X'05A'').
         :param value: Hexadecimal value of the literal.
         :param length: Length of the literal in bytes.
@@ -53,11 +78,33 @@ class LiteralData:
 
 class LiteralNode:
     """
+    /***************************************************************************************
+    ***  CLASS NAME : LiteralNode                                                        ***
+    ***  DESCRIPTION :                                                                   ***
+    ***      Represents a node in a linked list, containing literal data and a pointer   ***
+    ***      to the next node in the list. Each node stores an instance of LiteralData.  ***
+    ***************************************************************************************/
+
     Class to represent a node in the linked list of literals.
     Each node contains LiteralData and a reference to the next node.
     """
+
     def __init__(self, literal_data: LiteralData):
         """
+        /***************************************************************************************
+        ***  METHOD : __init__                                                               ***
+        ***  DESCRIPTION :                                                                   ***
+        ***      Initializes a LiteralNode object with literal data and sets the next        ***
+        ***      pointer to None.                                                            ***
+        ***                                                                                  ***
+        ***  INPUT PARAMETERS :                                                              ***
+        ***      literal_data : LiteralData  : An instance of LiteralData to store in the    ***
+        ***                      node.                                                       ***
+        ***                                                                                  ***
+        ***  EXCEPTIONS :                                                                    ***
+        ***      Raises TypeError if the literal_data is not an instance of LiteralData.     ***
+        ***************************************************************************************/
+
         Initialize the node with literal data.
 
         :param literal_data: Instance of LiteralData.
@@ -73,12 +120,33 @@ class LiteralNode:
 
 class LiteralTableList:
     """
+    /***************************************************************************************
+    ***  CLASS NAME : LiteralTableList                                                   ***
+    ***  DESCRIPTION :                                                                   ***
+    ***      Represents a linked list that stores literal data. Provides methods for     ***
+    ***      inserting literals, updating their addresses, and displaying the literal    ***
+    ***      table.                                                                      ***
+    ***************************************************************************************/
+
     Class to represent the literal table, stored as a linked list.
     This class provides methods to insert literals, update their addresses,
     and display the literal table.
     """
+
+
     def __init__(self, log_handler):
         """
+        /***************************************************************************************
+        ***  METHOD : __init__                                                               ***
+        ***  DESCRIPTION :                                                                   ***
+        ***      Initializes the LiteralTableList with an empty linked list and a log        ***
+        ***      handler to log actions and errors.                                          ***
+        ***                                                                                  ***
+        ***  INPUT PARAMETERS :                                                              ***
+        ***      log_handler : ErrorLogHandler  : Object used to handle logging of actions   ***
+        ***                      and errors in the table.                                   ***
+        ***************************************************************************************/
+
         Initialize the literal table with an empty linked list and a log handler.
 
         :param log_handler: An instance of ErrorLogHandler for logging actions and errors.
@@ -86,8 +154,21 @@ class LiteralTableList:
         self.head: LiteralNode = None
         self.log_handler = log_handler
 
+
     def insert(self, literal_data: LiteralData):
         """
+        /***************************************************************************************
+        ***  METHOD : insert                                                                 ***
+        ***  DESCRIPTION :                                                                   ***
+        ***      Inserts a new literal into the linked list if it doesn't already exist.     ***
+        ***                                                                                  ***
+        ***  INPUT PARAMETERS :                                                              ***
+        ***      literal_data : LiteralData  : The LiteralData object to be inserted.        ***
+        ***                                                                                  ***
+        ***  EXCEPTIONS :                                                                    ***
+        ***      Logs an error if the literal is a duplicate or the object is invalid.       ***
+        ***************************************************************************************/
+
         Insert a new literal into the linked list.
 
         :param literal_data: An instance of LiteralData to be inserted.
@@ -116,7 +197,23 @@ class LiteralTableList:
             current.next = new_node
             self.log_handler.log_action(f"Inserted literal '{literal_data.name}' into the table.")
 
+
     def exists_by_value(self, value: str, name: str) -> bool:
+        """
+        /***************************************************************************************
+        ***  METHOD : exists_by_value                                                        ***
+        ***  DESCRIPTION :                                                                   ***
+        ***      Checks if a literal with a specific value and name exists in the list.      ***
+        ***                                                                                  ***
+        ***  INPUT PARAMETERS :                                                              ***
+        ***      value : str  : The hexadecimal value of the literal to check.               ***
+        ***      name  : str  : The name of the literal.                                     ***
+        ***                                                                                  ***
+        ***  RETURN : bool                                                                   ***
+        ***      Returns True if a literal with the same value and name exists, otherwise    ***
+        ***      False.                                                                      ***
+        ***************************************************************************************/
+        """
         current = self.head
         while current is not None:
             if current.literal_data.value.upper() == value.upper():
@@ -124,6 +221,7 @@ class LiteralTableList:
                     return True
             current = current.next
         return False
+
 
     def exists_by_value_alone(self, value: str) -> bool:
         current = self.head
@@ -134,8 +232,19 @@ class LiteralTableList:
         return False
 
 
+
     def insert_sorted(self, literal_data: LiteralData):
         """
+        /***************************************************************************************
+        ***  METHOD : insert_sorted                                                          ***
+        ***  DESCRIPTION :                                                                   ***
+        ***      Inserts a literal into the linked list in sorted order based on literal     ***
+        ***      name.                                                                       ***
+        ***                                                                                  ***
+        ***  INPUT PARAMETERS :                                                              ***
+        ***      literal_data : LiteralData  : LiteralData object to insert into the list.   ***
+        ***************************************************************************************/
+
         Insert a literal into the linked list in sorted order.
         
         :param literal_data: LiteralData object to insert.
@@ -151,8 +260,21 @@ class LiteralTableList:
             new_node.next = current.next
             current.next = new_node
 
+
     def _find_literal(self, name: str) -> bool:
         """
+        /***************************************************************************************
+        ***  METHOD : _find_literal                                                          ***
+        ***  DESCRIPTION :                                                                   ***
+        ***      Searches for a literal by name in the list.                                 ***
+        ***                                                                                  ***
+        ***  INPUT PARAMETERS :                                                              ***
+        ***      name : str  : The name of the literal to search for.                        ***
+        ***                                                                                  ***
+        ***  RETURN : bool                                                                   ***
+        ***      Returns True if the literal is found, otherwise False.                      ***
+        ***************************************************************************************/
+
         Check if a literal with the given name exists in the table.
 
         :param name: The name of the literal to search for.
@@ -165,8 +287,22 @@ class LiteralTableList:
             current = current.next
         return False
 
+
     def search(self, literal_name: str) -> LiteralData | None:
         """
+        /***************************************************************************************
+        ***  METHOD : search                                                                 ***
+        ***  DESCRIPTION :                                                                   ***
+        ***      Searches for a literal by its name and returns the corresponding LiteralData***
+        ***      object if found. Logs the action.                                           ***
+        ***                                                                                  ***
+        ***  INPUT PARAMETERS :                                                              ***
+        ***      literal_name : str  : The name of the literal to search for.                ***
+        ***                                                                                  ***
+        ***  RETURN : LiteralData | None                                                     ***
+        ***      Returns the LiteralData object if found, otherwise None.                    ***
+        ***************************************************************************************/
+
         Search for a literal by its name in the literal table.
 
         :param literal_name: The name of the literal to search for.
@@ -181,8 +317,22 @@ class LiteralTableList:
         self.log_handler.log_action(f"Literal '{literal_name}' not found in the table.")
         return None
 
+
     def update_addresses(self, start_address: int = 0):
         """
+        /***************************************************************************************
+        ***  METHOD : update_addresses                                                       ***
+        ***  DESCRIPTION :                                                                   ***
+        ***      Assigns addresses to literals in the order they were encountered in the     ***
+        ***      list, starting from the specified start_address.                            ***
+        ***                                                                                  ***
+        ***  INPUT PARAMETERS :                                                              ***
+        ***      start_address : int  : The starting address for the first literal (default 0).***
+        ***                                                                                  ***
+        ***  EXCEPTIONS :                                                                    ***
+        ***      Logs an error if the starting address is negative or the table is empty.    ***
+        ***************************************************************************************/
+
         Assign addresses to literals sequentially without sorting, retaining the order 
         in which they were encountered in the linked list.
         
@@ -208,6 +358,12 @@ class LiteralTableList:
 
     def display_literals(self):
         """
+        /***************************************************************************************
+        ***  METHOD : display_literals                                                       ***
+        ***  DESCRIPTION :                                                                   ***
+        ***      Displays all literals stored in the table, formatted into columns.          ***
+        ***************************************************************************************/
+
         Display all the literals in the table in a formatted manner.
         """
         if self.head is None:
@@ -222,9 +378,22 @@ class LiteralTableList:
     
         self.display_literals_header(Lit, Val, Len, Addr)
         self.display_literals_body(Lit, Val, Len, Addr)
-    
+
+
     def display_literals_header(self, Lit, Val, Len, Addr):
         """
+        /***************************************************************************************
+        ***  METHOD : display_literals_header                                                ***
+        ***  DESCRIPTION :                                                                   ***
+        ***      Displays the header of the literal table with proper column titles.         ***
+        ***                                                                                  ***
+        ***  INPUT PARAMETERS :                                                              ***
+        ***      Lit  : int  : The width of the 'Literal' column.                            ***
+        ***      Val  : int  : The width of the 'Value' column.                              ***
+        ***      Len  : int  : The width of the 'Length' column.                             ***
+        ***      Addr : int  : The width of the 'Address' column.                            ***
+        ***************************************************************************************/
+
         Display the header for the literal table.
         """
         total_width = Lit + Val + Len + Addr + 3
@@ -233,9 +402,23 @@ class LiteralTableList:
         print("┣" + ("━" * Lit) + "┯" + ("━" * Val) + "┯" + ("━" * Len) + "┯" + ("━" * Addr) + "┫")
         print(f"┃ {'Literal':<{Lit - 2}} │ {'Value':^{Val - 2}} │ {'Length':^{Len - 2}} │ {'Address':^{Addr - 2}} ┃")
         print("┣" + ("━" * Lit) + "┿" + ("━" * Val) + "┿" + ("━" * Len) + "┿" + ("━" * Addr) + "┫")
-    
+
+
     def display_literals_body(self, Lit, Val, Len, Addr):
         """
+        /***************************************************************************************
+        ***  METHOD : display_literals_body                                                  ***
+        ***  DESCRIPTION :                                                                   ***
+        ***      Displays the body of the literal table, pausing every 18 lines for          ***
+        ***      pagination.                                                                 ***
+        ***                                                                                  ***
+        ***  INPUT PARAMETERS :                                                              ***
+        ***      Lit  : int  : The width of the 'Literal' column.                            ***
+        ***      Val  : int  : The width of the 'Value' column.                              ***
+        ***      Len  : int  : The width of the 'Length' column.                             ***
+        ***      Addr : int  : The width of the 'Address' column.                            ***
+        ***************************************************************************************/
+
         Display the body of the literal table, pausing every 18 lines.
         """
         current = self.head
@@ -252,9 +435,16 @@ class LiteralTableList:
     
         total_width = Lit + Val + Len + Addr + 3
         print("┗" + ("━" * Lit) + "┷" + ("━" * Val) + "┷" + ("━" * Len) + "┷" + ("━" * Addr) + "┛")
-    
+
+
     def press_continue(self):
         """
+        /***************************************************************************************
+        ***  METHOD : press_continue                                                         ***
+        ***  DESCRIPTION :                                                                   ***
+        ***      Pauses the program and waits for the user to press Enter before continuing. ***
+        ***************************************************************************************/
+
         Pause the program and wait for the user to press Enter before continuing.
         """
         input("Press Enter to continue...")
