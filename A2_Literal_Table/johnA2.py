@@ -99,12 +99,12 @@ class LiteralTableList:
         if self._find_literal(literal_data.name):
             self.log_handler.log_error(f"Duplicate literal insertion error: The literal '{literal_data.name}' already exists.")
             return
-        
-            # Check if a literal with the same value already exists
-        if self.exists_by_value(literal_data.value):
-            self.log_handler.log_action(f"Literal with value '{literal_data.value}' already exists. Skipping insertion.")
-            return
 
+                    # Check if a literal with the same value already exists
+        if self.exists_by_value(literal_data.value, literal_data.name):
+            self.log_handler.log_action(f"Literal '{literal_data.name}' with value '{literal_data.value}' already exists. Skipping insertion.")
+            return
+    
         new_node = LiteralNode(literal_data)
         if self.head is None:
             self.head = new_node
@@ -116,7 +116,16 @@ class LiteralTableList:
             current.next = new_node
             self.log_handler.log_action(f"Inserted literal '{literal_data.name}' into the table.")
 
-    def exists_by_value(self, value: str) -> bool:
+    def exists_by_value(self, value: str, name: str) -> bool:
+        current = self.head
+        while current is not None:
+            if current.literal_data.value.upper() == value.upper():
+                if current.literal_data.name.upper() == name.upper():
+                    return True
+            current = current.next
+        return False
+
+    def exists_by_value_alone(self, value: str) -> bool:
         current = self.head
         while current is not None:
             if current.literal_data.value.upper() == value.upper():
