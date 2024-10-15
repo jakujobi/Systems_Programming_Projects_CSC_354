@@ -453,18 +453,44 @@ class LiteralTableList:
 
 class ErrorLogHandler:
     """
+    /***************************************************************************************
+    ***  CLASS NAME : ErrorLogHandler                                                     ***
+    ***  DESCRIPTION :                                                                   ***
+    ***      Handles logging of actions and errors throughout the program. Provides      ***
+    ***      methods to log, display, and manage logs and errors.                        ***
+    ***************************************************************************************/
+
     Class to handle both logging actions and error messages throughout the program.
     Provides mechanisms to log actions, log errors, retrieve logs, and display all messages.
     """
+
+
     def __init__(self):
         """
+        /***************************************************************************************
+        ***  METHOD : __init__                                                               ***
+        ***  DESCRIPTION :                                                                   ***
+        ***      Initializes empty logs for actions and errors.                              ***
+        ***************************************************************************************/
+
         Initialize the ErrorLogHandler with empty logs for actions and errors.
         """
         self.log_entries: list[str] = []
         self.error_log: list[str] = []
 
+
     def log_action(self, message: str):
         """
+        /***************************************************************************************
+        ***  METHOD : log_action                                                             ***
+        ***  DESCRIPTION :                                                                   ***
+        ***      Logs an action by appending the message to the action log and prints the    ***
+        ***      message to the console. Paginates the output after every 18 lines.          ***
+        ***                                                                                  ***
+        ***  INPUT PARAMETERS :                                                              ***
+        ***      message : str   : The message describing the action performed.              ***
+        ***************************************************************************************/
+
         Log an action performed during the program's execution.
 
         :param message: The message describing the action.
@@ -476,8 +502,20 @@ class ErrorLogHandler:
         if len(self.log_entries) % 18 == 0:
             self.paginate_output(self.log_entries, "Displaying Actions Log")
 
+
     def log_error(self, error_message: str, context_info: str = None):
         """
+        /***************************************************************************************
+        ***  METHOD : log_error                                                              ***
+        ***  DESCRIPTION :                                                                   ***
+        ***      Logs an error message, optionally with context information, and prints      ***
+        ***      it to the console. Paginates the output after every 18 lines.               ***
+        ***                                                                                  ***
+        ***  INPUT PARAMETERS :                                                              ***
+        ***      error_message  : str  : The error message to log.                           ***
+        ***      context_info   : str  : Optional context about where the error occurred.    ***
+        ***************************************************************************************/
+
         Log an error message with optional context information for better clarity.
 
         :param error_message: The error message to be logged.
@@ -490,10 +528,17 @@ class ErrorLogHandler:
         # Paginate after every 18 lines of errors
         if len(self.error_log) % 18 == 0:
             self.paginate_output(self.error_log, "Displaying Error Log")
-            
-            
+
+    
     def display_log(self):
         """
+        /***************************************************************************************
+        ***  METHOD : display_log                                                            ***
+        ***  DESCRIPTION :                                                                   ***
+        ***      Asks the user if they want to display the log entries. Displays the log     ***
+        ***      entries with pagination if the user agrees.                                 ***
+        ***************************************************************************************/
+
         Ask the user if they want to view the log entries. Paginate if they agree.
         """
         if not self.log_entries:
@@ -504,8 +549,16 @@ class ErrorLogHandler:
                 print("=" * 50)
                 self.paginate_output(self.log_entries, "Log of Actions")
 
+        
     def display_errors(self):
         """
+        /***************************************************************************************
+        ***  METHOD : display_errors                                                         ***
+        ***  DESCRIPTION :                                                                   ***
+        ***      Asks the user if they want to display the error logs. Displays the errors   ***
+        ***      with pagination if the user agrees.                                         ***
+        ***************************************************************************************/
+
         Ask the user if they want to view the error logs. Paginate if they agree.
         """
         if not self.error_log:
@@ -516,8 +569,22 @@ class ErrorLogHandler:
                 print("=" * 50)
                 self.paginate_output(self.error_log, "Error Log")
 
+
     def ask_to_display(self, question: str) -> bool:
         """
+        /***************************************************************************************
+        ***  METHOD : ask_to_display                                                         ***
+        ***  DESCRIPTION :                                                                   ***
+        ***      Asks the user if they want to display logs or errors, with retry logic for  ***
+        ***      invalid inputs.                                                             ***
+        ***                                                                                  ***
+        ***  INPUT PARAMETERS :                                                              ***
+        ***      question : str   : The question to ask the user.                            ***
+        ***                                                                                  ***
+        ***  RETURN : bool                                                                   ***
+        ***      Returns True if the user agrees, False otherwise.                           ***
+        ***************************************************************************************/
+
         Ask the user if they want to display the logs/errors with retry logic for invalid inputs.
 
         :param question: The question to ask the user.
@@ -542,8 +609,19 @@ class ErrorLogHandler:
         print("Seriously? You can't just type 'y' or 'n'? Fine, I won't show it.")
         return False
 
+    
     def paginate_output(self, log_entries, header: str):
         """
+        /***************************************************************************************
+        ***  METHOD : paginate_output                                                        ***
+        ***  DESCRIPTION :                                                                   ***
+        ***      Displays the log entries with pagination to prevent excessive scrolling.    ***
+        ***                                                                                  ***
+        ***  INPUT PARAMETERS :                                                              ***
+        ***      log_entries : list  : The list of log entries to be displayed.              ***
+        ***      header      : str   : The header to display before showing the entries.     ***
+        ***************************************************************************************/
+
         Paginate the log/error output to prevent excessive scrolling.
         
         :param log_entries: The log or error entries to be displayed.
@@ -558,6 +636,12 @@ class ErrorLogHandler:
 
     def press_continue(self):
         """
+        /***************************************************************************************
+        ***  METHOD : press_continue                                                         ***
+        ***  DESCRIPTION :                                                                   ***
+        ***      Pauses the program and waits for the user to press Enter before continuing. ***
+        ***************************************************************************************/
+
         Pause the program and wait for the user to press Enter before continuing.
         """
         input("Press Enter to continue...")
@@ -565,6 +649,12 @@ class ErrorLogHandler:
 
     def clear_logs(self):
         """
+        /***************************************************************************************
+        ***  METHOD : clear_logs                                                             ***
+        ***  DESCRIPTION :                                                                   ***
+        ***      Clears all the logs of actions and errors.                                  ***
+        ***************************************************************************************/
+
         Clear all logs of actions and errors.
         """
         self.log_entries.clear()
@@ -572,6 +662,15 @@ class ErrorLogHandler:
 
     def has_errors(self) -> bool:
         """
+        /***************************************************************************************
+        ***  METHOD : has_errors                                                             ***
+        ***  DESCRIPTION :                                                                   ***
+        ***      Checks if there are any logged errors.                                      ***
+        ***                                                                                  ***
+        ***  RETURN : bool                                                                   ***
+        ***      Returns True if there are errors, otherwise False.                          ***
+        ***************************************************************************************/
+
         Check if there are any logged errors.
 
         :return: True if there are errors, False otherwise.
@@ -581,7 +680,14 @@ class ErrorLogHandler:
 
 class ExpressionParser:
     """
-    Class responsible for parsing assembly expressions and literals.
+    /***************************************************************************************
+    ***  CLASS NAME : ExpressionParser                                                   ***
+    ***  DESCRIPTION :                                                                   ***
+    ***      Responsible for parsing assembly expressions and literals. The class       ***
+    ***      manages both expressions and literals, logging actions and errors.          ***
+    ***************************************************************************************/
+
+        Class responsible for parsing assembly expressions and literals.
     
     Attributes:
         expressions_lines (list): List of raw expression lines.
@@ -589,9 +695,22 @@ class ExpressionParser:
         literal_table (LiteralTableList): Reference to the literal table.
         log_handler (ErrorLogHandler): Reference to the error log handler.
     """
-    
+
+
     def __init__(self, expressions_lines, literal_table, log_handler):
         """
+        /***************************************************************************************
+        ***  METHOD : __init__                                                               ***
+        ***  DESCRIPTION :                                                                   ***
+        ***      Initializes the parser with raw expression lines, the literal table, and    ***
+        ***      a log handler for managing errors and actions.                              ***
+        ***                                                                                  ***
+        ***  INPUT PARAMETERS :                                                              ***
+        ***      expressions_lines : list  : List of raw expression lines.                   ***
+        ***      literal_table     : LiteralTableList  : Reference to the literal table.     ***
+        ***      log_handler       : ErrorLogHandler  : Logs actions and errors.             ***
+        ***************************************************************************************/
+
         Initializes the parser with a list of expression lines, a literal table, and an error log handler.
         
         Args:
@@ -605,8 +724,15 @@ class ExpressionParser:
         self.log_handler = log_handler
         self.invalid_literals_set = set()  # Track invalid literals
 
+
     def parse_all(self):
         """
+        /***************************************************************************************
+        ***  METHOD : parse_all                                                              ***
+        ***  DESCRIPTION :                                                                   ***
+        ***      Parses all expression lines and logs actions or errors as necessary.        ***
+        ***************************************************************************************/
+
         Parses all expression lines and stores the parsed expressions in parsed_expressions.
         Logs actions and errors as necessary.
         """
@@ -622,6 +748,19 @@ class ExpressionParser:
  
     def parse_line(self, line):
         """
+        /***************************************************************************************
+        ***  METHOD : parse_line                                                             ***
+        ***  DESCRIPTION :                                                                   ***
+        ***      Parses a single line into a structured expression, handling literals and    ***
+        ***      addressing modes.                                                           ***
+        ***                                                                                  ***
+        ***  INPUT PARAMETERS :                                                              ***
+        ***      line : str  : A single line from the expression file to be parsed.          ***
+        ***                                                                                  ***
+        ***  RETURN : dict                                                                   ***
+        ***      Returns a dictionary representing the parsed expression.                   ***
+        ***************************************************************************************/
+
         Parses a single line into a structured expression and handles literals.
         """
         parsed_expr = {
@@ -666,6 +805,20 @@ class ExpressionParser:
 
     def parse_addressing_mode(self, line, parsed_expr):
         """
+        /***************************************************************************************
+        ***  METHOD : parse_addressing_mode                                                  ***
+        ***  DESCRIPTION :                                                                   ***
+        ***      Parses the addressing mode from the expression and modifies the parsed      ***
+        ***      expression.                                                                 ***
+        ***                                                                                  ***
+        ***  INPUT PARAMETERS :                                                              ***
+        ***      line        : str   : The expression line being parsed.                     ***
+        ***      parsed_expr : dict  : The dictionary representing the parsed expression.    ***
+        ***                                                                                  ***
+        ***  RETURN : str                                                                    ***
+        ***      Returns the updated line after stripping the addressing mode.               ***
+        ***************************************************************************************/
+
         Parse the addressing mode from the expression and modify the parsed expression.
         Returns the updated line (after stripping addressing mode).
         """
@@ -677,8 +830,23 @@ class ExpressionParser:
             return line[1:].strip()
         return line
 
+
     def parse_indexing(self, line, parsed_expr):
         """
+        /***************************************************************************************
+        ***  METHOD : parse_indexing                                                        ***
+        ***  DESCRIPTION :                                                                   ***
+        ***      Parses the indexing mode from the expression and updates the parsed         ***
+        ***      expression.                                                                 ***
+        ***                                                                                  ***
+        ***  INPUT PARAMETERS :                                                              ***
+        ***      line        : str   : The expression line being parsed.                     ***
+        ***      parsed_expr : dict  : The dictionary representing the parsed expression.    ***
+        ***                                                                                  ***
+        ***  RETURN : str                                                                    ***
+        ***      Returns the updated line after stripping the indexing mode.                 ***
+        ***************************************************************************************/
+
         Parse the indexing mode from the expression (e.g., `,X`).
         Returns the updated line (after stripping indexing mode).
         """
@@ -687,8 +855,24 @@ class ExpressionParser:
             return line[:-2].strip()
         return line
 
+
     def parse_literals(self, line, parsed_expr):
         """
+        /***************************************************************************************
+        ***  METHOD : parse_literals                                                         ***
+        ***  DESCRIPTION :                                                                   ***
+        ***      Parses and validates literals from the expression, adding valid literals    ***
+        ***      to the literal table and logging errors if encountered.                     ***
+        ***                                                                                  ***
+        ***  INPUT PARAMETERS :                                                              ***
+        ***      line        : str   : The expression line containing the literal.           ***
+        ***      parsed_expr : dict  : The dictionary representing the parsed expression.    ***
+        ***                                                                                  ***
+        ***  RETURN : dict or None                                                           ***
+        ***      Returns the parsed expression if invalid, otherwise None if the literal     ***
+        ***      is valid.                                                                   ***
+        ***************************************************************************************/
+
         Parse and validate literals from the expression. Handles errors and adds them to the literal table.
         Returns the parsed expression or None if it's valid and already inserted.
         """
@@ -742,8 +926,20 @@ class ExpressionParser:
         self.log_handler.log_action(f"Used existing literal '{literal_name}'")
         return parsed_expr
 
+
     def parse_operands(self, line, parsed_expr):
         """
+        /***************************************************************************************
+        ***  METHOD : parse_operands                                                         ***
+        ***  DESCRIPTION :                                                                   ***
+        ***      Splits the expression line and assigns operands, identifying the operator   ***
+        ***      and handling parentheses.                                                   ***
+        ***                                                                                  ***
+        ***  INPUT PARAMETERS :                                                              ***
+        ***      line        : str   : The expression line containing operands.              ***
+        ***      parsed_expr : dict  : The dictionary representing the parsed expression.    ***
+        ***************************************************************************************/
+
         Split and assign operands to the parsed expression. Identifies the operator (`+`, `-`) and assigns operands.
         """
         if '+' in line:
@@ -762,8 +958,19 @@ class ExpressionParser:
         elif len(operands) == 2:
             parsed_expr['operand1'], parsed_expr['operand2'] = operands
 
+
     def validate_operands(self, parsed_expr):
         """
+        /***************************************************************************************
+        ***  METHOD : validate_operands                                                      ***
+        ***  DESCRIPTION :                                                                   ***
+        ***      Validates the parsed operands, checking for missing or invalid operands,    ***
+        ***      and logs errors if found.                                                   ***
+        ***                                                                                  ***
+        ***  INPUT PARAMETERS :                                                              ***
+        ***      parsed_expr : dict  : The dictionary representing the parsed expression.    ***
+        ***************************************************************************************/
+
         Validate the operands in the parsed expression. If missing operands or invalid combination, add errors.
         """
         if not parsed_expr['operand1']:
@@ -771,8 +978,18 @@ class ExpressionParser:
         elif parsed_expr['operator'] and not parsed_expr['operand2']:
             parsed_expr['error'] = "Missing second operand."
 
+
     def get_parsed_expressions(self):
         """
+        /***************************************************************************************
+            ***  METHOD : get_parsed_expressions                                                 ***
+            ***  DESCRIPTION :                                                                   ***
+            ***      Returns the list of parsed expressions stored by the parser.                ***
+            ***                                                                                  ***
+            ***  RETURN : list                                                                   ***
+            ***      A list of parsed expressions.                                               ***
+            ***************************************************************************************/
+
         Returns the parsed expressions.
         
         Returns:
@@ -784,6 +1001,13 @@ class ExpressionParser:
 
 class ExpressionEvaluator:
     """
+    /***************************************************************************************
+    ***  CLASS NAME : ExpressionEvaluator                                                ***
+    ***  DESCRIPTION :                                                                   ***
+    ***      Evaluates parsed expressions by calculating their values and determining    ***
+    ***      their relocatability.                                                       ***
+    ***************************************************************************************/
+
     Class responsible for evaluating parsed expressions.
     
     Attributes:
@@ -793,9 +1017,23 @@ class ExpressionEvaluator:
         evaluated_expressions (list): List of evaluated expressions with their results.
         log_handler (ErrorLogHandler): Reference to the error log handler.
     """
-    
+
+
     def __init__(self, parsed_expressions, symbol_table, literal_table, log_handler):
         """
+        /***************************************************************************************
+        ***  METHOD : __init__                                                               ***
+        ***  DESCRIPTION :                                                                   ***
+        ***      Initializes the evaluator with parsed expressions, a symbol table, literal  ***
+        ***      table, and a log handler for managing errors and actions.                   ***
+        ***                                                                                  ***
+        ***  INPUT PARAMETERS :                                                              ***
+        ***      parsed_expressions : list  : List of parsed expressions.                    ***
+        ***      symbol_table       : SymbolTable  : Reference to the symbol table.          ***
+        ***      literal_table      : LiteralTableList  : Reference to the literal table.    ***
+        ***      log_handler        : ErrorLogHandler  : Logs actions and errors.            ***
+        ***************************************************************************************/
+
         Initializes the evaluator with parsed expressions, symbol table, literal table, and log handler.
         
         Args:
@@ -810,8 +1048,15 @@ class ExpressionEvaluator:
         self.evaluated_expressions = []
         self.log_handler = log_handler
 
+
     def evaluate_all(self):
         """
+        /***************************************************************************************
+        ***  METHOD : evaluate_all                                                           ***
+        ***  DESCRIPTION :                                                                   ***
+        ***      Evaluates all parsed expressions and logs actions or errors as necessary.   ***
+        ***************************************************************************************/
+
         Evaluates all parsed expressions and stores the results in evaluated_expressions.
         Logs actions and errors as necessary.
         """
@@ -824,8 +1069,23 @@ class ExpressionEvaluator:
                     self.log_handler.log_action(f"Evaluated expression: {parsed_expr['original_expression']}")
                 self.evaluated_expressions.append(evaluated_expr)
 
+
     def evaluate_expression(self, parsed_expr):
         """
+        /***************************************************************************************
+        ***  METHOD : evaluate_expression                                                    ***
+        ***  DESCRIPTION :                                                                   ***
+        ***      Evaluates a single parsed expression and computes its value, relocatability,***
+        ***      and various flags.                                                          ***
+        ***                                                                                  ***
+        ***  INPUT PARAMETERS :                                                              ***
+        ***      parsed_expr : dict   : A parsed expression dictionary.                      ***
+        ***                                                                                  ***
+        ***  RETURN : dict                                                                   ***
+        ***      Returns a dictionary representing the evaluated expression, with its value  ***
+        ***      and flags.                                                                  ***
+        ***************************************************************************************/
+
         Evaluates a single parsed expression.
         
         Args:
@@ -892,8 +1152,22 @@ class ExpressionEvaluator:
 
         return evaluated_expr
 
+
     def get_operand_value(self, operand):
         """
+        /***************************************************************************************
+        ***  METHOD : get_operand_value                                                      ***
+        ***  DESCRIPTION :                                                                   ***
+        ***      Retrieves the value and relocatability flag (RFLAG) for an operand,         ***
+        ***      handling symbols, literals, and numeric values.                             ***
+        ***                                                                                  ***
+        ***  INPUT PARAMETERS :                                                              ***
+        ***      operand : str   : The operand to evaluate (symbol, literal, or numeric).    ***
+        ***                                                                                  ***
+        ***  RETURN : tuple                                                                  ***
+        ***      Returns a tuple with (value, relocatability flag, error message).           ***
+        ***************************************************************************************/
+
         Retrieves the value and RFLAG for an operand (symbol, literal, or numeric).
         
         Args:
@@ -928,6 +1202,21 @@ class ExpressionEvaluator:
 
     def evaluate_rflag(self, rflag1, operator, rflag2):
         """
+        /***************************************************************************************
+        ***  METHOD : evaluate_rflag                                                         ***
+        ***  DESCRIPTION :                                                                   ***
+        ***      Evaluates the relocatability (RFLAG) of the result based on the operation   ***
+        ***      performed between two operands.                                             ***
+        ***                                                                                  ***
+        ***  INPUT PARAMETERS :                                                              ***
+        ***      rflag1    : bool   : RFLAG of the first operand (True for relocatable).     ***
+        ***      operator  : str    : The operation performed ('+' or '-').                  ***
+        ***      rflag2    : bool   : RFLAG of the second operand (True for relocatable).    ***
+        ***                                                                                  ***
+        ***  RETURN : tuple                                                                  ***
+        ***      Returns a tuple with (relocatable_flag, error_message) if applicable.       ***
+        ***************************************************************************************/
+
         Evaluates the RFLAG (relocatability) based on the operation and RFLAGS of the operands.
         
         Args:
@@ -963,6 +1252,15 @@ class ExpressionEvaluator:
 
     def get_evaluated_expressions(self):
         """
+        /***************************************************************************************
+        ***  METHOD : get_evaluated_expressions                                              ***
+        ***  DESCRIPTION :                                                                   ***
+        ***      Returns the list of evaluated expressions.                                  ***
+        ***                                                                                  ***
+        ***  RETURN : list                                                                   ***
+        ***      A list of evaluated expressions with results.                               ***
+        ***************************************************************************************/
+
         Returns the evaluated expressions.
         
         Returns:
