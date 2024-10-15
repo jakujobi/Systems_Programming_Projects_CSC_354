@@ -429,19 +429,14 @@ class ExpressionParser:
                     self.log_handler.log_action(f"Parsed expression: {parsed_expr['original_expression']}")
                 self.parsed_expressions.append(parsed_expr)
 
+ 
     def parse_line(self, line):
         """
         Parses a single line into a structured expression and handles literals.
-        
-        Args:
-            line (str): A single line of expression.
-        
-        Returns:
-            dict: A dictionary containing parsed expression details.
         """
         parsed_expr = {
             'original_expression': line.strip(),
-            'addressing_mode': 'DIRECT',  # Default addressing mode
+            'addressing_mode': 'DIRECT',
             'operator': None,
             'operand1': None,
             'operand2': None,
@@ -452,101 +447,115 @@ class ExpressionParser:
         # Trim leading and trailing whitespaces
         line = line.strip()
 
-        # Ignore empty lines
-        if not line:
+        if not line:  # Ignore empty lines
             return None
 
-        # Handle addressing modes
-        if line.startswith('@'):
-            parsed_expr['addressing_mode'] = 'INDIRECT'
-            line = line[1:].strip()
-        elif line.startswith('#'):
-            parsed_expr['addressing_mode'] = 'IMMEDIATE'
-            line = line[1:].strip()
+        # Parse different parts of the expression
+        line = self.parse_addressing_mode(line, parsed_expr)
+        line = self.parse_indexing(line, parsed_expr)
 
-        # Check for indexed addressing mode
-        if line[-2:].upper() == ',X': 
-            parsed_expr['indexing'] = True
-            line = line[:-2].strip()
-            
-        # Error: Invalid combination of addressing mode and indexing
+        # Handle invalid combination of addressing mode and indexing
         if parsed_expr['indexing'] and parsed_expr['addressing_mode'] in ['IMMEDIATE', 'INDIRECT']:
             parsed_expr['error'] = f"{parsed_expr['addressing_mode'][0]} and x ERROR"
             return parsed_expr
 
         # Handle literals
         if line.startswith('='):
-            literal_name = line
-            literal = self.literal_table.search(literal_name)
-            if not literal:
-                try:
-                    # Check for illegal character literal format =C'123'
-                    if literal_name.upper().startswith("=C'"):
-                        raise ValueError(f"Illegal literal format: {literal_name}")
+            result = self.parse_literals(line, parsed_expr)
+            return result  # It either returns the expression or continues processing
 
-                    
-                    # Handle hexadecimal literals
-                    if literal_name.upper().startswith("=0X"):
-                        literal_value = literal_name[3:]  # Remove the "=0X" part
-                        literal_value = literal_value.upper()  # Convert to uppercase
+        # Parse operands and operator
+        self.parse_operands(line, parsed_expr)
 
-                        # Validate hexadecimal format
-                        if not all(c in '0123456789ABCDEFabcdef' for c in literal_value):
-                            raise ValueError(f"Invalid hexadecimal value: {literal_value}")
+        # Validate operands
+        self.validate_operands(parsed_expr)
 
-                        # Validate length (must be even to form complete bytes)
-                        if len(literal_value) % 2 != 0:
-                            raise ValueError(f"Hexadecimal value length is not valid (must be even): {literal_value}")
+        return parsed_expr
 
-                        literal_length = len(literal_value) // 2  # Two characters per byte
+    ### Sub-methods below ###
 
-                    # Handle character literals
-                    elif literal_name.upper().startswith("=0C") or literal_name.upper().startswith("=C'"):
-                        if literal_name.upper().startswith("=0C"):
-                            char_sequence = literal_name[3:]  # Remove the "=0C" part
-                        else:
-                            if not (literal_name.endswith("'") and len(literal_name) > 4):
-                                raise ValueError(f"Invalid character literal format: {literal_name}")
-                            char_sequence = literal_name[3:-1]  # Extract characters inside C'...'
+    def parse_addressing_mode(self, line, parsed_expr):
+        """
+        Parse the addressing mode from the expression and modify the parsed expression.
+        Returns the updated line (after stripping addressing mode).
+        """
+        if line.startswith('@'):
+            parsed_expr['addressing_mode'] = 'INDIRECT'
+            return line[1:].strip()
+        elif line.startswith('#'):
+            parsed_expr['addressing_mode'] = 'IMMEDIATE'
+            return line[1:].strip()
+        return line
 
-                        if len(char_sequence) == 0:
-                            raise ValueError(f"Character literal is empty: {literal_name}")
+    def parse_indexing(self, line, parsed_expr):
+        """
+        Parse the indexing mode from the expression (e.g., `,X`).
+        Returns the updated line (after stripping indexing mode).
+        """
+        if line[-2:].upper() == ',X':
+            parsed_expr['indexing'] = True
+            return line[:-2].strip()
+        return line
 
-                        literal_value = ''.join(f"{ord(c):02X}" for c in char_sequence)
-                        literal_length = len(char_sequence)
+    def parse_literals(self, line, parsed_expr):
+        """
+        Parse and validate literals from the expression. Handles errors and adds them to the literal table.
+        Returns the parsed expression or None if it's valid and already inserted.
+        """
+        literal_name = line
+        literal = self.literal_table.search(literal_name)
 
-                    else:
-                        # Invalid literal format
-                        raise ValueError(f"Invalid literal format: {literal_name}")
+        if not literal:
+            try:
+                # Check for illegal character literal format =C'123'
+                if literal_name.upper().startswith("=C'"):
+                    raise ValueError(f"Illegal literal format: {literal_name}")
 
-                    # Insert literal into the literal table
-                    new_literal = LiteralData(name=literal_name, value=literal_value, length=literal_length)
-                    self.literal_table.insert(new_literal)
+                # Handle hexadecimal literals
+                if literal_name.upper().startswith("=0X"):
+                    literal_value = literal_name[3:].upper()
+                    if not all(c in '0123456789ABCDEFabcdef' for c in literal_value):
+                        raise ValueError(f"Invalid hexadecimal value: {literal_value}")
+                    if len(literal_value) % 2 != 0:
+                        raise ValueError(f"Hexadecimal value length is not valid (must be even): {literal_value}")
+                    literal_length = len(literal_value) // 2  # Two characters per byte
 
-                    parsed_expr['operand1'] = literal_name
-                    self.log_handler.log_action(f"Inserted new literal '{literal_name}'")
-                except ValueError as e:
-                    # Capture any validation errors and mark them as "ERROR" in the expression table
-                    parsed_expr['error'] = str(e)
-                    #self.log_handler.log_error(parsed_expr['error'], context_info=literal_name)
-                    
-                    # Check if this invalid literal has already been processed
-                    if literal_name in self.invalid_literals_set:
-                        return None  # Skip duplicate invalid literals
-                    else:
-                        # Add to invalid literal set
-                        self.invalid_literals_set.add(literal_name)
-                        self.log_handler.log_error(parsed_expr['error'], context_info=literal_name)
-                        return parsed_expr  # Return the invalid literal as an error
+                # Handle character literals
+                elif literal_name.upper().startswith("=0C"):
+                    char_sequence = literal_name[3:]
+                    if len(char_sequence) == 0:
+                        raise ValueError(f"Character literal is empty: {literal_name}")
+                    literal_value = ''.join(f"{ord(c):02X}" for c in char_sequence)
+                    literal_length = len(char_sequence)
 
-            else:
+                else:
+                    raise ValueError(f"Invalid literal format: {literal_name}")
+
+                # Insert literal into the literal table
+                new_literal = LiteralData(name=literal_name, value=literal_value, length=literal_length)
+                self.literal_table.insert(new_literal)
+
                 parsed_expr['operand1'] = literal_name
-                self.log_handler.log_action(f"Used existing literal '{literal_name}'")
+                self.log_handler.log_action(f"Inserted new literal '{literal_name}'")
+                return None  # Skip further processing for valid literals
 
-            return parsed_expr
+            except ValueError as e:
+                parsed_expr['error'] = str(e)
+                if literal_name in self.invalid_literals_set:
+                    return None  # Skip duplicate invalid literals
+                else:
+                    self.invalid_literals_set.add(literal_name)
+                    self.log_handler.log_error(parsed_expr['error'], context_info=literal_name)
+                    return parsed_expr  # Return the invalid literal as an error
 
-        # Continue with normal parsing for non-literal expressions
-        # Split operands and operator
+        parsed_expr['operand1'] = literal_name
+        self.log_handler.log_action(f"Used existing literal '{literal_name}'")
+        return parsed_expr
+
+    def parse_operands(self, line, parsed_expr):
+        """
+        Split and assign operands to the parsed expression. Identifies the operator (`+`, `-`) and assigns operands.
+        """
         if '+' in line:
             parsed_expr['operator'] = '+'
             operands = line.split('+')
@@ -556,26 +565,21 @@ class ExpressionParser:
         else:
             operands = [line]
 
-        # Remove parentheses if present
-        operands = [operand.strip('()').strip() for operand in operands]
+        operands = [operand.strip('()').strip() for operand in operands]  # Clean parentheses
 
-        # Assign operands
         if len(operands) == 1:
             parsed_expr['operand1'] = operands[0]
         elif len(operands) == 2:
             parsed_expr['operand1'], parsed_expr['operand2'] = operands
-        else:
-            parsed_expr['error'] = f"Invalid expression format: {line}"
-            return parsed_expr
 
-        # Validate operands
+    def validate_operands(self, parsed_expr):
+        """
+        Validate the operands in the parsed expression. If missing operands or invalid combination, add errors.
+        """
         if not parsed_expr['operand1']:
             parsed_expr['error'] = "Missing first operand."
         elif parsed_expr['operator'] and not parsed_expr['operand2']:
             parsed_expr['error'] = "Missing second operand."
-
-        return parsed_expr
-
 
     def get_parsed_expressions(self):
         """
