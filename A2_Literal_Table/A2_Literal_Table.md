@@ -1,7 +1,5 @@
 # Modules
 
-Sure thing! Below is a comprehensive and complete project plan that lays out the different modules, classes, attributes, methods, and their relationships. The goal is to provide a detailed overview to guide the implementation of the entire project in a cohesive and integrated way.
-
 ### **Overview of the Project**
 The purpose of this project is to create an assembler-like system that parses, evaluates, and processes **symbols**, **literals**, and **expressions** for a simplified assembly language (SIC/XE assembler). The main components are the **Symbol Table**, **Literal Table**, **Expression Evaluator**, and several supporting utility functions/classes.
 
