@@ -1,15 +1,18 @@
 import sys
 import re
 from FileExplorer import FileExplorer
+from ErrorLogHandler import ErrorLogHandler
 
 class OpcodeHandler:
-    def __init__(self, file_path='opcodes.txt'):
+    def __init__(self, file_path='opcodes.txt', logger=None):
         """
         Initializes the OpcodeHandler with an empty opcode dictionary.
         Creates an instance of FileExplorer to handle file operations.
+        Uses ErrorLogHandler to manage error and action logging.
         """
         self.opcodes = {}  # Dictionary to store opcode info
         self.file_explorer = FileExplorer()  # Create a new instance of FileExplorer
+        self.logger = logger if logger else ErrorLogHandler()  # Use provided logger or create one
         self.file_path = file_path
         self._load_opcodes()  # Private method to load opcodes on initialization
 
@@ -25,13 +28,15 @@ class OpcodeHandler:
             if not lines:
                 raise FileNotFoundError(f"No lines found in '{self.file_path}' or file is empty.")
 
+            self.logger.log_action(f"Loading opcodes from file: {self.file_path}", False)
+
             for line_num, line in enumerate(lines, start=1):
                 # Use regex to handle inconsistent spacing
                 parts = re.split(r'\s+', line.strip())
 
                 # Ensure the line has exactly 3 parts
                 if len(parts) != 3:
-                    print(f"[Error] Line {line_num} has an invalid format: '{line.strip()}'")
+                    self.logger.log_error(f"Invalid format on line {line_num}: '{line.strip()}'")
                     continue
 
                 name, format_type, hex_code = parts
@@ -40,14 +45,14 @@ class OpcodeHandler:
                 try:
                     format_parsed = (3, 4) if format_type == "3/4" else int(format_type)
                 except ValueError:
-                    print(f"[Error] Line {line_num} has an invalid format type: '{format_type}'")
+                    self.logger.log_error(f"Invalid format type on line {line_num}: '{format_type}'")
                     continue
 
                 # Validate and convert the hex code
                 try:
                     hex_value = int(hex_code, 16)
                 except ValueError:
-                    print(f"[Error] Line {line_num} has an invalid hex code: '{hex_code}'")
+                    self.logger.log_error(f"Invalid hex code on line {line_num}: '{hex_code}'")
                     continue
 
                 # Store the opcode information
@@ -55,40 +60,54 @@ class OpcodeHandler:
                     'format': format_parsed,
                     'hex': hex_value
                 }
+                self.logger.log_action(f"Loaded opcode '{name}' with format {format_parsed} and hex {hex_value:02X}", False)
 
         except FileNotFoundError as e:
-            print(f"[File Error] {e}")
+            self.logger.log_error(str(e), "File Error")
         except Exception as e:
-            print(f"[Unexpected Error] An error occurred while loading opcodes: {e}")
+            self.logger.log_error(f"Unexpected error while loading opcodes: {e}", "Unexpected Error")
 
     def get_opcode(self, name):
         """
         Retrieves the opcode information for the given mnemonic.
         """
         try:
-            return self.opcodes[name]
+            opcode_info = self.opcodes[name]
+            self.logger.log_action(f"Retrieved opcode '{name}': {opcode_info}", False)
+            return opcode_info
         except KeyError:
-            raise ValueError(f"Opcode '{name}' not found.")
+            error_message = f"Opcode '{name}' not found."
+            self.logger.log_error(error_message, "Lookup Error")
+            raise ValueError(error_message)
 
     def get_format(self, name):
         """
         Returns the format of the specified opcode, if found.
         """
-        opcode = self.get_opcode(name)
-        return opcode['format']
+        try:
+            opcode = self.get_opcode(name)
+            return opcode['format']
+        except ValueError as e:
+            self.logger.log_error(str(e), "Format Retrieval Error")
+            raise
 
     def get_hex(self, name):
         """
         Returns the hexadecimal representation of the specified opcode, if found.
         """
-        opcode = self.get_opcode(name)
-        return opcode['hex']
+        try:
+            opcode = self.get_opcode(name)
+            return opcode['hex']
+        except ValueError as e:
+            self.logger.log_error(str(e), "Hex Retrieval Error")
+            raise
 
     def print_opcodes(self):
         """
         Prints all loaded opcodes to the screen in a readable format.
         """
         if not self.opcodes:
+            self.logger.log_action("No opcodes loaded.", False)
             print("No opcodes loaded.")
             return
 
@@ -98,3 +117,47 @@ class OpcodeHandler:
             format_str = f"{info['format']}"  # Convert format to string for display
             hex_str = f"{info['hex']:02X}"  # Convert hex to uppercase string
             print(f"{name:<10} {format_str:<10} {hex_str:<10}")
+
+
+def main():
+    # Create an instance of ErrorLogHandler
+    logger = ErrorLogHandler()
+
+    # Check if a file name is provided as a command-line argument
+    file_name = sys.argv[1] if len(sys.argv) > 1 else 'opcodes.txt'
+
+    # Create an instance of OpcodeHandler with the provided file name
+    try:
+        opcode_handler = OpcodeHandler(file_name, logger)
+    except Exception as e:
+        logger.log_error(f"Failed to create OpcodeHandler: {e}", "Initialization Error")
+        #logger.display_errors()
+        return
+
+    # Print all loaded opcodes
+    logger.log_action("\nLoaded Opcodes:", False)
+    try:
+        opcode_handler.print_opcodes()
+    except Exception as e:
+        logger.log_error(f"Failed to print opcodes: {e}", "Print Error")
+
+    # Test retrieval of specific opcode information
+    test_mnemonics = ['ADD', 'SUB', 'LDA', 'INVALID']
+    for mnemonic in test_mnemonics:
+        try:
+            logger.log_action(f"\nRetrieving details for '{mnemonic}':", False)
+            opcode_info = opcode_handler.get_opcode(mnemonic)
+            print(f"Format: {opcode_info['format']}, Hex Code: {opcode_info['hex']:02X}")
+        except ValueError as e:
+            logger.log_error(str(e), "Lookup Error")
+        except Exception as e:
+            logger.log_error(f"Unexpected error while retrieving '{mnemonic}': {e}", "Unexpected Error")
+
+    # Display logs and errors
+    logger.display_log()
+    logger.display_errors()
+
+
+# Run the main program
+if __name__ == "__main__":
+    main()
