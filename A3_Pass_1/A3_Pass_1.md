@@ -116,9 +116,201 @@ C'EOF'      1006        3
    - The literal table stores values like `C'EOF'` that are used directly in the code. In Pass 1, you gather these literals and determine their memory placement, which will be used in Pass 2.
 
 ---
-### Final Info
-In **Pass 1**, you don't generate object code; instead, you focus on gathering necessary information (LC values, symbols, literals) for **Pass 2**, which will generate the final assembly listing and object code.
+# Example
+Source listing
+```assembly
+        START   0
+        LDA     #1000           ; Immediate addressing, Format 3
+        +LDA    #30000          ; Immediate addressing, Format 4
+        +STA    RESULT          ; Store using Format 4
+        ADD     VALUE           ; Direct addressing, Format 3
+        +ADD    =X'0F1E2D3C'    ; Literal in Format 4
+        +SUB    @ADDRESS        ; Indirect addressing, Format 4
+        AND     NUM,X           ; Indexed addressing, Format 3
+        +OR     =C'HELLO'       ; Character literal, Format 4
+        LDCH    BUF,X           ; Load character, Indexed addressing, Format 3
+        +STCH   BUF,X           ; Store character, Indexed addressing, Format 4
 
+        LDB     =X'FF'          ; Load base register, Format 3
+        +LDX    VALUE           ; Load index register, Format 4
+        LDT     =X'ABCDE'       ; Load T register, Format 3
+        LDF     FLVAL           ; Load floating-point register, Format 3
+        LDL     +LABEL          ; Load to register L, Format 4
+
+        COMP    #2000           ; Compare immediate, Format 3
+        +JEQ    NEXT            ; Jump if equal, Format 4
+        JGT     END             ; Jump if greater than, Format 3
+        JLT     +LOOP           ; Jump if less than, Format 4
+
+        +JSUB   SUBRTN          ; Jump to subroutine, Format 4
+        RSUB                    ; Return from subroutine, Format 3
+
+        ADDR    A, B            ; Add registers, Format 2
+        SUBR    T, S            ; Subtract registers, Format 2
+        MULR    X, L            ; Multiply registers, Format 2
+        DIVR    F, A            ; Divide registers, Format 2
+
+        SHIFTL  T, 4            ; Shift T left 4 times, Format 2
+        SHIFTR  S, 2            ; Shift S right 2 times, Format 2
+        RMO     A, L            ; Copy contents of register A to register L, Format 2
+        CLEAR   X               ; Clear register X, Format 2
+
+        TIXR    S               ; Increment index register, Format 2
+
+        HIO                     ; Halt I/O channel, Format 1
+        SIO                     ; Start I/O operation, Format 1
+        TIO                     ; Test I/O operation, Format 1
+
+        FIX                     ; Convert float to integer, Format 1
+        FLOAT                   ; Convert integer to float, Format 1
+        NORM                    ; Normalize floating-point value, Format 1
+
+        +TD     DEVADDR         ; Test device address, Format 4
+        +RD     DEVADDR         ; Read device, Format 4
+        +WD     DEVADDR         ; Write device, Format 4
+
+        LPS     +PROGADDR       ; Load processor status, Format 4
+        SVC     3               ; Supervisor call, Format 2
+
+        STA     MEM             ; Store accumulator, Format 3
+        +STB    BASE            ; Store base register, Format 4
+        STL     LENGTH          ; Store L register, Format 3
+        STX     +INDEX          ; Store index register, Format 4
+        +STT    TIMER           ; Store T register, Format 4
+        +STF    FLVAL           ; Store floating-point register, Format 4
+        +STI    MEM             ; Store immediate value to memory, Format 4
+        +STSW   SW              ; Store status word, Format 4
+        STCH    CHAR            ; Store character, Format 3
+        +SSK    SECVAL          ; Store storage key, Format 4
+
+        BASE    LDBASE          ; Set base register
+
+NEXT    +TIX    INDEX           ; Increment index, Format 4
+        +J      LOOP            ; Unconditional jump, Format 4
+
+LOOP    LDCH    BUF             ; Load character, Format 3
+        ADD     ONE             ; Add a word value, Format 3
+        +JLT    NEXT            ; Jump if less than, Format 4
+        RSUB                    ; Return, Format 3
+
+VALUE   WORD    2000            ; Define a word constant
+ADDRESS WORD    5000            ; Define a word constant
+FLVAL   RESW    1               ; Reserve one word for floating-point value
+DEVADDR RESB    1               ; Reserve one byte for device address
+MEM     RESW    10              ; Reserve memory
+BUF     RESB    256             ; Reserve a buffer of 256 bytes
+CHAR    RESB    1               ; Reserve a byte for character storage
+SECVAL  RESB    1               ; Reserve a byte for security key storage
+
+TIMER   WORD    0               ; Define a timer word
+BASE    WORD    0               ; Define a base register word
+INDEX   WORD    0               ; Define an index register word
+ONE     WORD    1               ; Define a word constant
+LABEL   WORD    6000            ; Define a word constant
+
+SUBRTN  LDA     #3000           ; Load immediate, Format 3
+        COMP    #4000           ; Compare immediate, Format 3
+        +JLT    RET             ; Jump if less than, Format 4
+        ADD     VALUE           ; Add value, Format 3
+        +STCH   BUF             ; Store character, Format 4
+
+RET     RSUB                    ; Return, Format 3
+
+RESULT  RESW    1               ; Reserve memory for result
+PROGADDR WORD   0               ; Define program address
+SW      WORD    0               ; Define status word
+
+END     START                   ; End of the program
+
+```
+
+
+## Pass1 Output
+```assembly
+1       000000          START      0           
+2       000000          LDA        #1000       
+3       000003          +LDA       #30000      
+4       000007          +STA       RESULT      
+5       00000B          ADD        VALUE       
+6       00000E          +ADD       =X'0F1E2D3C'
+7       000012          +SUB       @ADDRESS    
+8       000016          AND        NUM,X       
+9       000019          +OR        =C'HELLO'   
+10      00001D          LDCH       BUF,X       
+11      000020          +STCH      BUF,X       
+12      000024          LDB        =X'FF'      
+13      000027          +LDX       VALUE       
+14      00002B          LDT        =X'ABCDE'   
+15      00002E          LDF        FLVAL       
+16      000031          LDL        +LABEL      
+17      000035          COMP       #2000       
+18      000038          +JEQ       NEXT        
+19      00003C          JGT        END         
+20      00003F          +JLT       LOOP        
+21      000043          +JSUB      SUBRTN      
+22      000047          RSUB                   
+23      00004A          ADDR       A, B        
+24      00004C          SUBR       T, S        
+25      00004E          MULR       X, L        
+26      000050          DIVR       F, A        
+27      000052          SHIFTL     T, 4        
+28      000054          SHIFTR     S, 2        
+29      000056          RMO        A, L        
+30      000058          CLEAR      X           
+31      00005A          TIXR       S           
+32      00005C          HIO                    
+33      00005D          SIO                    
+34      00005E          TIO                    
+35      00005F          FIX                    
+36      000060          FLOAT                  
+37      000061          NORM                   
+38      000062          +TD        DEVADDR     
+39      000066          +RD        DEVADDR     
+40      00006A          +WD        DEVADDR     
+41      00006E          LPS        +PROGADDR   
+42      000072          SVC        3           
+43      000074          STA        MEM         
+44      000077          +STB       BASE        
+45      00007B          STL        LENGTH      
+46      00007E          STX        +INDEX      
+47      000082          +STT       TIMER       
+48      000086          +STF       FLVAL       
+49      00008A          +STI       MEM         
+50      00008E          +STSW      SW          
+51      000092          STCH       CHAR        
+52      000095          +SSK       SECVAL      
+53      000099          BASE       LDBASE      
+54      00009B  NEXT    +TIX       INDEX       
+55      00009F          +J         LOOP        
+56      0000A3  LOOP    LDCH       BUF         
+57      0000A6          ADD        ONE         
+58      0000A9          +JLT       NEXT        
+59      0000AD          RSUB                   
+60      0000B0  VALUE   WORD       2000        
+61      0000B3  ADDRESS WORD       5000        
+62      0000B6  FLVAL   RESW       1           
+63      0000B9  DEVADDR RESB       1           
+64      0000BA  MEM     RESW       10          
+65      0000C4  BUF     RESB       256         
+66      0001C4  CHAR    RESB       1           
+67      0001C5  SECVAL  RESB       1           
+68      0001C6  TIMER   WORD       0           
+69      0001C9  BASE    WORD       0           
+70      0001CC  INDEX   WORD       0           
+71      0001CF  ONE     WORD       1           
+72      0001D2  LABEL   WORD       6000        
+73      0001D5  SUBRTN  LDA        #3000       
+74      0001D8          COMP       #4000       
+75      0001DB          +JLT       RET         
+76      0001DF          ADD        VALUE       
+77      0001E2          +STCH      BUF         
+78      0001E6  RET     RSUB                   
+79      0001E9  RESULT  RESW       1           
+80      0001EC  PROGADDRWORD       0           
+81      0001EF  SW      WORD       0           
+82      0001F2  END     START                  
+
+```
 ---
 
 ### **Design Plan for Pass 1 of the Assembler Project**
