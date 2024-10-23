@@ -19,7 +19,7 @@ class OpcodeHandler:
     def _load_opcodes(self):
         """
         Reads the opcodes from the file using FileExplorer and loads them into the dictionary.
-        Expects a space-separated file with 'name format hex' structure.
+        Expects a space-separated file with 'name hex format' structure.
         """
         try:
             # Use FileExplorer's method to get the file contents as a list of lines
@@ -39,11 +39,11 @@ class OpcodeHandler:
                     self.logger.log_error(f"Invalid format on line {line_num}: '{line.strip()}'")
                     continue
 
-                name, format_type, hex_code = parts
+                name, hex_code, format_type = parts
 
                 # Validate and convert the format type
                 try:
-                    format_parsed = (3, 4) if format_type == "3/4" else int(format_type)
+                    format_parsed = int(format_type)
                 except ValueError:
                     self.logger.log_error(f"Invalid format type on line {line_num}: '{format_type}'")
                     continue
@@ -111,12 +111,13 @@ class OpcodeHandler:
             print("No opcodes loaded.")
             return
 
-        print(f"{'Mnemonic':<10} {'Format':<10} {'Hex Code':<10}")
+        print(f"{'Mnemonic':<10} {'Hex Code':<10} {'Format':<10}")
         print("=" * 30)
         for name, info in self.opcodes.items():
             format_str = f"{info['format']}"  # Convert format to string for display
             hex_str = f"{info['hex']:02X}"  # Convert hex to uppercase string
-            print(f"{name:<10} {format_str:<10} {hex_str:<10}")
+            print(f"{name:<10} {hex_str:<10} {format_str:<10}")
+
 
 
 def main():
@@ -131,7 +132,7 @@ def main():
         opcode_handler = OpcodeHandler(file_name, logger)
     except Exception as e:
         logger.log_error(f"Failed to create OpcodeHandler: {e}", "Initialization Error")
-        #logger.display_errors()
+        logger.display_errors()
         return
 
     # Print all loaded opcodes
@@ -145,7 +146,7 @@ def main():
     test_mnemonics = ['ADD', 'SUB', 'LDA', 'INVALID']
     for mnemonic in test_mnemonics:
         try:
-            logger.log_action(f"\nRetrieving details for '{mnemonic}':", False)
+            logger.log_action(f"\nRetrieving details for '{mnemonic}':, False")
             opcode_info = opcode_handler.get_opcode(mnemonic)
             print(f"Format: {opcode_info['format']}, Hex Code: {opcode_info['hex']:02X}")
         except ValueError as e:
