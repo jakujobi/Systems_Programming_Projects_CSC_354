@@ -122,7 +122,7 @@ class FileExplorer:
             
             return self.read_file(file_generator)
         except FileNotFoundError:
-            print(f"File not found: {file_name}. Error: {fnf_error}")
+            print(f"File not found: {file_name}.")
         except Exception as e:
             print(f"An error occurred: {e}")
             return None
