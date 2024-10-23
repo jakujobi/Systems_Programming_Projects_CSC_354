@@ -116,7 +116,7 @@ C'EOF'      1006        3
    - The literal table stores values like `C'EOF'` that are used directly in the code. In Pass 1, you gather these literals and determine their memory placement, which will be used in Pass 2.
 
 ---
-# Example
+# Example 2
 Source listing
 ```assembly
         START   0
@@ -313,45 +313,21 @@ END     START                   ; End of the program
 ```
 ---
 
-### **Design Plan for Pass 1 of the Assembler Project**
-
-The goal of **Pass 1** in an assembler is to scan through the assembly source code, generate symbol and literal tables, and assign memory addresses using a **Location Counter (LOCCTR)**. Here's how we can design a Python program to achieve this:
-
----
-
-### **1. Overview of Pass 1**
-
-Pass 1 performs the following major tasks:
-
-1. **Initialize the LOCCTR**: Set the starting address from the **START** directive or **0** by default.
-2. **Parse Each Line of Assembly Code**: Extract labels, opcodes, operands, and other details.
-3. **Build Symbol Table**: Add labels to the symbol table with their respective addresses.
-4. **Manage the Literal Table**: Store literals found in the source and assign addresses later.
-5. **Update the LOCCTR**: Increment the LOCCTR based on the instruction size.
-6. **Generate Intermediate File**: Output an intermediate representation to use in **Pass 2**.
-
----
-
-### **2. Core Classes and Modules**
-
-#### **2.1. AssemblyInstruction**
-
+# Core Classes and Modules
+## 1. SourceCodeLine
 - **Purpose**: Represents a single line of assembly code.
 - **Attributes**:
   - `line_number`: The line number in the source file.
   - `address`: The memory address assigned to the instruction (set by LOCCTR).
   - `label`: The label of the instruction, if present.
   - `opcode`: The operation code or assembler directive.
+  - `format`: The final format of the instruction
   - `operands`: The operands of the instruction.
   - `object_code`: The object code generated (if any).
-  - `comment`: Any comment on the line.
 - **Methods**:
-  - `is_comment()`: Checks if the line is a comment.
   - `has_label()`: Checks if a label exists.
   - `__str__()`: Provides a string representation for debugging.
-
-#### **2.2. SymbolTable**
-
+## 2. SymbolTable
 - **Purpose**: Stores labels and their corresponding memory addresses.
 - **Attributes**:
   - `symbols`: A dictionary with labels as keys and addresses as values.
@@ -359,9 +335,7 @@ Pass 1 performs the following major tasks:
   - `add_label(label, address)`: Adds a label with its address to the table. Logs errors for duplicates.
   - `get_address(label)`: Retrieves the address for a given label.
   - `display()`: Displays the symbol table.
-
-#### **2.3. LiteralTable**
-
+## 3. LiteralTable
 - **Purpose**: Manages the storage and address assignment of literals.
 - **Attributes**:
   - `literals`: A dictionary with literal names as keys and details (e.g., value, length, address) as values.
@@ -369,9 +343,7 @@ Pass 1 performs the following major tasks:
   - `add_literal(literal, value, length)`: Adds a literal to the table.
   - `assign_addresses(start_address)`: Assigns addresses to literals starting from `start_address`.
   - `display()`: Displays the literal table.
-
-#### **2.4. LOCCTR (Location Counter)**
-
+## LocationCounter
 - **Purpose**: Manages memory address assignments during Pass 1.
 - **Attributes**:
   - `current_address`: Tracks the current memory address.
@@ -379,53 +351,48 @@ Pass 1 performs the following major tasks:
   - `initialize(start_address)`: Sets the starting address.
   - `increment(bytes)`: Increments the LOCCTR by a given number of bytes.
   - `get_current_address()`: Returns the current value of the LOCCTR.
+## Parser
 
-#### **2.5. Parser**
-
+## SourceReader
+- Load the source code from a file using `FileExplorer` as a list of lines
+- Skips a line if it only has comments
+	- Check if the first character (after all leading spaces are removed) is ";"
+- Receive a raw line of code and tokenize it into pieces
 - **Purpose**: Parses each line of the source file into components.
 - **Methods**:
   - `parse_line(line)`: Splits a line into label, opcode, operands, and comments.
   - `handle_directives(opcode, operands)`: Processes assembler directives like **START**, **END**, **BYTE**, **WORD**, etc.
   - `identify_literals(operands)`: Extracts literals from operands for insertion into the literal table.
-
-#### **2.6. IntermediateFileGenerator**
-
+## IntermediateFileGenerator
 - **Purpose**: Generates an intermediate file for Pass 2.
 - **Methods**:
   - `write_line(line)`: Writes a formatted line to the intermediate file.
   - `close_file()`: Closes the file after writing all lines.
-
-#### **2.7. ErrorHandler**
-
+## ErrorHandler
 - **Purpose**: Handles and logs errors and warnings during Pass 1.
 - **Methods**:
   - `log_error(message)`: Logs an error message.
   - `log_warning(message)`: Logs a warning message.
   - `display_errors()`: Displays all errors and warnings.
+## AssemblerPass1 (Driver Class)
+
 
 ---
 
-### **3. Workflow for Pass 1**
+## 3. Workflow for Pass 1
 
-#### **3.1. Initialize Components**
-
+### 3.1. Initialize Components
 - **Symbol Table**, **Literal Table**, **LOCCTR**, **ErrorHandler**, and **IntermediateFileGenerator** are initialized.
 - Set the LOCCTR to `0` or the address specified by the **START** directive.
-
-#### **3.2. Read Source File Line by Line**
-
+### 3.2. Read Source File Line by Line
 1. **Open the Source File** and read each line.
 2. **Skip Comments**: If the line starts with a comment character (e.g., `.`), skip further processing.
 3. **Parse Line**: Use the `Parser` class to extract components like label, opcode, operands, and comments.
-
-#### **3.3. Handle Labels**
-
+### 3.3. Handle Labels
 - If a label exists:
   - **Check for Duplicates**: If already in the symbol table, log an error.
   - **Add to Symbol Table**: Add the label with the current value of the LOCCTR.
-
-#### **3.4. Handle Opcodes and Directives**
-
+### 3.4. Handle Opcodes and Directives
 1. **Directives**:
    - **START**: Initialize the LOCCTR.
    - **END**: Mark the end of the source file. Handle any unprocessed literals.
@@ -434,24 +401,16 @@ Pass 1 performs the following major tasks:
 2. **Opcodes**:
    - Calculate instruction size based on the opcode.
    - Increment the LOCCTR based on the calculated size.
-
-#### **3.5. Handle Literals**
-
+### 3.5. Handle Literals
 - **Identify Literals**: For operands starting with `=`, add to the literal table.
 - **Assign Addresses to Literals**: At the end of Pass 1, assign addresses to literals starting from the next available memory address.
-
-#### **3.6. Update LOCCTR**
-
+### 3.6. Update LOCCTR
 - **Calculate Instruction Size**: Use the opcode and operands to determine the instruction size.
 - **Increment LOCCTR**: Adjust the LOCCTR accordingly.
-
-#### **3.7. Generate Intermediate File**
-
+### 3.7. Generate Intermediate File
 - Write each parsed line and associated information to the intermediate file.
 - Include addresses, labels, opcodes, operands, and any other details needed for Pass 2.
-
-#### 3.8. Error Handling
-
+### 3.8. Error Handling
 - If any errors are detected (e.g., duplicate labels, invalid opcodes), log them using the `ErrorHandler`.
 - Display all errors and warnings at the end of Pass 1.
 
@@ -527,3 +486,13 @@ Pass 1 performs the following major tasks:
 - **Intermediate File**: Proper intermediate file generation for seamless transition to Pass 2.
 
 This design provides a robust structure to handle the requirements of **Pass 1** efficiently and lays the foundation for **Pass 2**. Let me know if you have any questions or need adjustments!
+
+----
+# Questions and info
+Make the assembler directories to be in the program. Can be a class
+- What characters should not be allowed at all in the line
+- What if the file is empty
+- Can a line only have a label?
+	- Can a line only have a label and an opcode?
+- Check if the line starts with END
+- Try spli
