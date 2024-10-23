@@ -98,28 +98,32 @@ class ErrorLogHandler:
         self.error_log: list[str] = []
 
 
-    def log_action(self, message: str):
+    def log_action(self, message: str, print_actions: bool = True):
         """
         /***************************************************************************************
         ***  METHOD : log_action                                                             ***
         ***  DESCRIPTION :                                                                   ***
         ***      Logs an action by appending the message to the action log and prints the    ***
-        ***      message to the console. Paginates the output after every 18 lines.          ***
+        ***      message to the console if print_actions is True. Paginates the output       ***
+        ***      after every 18 lines.                                                       ***
         ***                                                                                  ***
         ***  INPUT PARAMETERS :                                                              ***
         ***      message : str   : The message describing the action performed.              ***
+        ***      print_actions : bool : Whether to print the message to the console.         ***
         ***************************************************************************************/
 
         Log an action performed during the program's execution.
 
         :param message: The message describing the action.
+        :param print_actions: Whether to print the message to the console.
         """
         self.log_entries.append(f"[ACTION]: {message}")
-        print(f"[ACTION]: {message}")
-
-        # Paginate after every 18 lines of actions
-        if len(self.log_entries) % 18 == 0:
-            self.paginate_output(self.log_entries, "Displaying Actions Log")
+        
+        if print_actions:
+            print(f"[ACTION]: {message}")
+            # Paginate after every 18 lines of actions
+            if len(self.log_entries) % 18 == 0:
+                self.paginate_output(self.log_entries, "Displaying Actions Log")
 
 
     def log_error(self, error_message: str, context_info: str = None):
