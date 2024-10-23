@@ -434,7 +434,7 @@ class FileExplorer:
             return False
 
 
-    def find_file(self, file_name, create_if_missing=False):
+    def find_file(self, file_name, create_if_missing=True):
         """
         Checks if the specified file exists in the same directory as the script.
         Creates a new file if 'create_if_missing' is True and the file doesn't exist.
