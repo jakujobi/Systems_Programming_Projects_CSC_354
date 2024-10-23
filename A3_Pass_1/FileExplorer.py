@@ -391,6 +391,72 @@ class FileExplorer:
             return None
         
         return line
+    
+    def write_file(self, file_name, lines):
+        """
+        Writes a list of lines to the specified file.
+        Creates a new file if it doesn't exist or overwrites it if it does.
+        """
+        file_path = self.find_file(file_name, create_if_missing=True)
+        if not file_path:
+            print(f"Error: Could not create or find the file '{file_name}'.")
+            return False
+
+        try:
+            with open(file_path, "w", encoding="utf-8") as file:
+                for line in lines:
+                    file.write(line + "\n")
+            print(f"Successfully wrote to the file: {file_path}")
+            return True
+        except Exception as e:
+            print(f"An error occurred while writing to the file: {e}")
+            return False
+
+
+    def append_to_file(self, file_name, lines):
+        """
+        Appends a list of lines to the specified file.
+        Creates a new file if it doesn't exist.
+        """
+        file_path = self.find_file(file_name, create_if_missing=True)
+        if not file_path:
+            print(f"Error: Could not create or find the file '{file_name}'.")
+            return False
+
+        try:
+            with open(file_path, "a", encoding="utf-8") as file:
+                for line in lines:
+                    file.write(line + "\n")
+            print(f"Successfully appended to the file: {file_path}")
+            return True
+        except Exception as e:
+            print(f"An error occurred while appending to the file: {e}")
+            return False
+
+
+    def find_file(self, file_name, create_if_missing=False):
+        """
+        Checks if the specified file exists in the same directory as the script.
+        Creates a new file if 'create_if_missing' is True and the file doesn't exist.
+        """
+        script_directory = os.path.dirname(os.path.realpath(__file__))
+        default_path = os.path.join(script_directory, file_name)
+
+        if os.path.isfile(default_path):
+            return default_path
+        elif create_if_missing:
+            try:
+                with open(default_path, "w") as file:
+                    pass  # Create an empty file
+                print(f"Created a new file: {file_name}")
+                return default_path
+            except Exception as e:
+                print(f"Error creating the file '{file_name}': {e}")
+                return None
+
+        return self.prompt_for_file(file_name)
+
+
 
 # Test main program
 if __name__ == "__main__":
@@ -410,3 +476,12 @@ if __name__ == "__main__":
             print(line)
     else:
         print("No lines to display.")
+        
+    if lines:
+        # Test writing to a file
+        output_file = "output_example.txt"
+        explorer.write_file(output_file, lines)
+
+        # Test appending to a file
+        append_lines = ["This is an appended line.", "Appending more lines."]
+        explorer.append_to_file(output_file, append_lines)
