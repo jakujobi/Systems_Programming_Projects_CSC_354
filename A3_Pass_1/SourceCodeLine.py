@@ -3,8 +3,7 @@ class SourceCodeLine:
     Represents a single line of assembly code in a SIC/XE assembler.
     """
 
-    directives = ['START', 'END', 'BYTE', 'WORD', 'RESB', 'RESW', 
-                  'EQU', 'ORG', 'EXTDEF', 'EXTREF']
+    directives = ['START', 'END', 'BYTE', 'WORD', 'RESB', 'RESW', 'EQU', 'ORG', 'EXTDEF', 'EXTREF']
 
     def __init__(self, line_number, line_text):
         try:
@@ -60,22 +59,6 @@ class SourceCodeLine:
 
     def is_indexed_addressing(self):
         return any(',' in operand and operand.split(',')[-1].strip() == 'X' for operand in self.operands)
-
-    def calculate_instruction_length(self):
-        if self.instr_format is not None:
-            if self.instr_format == 1:
-                self.instruction_length = 1
-            elif self.instr_format == 2:
-                self.instruction_length = 2
-            elif self.instr_format in [3, 4]:
-                self.instruction_length = 4 if self.is_extended_format() else 3
-            else:
-                self.add_error(f"Unknown instruction format: {self.instr_format}")
-                self.instruction_length = 0
-        elif self.is_directive():
-            self.instruction_length = 0
-        else:
-            self.add_error("Instruction length cannot be determined without a valid format or directive.")
 
     def get_operand_count(self):
         return len(self.operands)
