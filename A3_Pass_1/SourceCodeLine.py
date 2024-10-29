@@ -3,17 +3,10 @@ class SourceCodeLine:
     Represents a single line of assembly code in a SIC/XE assembler.
     """
 
-    # List of recognized assembler directives
     directives = ['START', 'END', 'BYTE', 'WORD', 'RESB', 'RESW', 
                   'EQU', 'ORG', 'EXTDEF', 'EXTREF']
 
     def __init__(self, line_number, line_text):
-        """
-        Initializes a SourceCodeLine instance.
-        
-        :param line_number: The line number in the source file.
-        :param line_text: The original line text as read from the source file.
-        """
         try:
             self.line_number = int(line_number)
         except ValueError:
@@ -29,15 +22,10 @@ class SourceCodeLine:
         self.is_comment = False
         self.errors = []
         self.line_text = line_text
-        
-        # Derived attributes
+
         self.instruction_length = 0
 
-    # Basic Methods
     def __str__(self):
-        """
-        Provides a detailed string representation of the line for debugging or output.
-        """
         line_info = f"Line {self.line_number}: "
         line_info += f"{self.label or ''} {self.opcode or ''} "
         line_info += f"{', '.join(self.operands)} "
@@ -46,73 +34,35 @@ class SourceCodeLine:
             line_info += f" ; {self.comment}"
         return line_info
 
-    # Validation & Error Management Methods
     def add_error(self, error_message):
-        """
-        Adds an error message to the list of errors for the line.
-        :param error_message: The error message to add.
-        """
         if isinstance(error_message, str):
             self.errors.append(error_message)
         else:
             raise TypeError("Error message must be a string.")
 
     def has_errors(self):
-        """
-        Returns True if there are errors associated with this line.
-        :return: True if errors are present, False otherwise.
-        """
         return bool(self.errors)
 
     def clear_errors(self):
-        """
-        Clears all stored errors for the line.
-        """
         self.errors.clear()
 
-    # Line Attribute Checkers
     def has_label(self):
-        """
-        Returns True if a label is present.
-        :return: True if the label is not None, False otherwise.
-        """
         return self.label is not None
 
     def is_directive(self):
-        """
-        Returns True if the opcode is an assembler directive.
-        :return: True if the opcode is a recognized directive, False otherwise.
-        """
         return self.opcode in self.directives
 
     def is_instruction(self):
-        """
-        Returns True if the opcode is a machine instruction.
-        :return: True if the opcode is not a directive and is defined, False otherwise.
-        """
         return self.opcode is not None and not self.is_directive()
 
     def is_extended_format(self):
-        """
-        Returns True if the instruction is in extended format (format 4).
-        :return: True if the opcode starts with '+', False otherwise.
-        """
         return self.opcode is not None and self.opcode.startswith('+')
 
     def is_indexed_addressing(self):
-        """
-        Returns True if the addressing mode is indexed (e.g., BUFFER,X).
-        :return: True if the last character of the operand is 'X', False otherwise.
-        """
         return any(',' in operand and operand.split(',')[-1].strip() == 'X' for operand in self.operands)
 
-    # Derived Attribute Methods
     def calculate_instruction_length(self):
-        """
-        Calculates the instruction length based on the format and sets the instruction_length attribute.
-        """
         if self.instr_format is not None:
-            # Standard instruction formats
             if self.instr_format == 1:
                 self.instruction_length = 1
             elif self.instr_format == 2:
@@ -121,26 +71,16 @@ class SourceCodeLine:
                 self.instruction_length = 4 if self.is_extended_format() else 3
             else:
                 self.add_error(f"Unknown instruction format: {self.instr_format}")
-                self.instruction_length = 0  # Unknown format
+                self.instruction_length = 0
         elif self.is_directive():
-            # Directives can affect location counter, but typically have no instruction length
             self.instruction_length = 0
         else:
             self.add_error("Instruction length cannot be determined without a valid format or directive.")
 
     def get_operand_count(self):
-        """
-        Returns the number of operands present.
-        :return: The number of operands in the operands list.
-        """
         return len(self.operands)
 
-    # Utility Methods
     def set_operands(self, operands):
-        """
-        Sets the operands for the line.
-        :param operands: A list of operands to set.
-        """
         if isinstance(operands, list):
             self.operands = operands
         else:
@@ -149,10 +89,6 @@ class SourceCodeLine:
             raise TypeError(error_msg)
 
     def set_address(self, address):
-        """
-        Sets the address of the line.
-        :param address: The address to set.
-        """
         if isinstance(address, int) and address >= 0:
             self.address = address
         else:
@@ -161,13 +97,101 @@ class SourceCodeLine:
             raise ValueError(error_msg)
 
     def update_object_code(self, code):
-        """
-        Updates the object code for the line.
-        :param code: The object code to set.
-        """
         if isinstance(code, str):
             self.object_code = code
         else:
             error_msg = "Object code must be a string."
             self.add_error(error_msg)
             raise TypeError(error_msg)
+
+    @staticmethod
+    def test():
+        """
+        Rigorous testing of the SourceCodeLine class.
+        """
+        # Test basic initialization
+        print("=== Testing Initialization ===")
+        try:
+            line = SourceCodeLine(line_number=1, line_text="START 1000")
+            print(line)
+            print("Initialization successful.")
+        except Exception as e:
+            print(f"Initialization failed: {e}")
+
+        # Test invalid line number
+        print("\n=== Testing Invalid Line Number ===")
+        try:
+            line = SourceCodeLine(line_number="ABC", line_text="START 1000")
+        except ValueError as e:
+            print(f"Passed: {e}")
+
+        # Test setting operands
+        print("\n=== Testing Operands Setting ===")
+        try:
+            line.set_operands(["BUFFER", "X"])
+            print(f"Operands: {line.operands}")
+        except Exception as e:
+            print(f"Operands setting failed: {e}")
+
+        # Test invalid operands setting
+        try:
+            line.set_operands("INVALID")
+        except TypeError as e:
+            print(f"Passed: {e}")
+
+        # Test setting address
+        print("\n=== Testing Address Setting ===")
+        try:
+            line.set_address(1000)
+            print(f"Address: {line.address}")
+        except Exception as e:
+            print(f"Address setting failed: {e}")
+
+        # Test invalid address setting
+        try:
+            line.set_address(-1)
+        except ValueError as e:
+            print(f"Passed: {e}")
+
+        # Test updating object code
+        print("\n=== Testing Object Code Update ===")
+        try:
+            line.update_object_code("4C0000")
+            print(f"Object Code: {line.object_code}")
+        except Exception as e:
+            print(f"Object code update failed: {e}")
+
+        # Test invalid object code update
+        try:
+            line.update_object_code(1234)
+        except TypeError as e:
+            print(f"Passed: {e}")
+
+        # Test directive and instruction checks
+        print("\n=== Testing Directive & Instruction Checks ===")
+        line.opcode = "START"
+        print(f"Is Directive: {line.is_directive()}")  # Expected: True
+        line.opcode = "LDA"
+        print(f"Is Instruction: {line.is_instruction()}")  # Expected: True
+
+        # Test extended format and indexed addressing
+        print("\n=== Testing Extended Format & Indexed Addressing ===")
+        line.opcode = "+LDA"
+        print(f"Is Extended Format: {line.is_extended_format()}")  # Expected: True
+        line.operands = ["BUFFER,X"]
+        print(f"Is Indexed Addressing: {line.is_indexed_addressing()}")  # Expected: True
+
+        # Test error handling
+        print("\n=== Testing Error Handling ===")
+        line.add_error("Test error")
+        print(f"Has Errors: {line.has_errors()}")  # Expected: True
+        print(f"Errors: {line.errors}")
+        line.clear_errors()
+        print(f"Errors Cleared. Has Errors: {line.has_errors()}")  # Expected: False
+
+        print("\n=== All Tests Completed ===")
+
+
+# Run the test
+if __name__ == "__main__":
+    SourceCodeLine.test()
