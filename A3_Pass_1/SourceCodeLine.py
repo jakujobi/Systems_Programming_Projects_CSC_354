@@ -36,6 +36,8 @@ class SourceCodeLine:
         line_info += f"(Addr: {self.address or 'N/A'}, Obj Code: {self.object_code or 'N/A'})"
         if self.comment:
             line_info += f" ; {self.comment}"
+        if self.errors:
+            line_info += f" [Errors: {', '.join(self.errors)}]"
         return line_info
 
     def _initialize_line(self):
@@ -160,6 +162,24 @@ class SourceCodeLine:
             error_msg = "Object code must be a string."
             self.add_error(error_msg)
             raise TypeError(error_msg)
+
+    def print_full_opcodes(self):
+        """
+        Prints every attribute of the SourceCodeLine object.
+        """
+        print(f"Line Number: {self.line_number}")
+        print(f"Address: {self.address}")
+        print(f"Label: {self.label}")
+        print(f"Opcode: {self.opcode}")
+        print(f"Instruction Format: {self.instr_format}")
+        print(f"Operands: {self.operands}")
+        print(f"Operands List: {self.operands_list}")
+        print(f"Object Code: {self.object_code}")
+        print(f"Comment: {self.comment}")
+        print(f"Is Comment: {self.is_comment}")
+        print(f"Errors: {self.errors}")
+        print(f"Line Text: {self.line_text}")
+        print(f"Instruction Length: {self.instruction_length}")
 
     @staticmethod
     def test():
