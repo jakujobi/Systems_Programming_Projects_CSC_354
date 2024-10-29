@@ -58,28 +58,18 @@ class ParsingHandler:
 
             # Extract label and opcode
             if tokens:
-                # Check if first token is a label (not an opcode)
-                first_token = tokens[0]
-                # Remove ':' if present
-                if first_token.endswith(':'):
+                # Check if first token is a label (ends with ':')
+                if tokens[0].endswith(':'):
                     label = tokens.pop(0).rstrip(':')
-                else:
-                    opcode_candidate = first_token.lstrip('+').upper()
-                    if self.opcode_handler and self.opcode_handler.is_opcode(opcode_candidate):
-                        opcode = tokens.pop(0)
-                    else:
-                        # Assume it's a label
-                        label = tokens.pop(0)
-                # Extract opcode if not yet set
-                if not opcode and tokens:
+                # Check if first token is a label (not an opcode)
+                elif len(tokens) > 1 and not self.opcode_handler.is_opcode(tokens[0].lstrip('+').upper()):
+                    label = tokens.pop(0)
+                # Otherwise, first token is opcode
+                if tokens:
                     opcode = tokens.pop(0)
-            else:
-                # Line with only comment or empty
-                pass
-
-            # Extract operands
-            if tokens:
-                operands_str = ' '.join(tokens)
+                # Extract operands
+                if tokens:
+                    operands_str = ' '.join(tokens)
 
             # Update SourceCodeLine
             self.source_line.label = label
@@ -93,6 +83,13 @@ class ParsingHandler:
             error_msg = f"Exception occurred while parsing line: {e}"
             self.logger.log_error(error_msg, context_info=f"Line {self.source_line.line_number}")
             self.source_line.add_error(error_msg)
+            
+    def print_full_opcodes(self):
+        """
+        Prints the full opcode information for the parsed line.
+        """
+        self.source_line.print_full_opcodes()
+
 
     def reset_source_line(self):
         """
@@ -172,7 +169,6 @@ class ParsingHandler:
                 self.source_line.add_error(error_msg)
             # Additional operand validations can be added here
 
-
     @classmethod
     def test(cls):
         """
@@ -181,68 +177,77 @@ class ParsingHandler:
         logger = ErrorLogHandler()
         opcode_handler = OpcodeHandler(logger=logger)  # Ensure the opcodes are loaded
         test_cases = [
-            ("LOOP: LDA BUFFER,X . Load A register with BUFFER indexed", 
-             {'label': 'LOOP', 'opcode': 'LDA', 'operands': 'BUFFER,X', 'comment': '. Load A register with BUFFER indexed'}),
-            ("START 1000", 
-             {'label': None, 'opcode': 'START', 'operands': '1000', 'comment': ''}),
-            ("BUFFER,X", 
-             {'label': None, 'opcode': 'BUFFER,X', 'operands': '', 'comment': ''}),
-            ("RSUB", 
-             {'label': None, 'opcode': 'RSUB', 'operands': '', 'comment': ''}),
-            ("  . This is a full line comment", 
+            # Valid lines
+            ("LOOP: LDA BUFFER,X . Load A register with BUFFER indexed",
+             {'label': 'LOOP', 'opcode': 'LDA', 'operands': 'BUFFER,X', 'comment': '. Load A register with BUFFER indexed', 'errors': []}),
+            ("START 1000",
+             {'label': None, 'opcode': 'START', 'operands': '1000', 'comment': '', 'errors': []}),
+            ("RSUB",
+             {'label': None, 'opcode': 'RSUB', 'operands': '', 'comment': '', 'errors': []}),
+            ("+LDA @BUFFER",
+             {'label': None, 'opcode': '+LDA', 'operands': '@BUFFER', 'comment': '', 'errors': []}),
+            ("LDA #LENGTH+2",
+             {'label': None, 'opcode': 'LDA', 'operands': '#LENGTH+2', 'comment': '', 'errors': []}),
+            ("BYTE C'EOF'",
+             {'label': None, 'opcode': 'BYTE', 'operands': "C'EOF'", 'comment': '', 'errors': []}),
+            ("WORD -1",
+             {'label': None, 'opcode': 'WORD', 'operands': '-1', 'comment': '', 'errors': []}),
+            # Lines with errors
+            ("INVALIDLABEL: LDA BUFFER",
+             {'label': 'INVALIDLABEL', 'opcode': 'LDA', 'operands': 'BUFFER', 'comment': '', 'errors': ["Label 'INVALIDLABEL' is too long. Maximum length is 10 characters."]}),
+            ("LOOP LDA",
+             {'label': 'LOOP', 'opcode': 'LDA', 'operands': '', 'comment': '', 'errors': []}),
+            ("ADD ALPHA-@BETA",
+             {'label': None, 'opcode': 'ADD', 'operands': 'ALPHA-@BETA', 'comment': '', 'errors': []}),
+            ("LDA 'UNMATCHED_QUOTE",
+             {'label': None, 'opcode': 'LDA', 'operands': "'UNMATCHED_QUOTE", 'comment': '', 'errors': ["Unmatched quotes in operands ''UNMATCHED_QUOTE'."]}),
+            ("EQU HERE-ALPHA,X",
+             {'label': None, 'opcode': 'EQU', 'operands': 'HERE-ALPHA,X', 'comment': '', 'errors': []}),
+            ("idkwhatimdoingonthislinespace:",
+             {'label': 'idkwhatimdoingonthislinespace', 'opcode': None, 'operands': '', 'comment': '', 'errors': ["Label 'idkwhatimdoingonthislinespace' is too long. Maximum length is 10 characters."]}),
+            ("INVALIDOPCODE #100",
+             {'label': None, 'opcode': 'INVALIDOPCODE', 'operands': '#100', 'comment': '', 'errors': ["Invalid opcode 'INVALIDOPCODE'."]}),
+            # Comment and empty lines
+            ("  . This is a full line comment",
              {'label': None, 'opcode': None, 'operands': '', 'comment': '. This is a full line comment', 'is_comment': True}),
-            ("  ", 
+            ("",
              {'label': None, 'opcode': None, 'operands': '', 'comment': '', 'is_comment': True}),
-            ("+LDA @BUFFER", 
-             {'label': None, 'opcode': '+LDA', 'operands': '@BUFFER', 'comment': ''}),
-            ("LDA #LENGTH+2", 
-             {'label': None, 'opcode': 'LDA', 'operands': '#LENGTH+2', 'comment': ''}),
-            ("BUFFER:   ", 
-             {'label': 'BUFFER', 'opcode': None, 'operands': '', 'comment': ''}),
-            ("EQU   HERE-ALPHA,X", 
-             {'label': None, 'opcode': 'EQU', 'operands': 'HERE-ALPHA,X', 'comment': ''}),
-            ("ALPHA: EQU #1000", 
-             {'label': 'ALPHA', 'opcode': 'EQU', 'operands': '#1000', 'comment': ''}),
-            ("ADD ALPHA-@BETA", 
-             {'label': None, 'opcode': 'ADD', 'operands': 'ALPHA-@BETA', 'comment': ''}),
-            ("ADD ALPHA+#BETA", 
-             {'label': None, 'opcode': 'ADD', 'operands': 'ALPHA+#BETA', 'comment': ''}),
-            ("EQUAL: EQU HERE", 
-             {'label': 'EQUAL', 'opcode': 'EQU', 'operands': 'HERE', 'comment': ''}),
-            ("idkwhatimdoingonthislinespace:", 
-             {'label': 'idkwhatimdoingonthislinespace', 'opcode': None, 'operands': '', 'comment': ''}),
-            ("+JSUB   @RDREC", 
-             {'label': None, 'opcode': '+JSUB', 'operands': '@RDREC', 'comment': ''}),
-            ("JLT     LOOP", 
-             {'label': None, 'opcode': 'JLT', 'operands': 'LOOP', 'comment': ''}),
-            ("BYTE    C'EOF'", 
-             {'label': None, 'opcode': 'BYTE', 'operands': "C'EOF'", 'comment': ''}),
-            ("WORD    -1", 
-             {'label': None, 'opcode': 'WORD', 'operands': '-1', 'comment': ''}),
-            ("END     FIRST", 
-             {'label': None, 'opcode': 'END', 'operands': 'FIRST', 'comment': ''}),
+            # Lines with unbalanced parentheses
+            ("ADD (ALPHA",
+             {'label': None, 'opcode': 'ADD', 'operands': '(ALPHA', 'comment': '', 'errors': ["Unbalanced parentheses in operands '(ALPHA'."]}),
+            # Lines with unbalanced quotes
+            ("BYTE C'EOF",
+             {'label': None, 'opcode': 'BYTE', 'operands': "C'EOF", 'comment': '', 'errors': ["Unmatched quotes in operands 'C'EOF'."]}),
         ]
-    
+
         passed_tests = 0
         failed_tests = 0
         failed_test_details = []
 
         for i, (line_text, expected) in enumerate(test_cases, 1):
+            print(f"\n--- Test Case {i} ---")
             source_line = SourceCodeLine(line_number=i, line_text=line_text)
             parser = cls(source_line, line_text, validate_parsing=True, logger=logger, opcode_handler=opcode_handler)
             parser.parse_line()
+            print(f"Parsed Line: {source_line}")
+            parser.print_full_opcodes()
+            print ("\n")
 
             # Verify results
             success = True
             for key, value in expected.items():
                 actual_value = getattr(source_line, key)
                 if key == 'errors':
-                    # Extract the error messages
-                    actual_errors = [e.split(': ')[-1] for e in actual_value]
+                    actual_errors = actual_value
                     if sorted(actual_errors) != sorted(value):
                         success = False
                         print(f"Failed: {key} | Expected: {value} | Got: {actual_errors}")
                         failed_test_details.append(f"Test Case {i}: {key} | Expected: {value} | Got: {actual_errors}")
+                elif key == 'is_comment':
+                    if actual_value != value:
+                        success = False
+                        print(f"Failed: {key} | Expected: {value} | Got: {actual_value}")
+                        failed_test_details.append(f"Test Case {i}: {key} | Expected: {value} | Got: {actual_value}")
                 else:
                     if actual_value != value:
                         success = False
@@ -250,10 +255,10 @@ class ParsingHandler:
                         failed_test_details.append(f"Test Case {i}: {key} | Expected: '{value}' | Got: '{actual_value}'")
 
             if success:
-                print(f"Test Case {i}: Passed")
+                print("Test passed.")
                 passed_tests += 1
             else:
-                print(f"Test Case {i}: Failed")
+                print("Test failed.")
                 failed_tests += 1
 
         # Summary of test results
