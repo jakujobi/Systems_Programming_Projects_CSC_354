@@ -295,7 +295,7 @@ Class SymbolTable:
 ### 4.2 Validator (Already defined in 1.4)
 - **Purpose**: Validates symbols, values, and expressions.
 ---
-##  5. LiteralTableDriver
+## 5. LiteralTableDriver
 ### 2.4 LiteralTableDriver
 - **Purpose**: Manages high-level operations of the literal table.
 - **Attributes**:

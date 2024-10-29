@@ -124,16 +124,16 @@ Source listing
         +LDA    #30000          ; Immediate addressing, Format 4
         +STA    RESULT          ; Store using Format 4
         ADD     VALUE           ; Direct addressing, Format 3
-        +ADD    =X'0F1E2D3C'    ; Literal in Format 4
+        +ADD    =0x0F1E2D3C     ; Literal in Format 4
         +SUB    @ADDRESS        ; Indirect addressing, Format 4
         AND     NUM,X           ; Indexed addressing, Format 3
-        +OR     =C'HELLO'       ; Character literal, Format 4
+        +OR     =0cHELLO        ; Character literal, Format 4
         LDCH    BUF,X           ; Load character, Indexed addressing, Format 3
         +STCH   BUF,X           ; Store character, Indexed addressing, Format 4
 
-        LDB     =X'FF'          ; Load base register, Format 3
+        LDB     =0xFF           ; Load base register, Format 3
         +LDX    VALUE           ; Load index register, Format 4
-        LDT     =X'ABCDE'       ; Load T register, Format 3
+        LDT     =0xABCDE        ; Load T register, Format 3
         LDF     FLVAL           ; Load floating-point register, Format 3
         LDL     +LABEL          ; Load to register L, Format 4
 
@@ -169,13 +169,13 @@ Source listing
         +RD     DEVADDR         ; Read device, Format 4
         +WD     DEVADDR         ; Write device, Format 4
 
-        LPS     +PROGADDR       ; Load processor status, Format 4
+        +LPS     PROGADDR       ; Load processor status, Format 4
         SVC     3               ; Supervisor call, Format 2
 
         STA     MEM             ; Store accumulator, Format 3
         +STB    BASE            ; Store base register, Format 4
         STL     LENGTH          ; Store L register, Format 3
-        STX     +INDEX          ; Store index register, Format 4
+        +STX     INDEX          ; Store index register, Format 4
         +STT    TIMER           ; Store T register, Format 4
         +STF    FLVAL           ; Store floating-point register, Format 4
         +STI    MEM             ; Store immediate value to memory, Format 4
@@ -185,42 +185,42 @@ Source listing
 
         BASE    LDBASE          ; Set base register
 
-NEXT    +TIX    INDEX           ; Increment index, Format 4
+NEXT:   +TIX    INDEX           ; Increment index, Format 4
         +J      LOOP            ; Unconditional jump, Format 4
 
-LOOP    LDCH    BUF             ; Load character, Format 3
+LOOP:   LDCH    BUF             ; Load character, Format 3
         ADD     ONE             ; Add a word value, Format 3
         +JLT    NEXT            ; Jump if less than, Format 4
         RSUB                    ; Return, Format 3
 
-VALUE   WORD    2000            ; Define a word constant
-ADDRESS WORD    5000            ; Define a word constant
-FLVAL   RESW    1               ; Reserve one word for floating-point value
-DEVADDR RESB    1               ; Reserve one byte for device address
-MEM     RESW    10              ; Reserve memory
-BUF     RESB    256             ; Reserve a buffer of 256 bytes
-CHAR    RESB    1               ; Reserve a byte for character storage
-SECVAL  RESB    1               ; Reserve a byte for security key storage
+VALUE:  WORD    2000            ; Define a word constant
+ADDRESS: WORD    5000            ; Define a word constant
+FLVAL:  RESW    1               ; Reserve one word for floating-point value
+DEVADDR: RESB    1               ; Reserve one byte for device address
+MEM:    RESW    10              ; Reserve memory
+BUF:    RESB    256             ; Reserve a buffer of 256 bytes
+CHAR:   RESB    1               ; Reserve a byte for character storage
+SECVAL: RESB    1               ; Reserve a byte for security key storage
 
-TIMER   WORD    0               ; Define a timer word
-BASE    WORD    0               ; Define a base register word
-INDEX   WORD    0               ; Define an index register word
-ONE     WORD    1               ; Define a word constant
-LABEL   WORD    6000            ; Define a word constant
+TIMER:  WORD    0               ; Define a timer word
+BASE:   WORD    0               ; Define a base register word
+INDEX:  WORD    0               ; Define an index register word
+ONE:    WORD    1               ; Define a word constant
+LABEL:  WORD    6000            ; Define a word constant
 
-SUBRTN  LDA     #3000           ; Load immediate, Format 3
+SUBRTN: LDA     #3000           ; Load immediate, Format 3
         COMP    #4000           ; Compare immediate, Format 3
         +JLT    RET             ; Jump if less than, Format 4
         ADD     VALUE           ; Add value, Format 3
         +STCH   BUF             ; Store character, Format 4
 
-RET     RSUB                    ; Return, Format 3
+RET:    RSUB                    ; Return, Format 3
 
-RESULT  RESW    1               ; Reserve memory for result
-PROGADDR WORD   0               ; Define program address
-SW      WORD    0               ; Define status word
+RESULT: RESW    1               ; Reserve memory for result
+PROGADDR: WORD   0               ; Define program address
+SW:     WORD    0               ; Define status word
 
-END     START                   ; End of the program
+END:    START                   ; End of the program
 
 ```
 
@@ -314,67 +314,291 @@ END     START                   ; End of the program
 ---
 
 # Core Classes and Modules
-## 1. SourceCodeLine
-- **Purpose**: Represents a single line of assembly code.
-- **Attributes**:
-  - `line_number`: The line number in the source file.
-  - `address`: The memory address assigned to the instruction (set by LOCCTR).
-  - `label`: The label of the instruction, if present.
-  - `opcode`: The operation code or assembler directive.
-  - `format`: The final format of the instruction
-  - `operands`: The operands of the instruction.
-  - `object_code`: The object code generated (if any).
-- **Methods**:
-  - `has_label()`: Checks if a label exists.
-  - `__str__()`: Provides a string representation for debugging.
-## 2. SymbolTable
-- **Purpose**: Stores labels and their corresponding memory addresses.
-- **Attributes**:
-  - `symbols`: A dictionary with labels as keys and addresses as values.
-- **Methods**:
-  - `add_label(label, address)`: Adds a label with its address to the table. Logs errors for duplicates.
-  - `get_address(label)`: Retrieves the address for a given label.
-  - `display()`: Displays the symbol table.
-## 3. LiteralTable
-- **Purpose**: Manages the storage and address assignment of literals.
-- **Attributes**:
-  - `literals`: A dictionary with literal names as keys and details (e.g., value, length, address) as values.
-- **Methods**:
-  - `add_literal(literal, value, length)`: Adds a literal to the table.
-  - `assign_addresses(start_address)`: Assigns addresses to literals starting from `start_address`.
-  - `display()`: Displays the literal table.
-## LocationCounter
-- **Purpose**: Manages memory address assignments during Pass 1.
-- **Attributes**:
-  - `current_address`: Tracks the current memory address.
-- **Methods**:
-  - `initialize(start_address)`: Sets the starting address.
-  - `increment(bytes)`: Increments the LOCCTR by a given number of bytes.
-  - `get_current_address()`: Returns the current value of the LOCCTR.
-## Parser
 
-## SourceReader
-- Load the source code from a file using `FileExplorer` as a list of lines
-- Skips a line if it only has comments
-	- Check if the first character (after all leading spaces are removed) is ";"
-- Receive a raw line of code and tokenize it into pieces
-- **Purpose**: Parses each line of the source file into components.
-- **Methods**:
-  - `parse_line(line)`: Splits a line into label, opcode, operands, and comments.
-  - `handle_directives(opcode, operands)`: Processes assembler directives like **START**, **END**, **BYTE**, **WORD**, etc.
-  - `identify_literals(operands)`: Extracts literals from operands for insertion into the literal table.
-## IntermediateFileGenerator
-- **Purpose**: Generates an intermediate file for Pass 2.
-- **Methods**:
-  - `write_line(line)`: Writes a formatted line to the intermediate file.
-  - `close_file()`: Closes the file after writing all lines.
-## ErrorHandler
-- **Purpose**: Handles and logs errors and warnings during Pass 1.
-- **Methods**:
-  - `log_error(message)`: Logs an error message.
-  - `log_warning(message)`: Logs a warning message.
-  - `display_errors()`: Displays all errors and warnings.
-## AssemblerPass1 (Driver Class)
+## `SourceCodeLine`
+Here are the list of directives
+directives = ['START', 'END', 'BYTE', 'WORD', 'RESB', 'RESW', 'EQU', 'ORG', 'EXTDEF', 'EXTREF']
+### Properties & Attributes
+The `SourceCodeLine` should have attributes that cover all possible aspects of an assembly line. The goal is to have a comprehensive representation that can be easily manipulated by the assembler.
+#### Core Attributes
+- **`line_number`** (`int`):
+    - The line number in the source file.
+    - Useful for error reporting and debugging.
+- **`address`** (`int` or `None`):
+    - The memory address assigned to the instruction (set during pass 1).
+    - Can be `None` if not yet assigned.
+- **`label`** (`str` or `None`):
+    - The label associated with the instruction, if present.
+    - Labels are typically used for jumps, data definitions, etc.
+- **`opcode`** (`str` or `None`):
+    - The operation code or assembler directive (e.g., `LDA`, `START`, `BYTE`).
+    - This distinguishes between instructions and directives.
+- **`instr_format`** (`int` or `None`):
+    - Represents the format of the instruction (e.g., 1, 2, 3, 4).
+    - Helps in calculating instruction length and object code generation.
+- **`operands`** (`list` of `str`):
+    - The operands associated with the instruction (e.g., `#LENGTH`, `BUFFER,X`).
+    - This should be a list to support instructions with multiple operands.
+- **`object_code`** (`str` or `None`):
+    - The final object code generated for this line.
+    - Will be set in pass 2 of the assembler.
+- **`comment`** (`str`):
+    - Stores any comment associated with the line.
+    - Useful for preserving comments when generating listings.
+- **`is_comment`** (`bool`):
+    - Indicates whether the entire line is a comment.
+- **`errors`** (`list` of `str`):
+    - A list of error messages associated with this line.
+    - Enables error tracking and reporting.
+- **`line_text`** (`str`):
+    - The original line text as read from the source file.
+    - Useful for reconstructing listings and for debugging.
+#### Derived Attributes
+These attributes are derived from the core attributes and can be helpful for quick access and identification.
+- **`instruction_length`** (`int`):
+    - The calculated length of the instruction based on its format.
+    - Helps in location counter (LOCCTR) updates during pass 1.
+- **`is_directive`** (`bool`):
+    - Indicates if the line contains an assembler directive (e.g., `START`, `END`, `BYTE`).
+- **`is_instruction`** (`bool`):
+    - Indicates if the line contains an actual machine instruction mnemonic.
+- **`is_extended_format`** (`bool`):
+    - Indicates if the instruction is in extended format (format 4), usually prefixed with `+`.
+- **`operand_count`** (`int`):
+    - Number of operands present in the line.
+    - Useful for validation and error handling.
+- **`is_indexed_addressing`** (`bool`):
+    - Indicates if the addressing mode is indexed (e.g., `BUFFER,X`).
+### 2. Methods
+#### Basic Methods
+- **`__init__()`**:
+    - Initializes the object with the necessary attributes.
+- **`__str__()`**:
+    - Provides a detailed string representation of the line for debugging or output.
+#### Validation & Error Management Methods
+- **`add_error(error_message)`**:
+    - Adds an error message to the list of errors for the line.
+- **`has_errors()`**:
+    - Returns `True` if there are errors associated with this line, otherwise `False`.
+#### Line Attribute Checkers
+- **`has_label()`**:
+    - Returns `True` if a label is present.
+- **`is_directive()`**:
+    - Returns `True` if the opcode is an assembler directive.
+- **`is_instruction()`**:
+    - Returns `True` if the opcode is a machine instruction.
+- **`is_extended_format()`**:
+    - Returns `True` if the instruction is in extended format.
+- **`is_indexed_addressing()`**:
+    - Returns `True` if the addressing mode is indexed.
+#### Derived Attribute Methods
+- **`calculate_instruction_length()`**:
+    - Calculates the instruction length based on the format and sets the `instruction_length` attribute.
+- **`get_operand_count()`**:
+    - Returns the number of operands present.
+#### Utility Methods
+- **`clear_errors()`**:
+    - Clears all stored errors for the line.
+- **`set_operands(operands)`**:
+    - Allows for setting the operands dynamically.
+- **`set_address(address)`**:
+    - Sets the address of the line and ensures it’s valid.
+- **`update_object_code(code)`**:
+    - Updates the object code for the line.
+## `OpcodeHandler`
+The `OpcodeHandler` class is responsible for loading, managing, and interacting with opcodes in an assembler. It provides methods for retrieving opcode details, validating opcodes, and printing the opcode table.
+### 1. Purpose
+The `OpcodeHandler` class serves to:
+- Load opcodes from an external file.
+- Store opcode details like mnemonic, hexadecimal code, and format.
+- Provide methods to access, validate, and interact with opcodes.
+- Integrate error logging and file management through helper classes (`ErrorLogHandler` and `FileExplorer`).
+### Attributes
+- **`opcodes`** (`dict`): 
+  - Stores opcodes with their details, where the keys are opcode mnemonics and values are dictionaries containing format and hex information.
+  - Example: `{'ADD': {'format': 3, 'hex': 0x18}}`.
+  - This is the central data structure for managing opcode information.
+- **`file_explorer`** (`FileExplorer`): 
+  - An instance of `FileExplorer` that handles file operations.
+  - Used to read the opcodes from a specified file.
+- **`logger`** (`ErrorLogHandler`): 
+  - An instance of `ErrorLogHandler` to log errors and actions.
+  - Used to log loading, retrieval, and validation of opcodes.
+- **`file_path`** (`str`): 
+  - Stores the path to the opcode file to be loaded.
+  - Defaults to `'opcodes.txt'` but can be customized.
+### Methods
+#### Initialization & Loading
+- **`__init__(file_path='opcodes.txt', logger=None)`**:
+  - Initializes the class attributes.
+  - Creates instances of `FileExplorer` and `ErrorLogHandler` if not provided.
+  - Calls `_load_opcodes()` to load the opcode file.
+- **`_load_opcodes()`**:
+  - Private method that reads the opcode file using `FileExplorer`.
+  - Parses each line to extract mnemonic, hex code, and format.
+  - Logs actions and errors using `ErrorLogHandler`.
+#### Opcode Management
+- **`get_opcode(name)`**:
+  - Retrieves the opcode information for the specified mnemonic.
+  - Raises a `ValueError` if the opcode is not found and logs the error.
+- **`get_format(name)`**:
+  - Returns the format of the specified opcode.
+  - Internally calls `get_opcode(name)` to fetch the format.
+- **`get_hex(name)`**:
+  - Returns the hexadecimal value of the specified opcode.
+  - Internally calls `get_opcode(name)` to fetch the hex code.
+- **`is_opcode(name)`**:
+  - Checks if the specified mnemonic exists in the opcode dictionary.
+  - Returns `True` if it exists, otherwise `False`.
+  - Allows for quick validation of opcode presence without full retrieval.
+#### Utility Methods
+- **`print_opcodes()`**:
+  - Prints all loaded opcodes in a tabular format.
+  - Displays mnemonic, hex code, and format for each opcode.
+  - Helps in debugging and verification.
+#### Error Handling & Logging
+- The class uses `ErrorLogHandler` to manage error logging throughout the process.
+- Errors are logged when:
+  - The file cannot be found or read.
+  - The opcode format or hex code is invalid.
+  - A mnemonic is not found during retrieval.
+- Actions are also logged, such as successful loading and retrieval of opcodes.
+### How It Works
+1. **Initialization**:
+   - When an instance of `OpcodeHandler` is created, it initializes attributes and calls `_load_opcodes()` to populate the opcode dictionary.
+2. **Loading Opcodes**:
+   - The `_load_opcodes()` method reads the specified opcode file using `FileExplorer`.
+   - Each line is parsed to extract the mnemonic, hex code, and format.
+   - If parsing succeeds, the opcode is added to the dictionary; otherwise, an error is logged.
+3. **Retrieving Opcode Information**:
+   - The `get_opcode()`, `get_format()`, and `get_hex()` methods allow for fetching specific details about an opcode.
+   - If the mnemonic is not found, the method raises a `ValueError` and logs an error.
+4. **Printing Opcodes**:
+   - The `print_opcodes()` method outputs all loaded opcodes in a human-readable format, useful for debugging or verification.
+
+
+
+## `ParsingHandler`
+The `ParsingHandler` class is responsible for reading source code, breaking down each line into components, and preparing it for further processing by other classes (e.g., `AssemblerPass1`, `LineValidator`).
+### Purpose
+- Load source code from a file.
+- Iterate through each line and tokenize it into label, opcode, operands, and comments.
+- Skip comment-only lines if specified.
+- Return parsed lines as instances of `SourceCodeLine`.
+There should be a variable called `commentstyle` which is currently a dot `.`
+### Attributes
+#### Core Attributes
+1. **`source_lines`** (`list` of `str`):
+    - **Purpose**: Stores raw lines of source code loaded from the file.
+    - **How it works**:
+        - Populated when the source code is read from the file.
+        - Each element in this list is a string representing a single line of the source code.
+    - **Importance**: Provides a base for line-by-line parsing.
+2. **`skip_comment_lines`** (`bool`):
+    - **Purpose**: Determines whether to skip lines that only contain comments.
+    - **How it works**:
+        - Set to `True` by default but can be toggled during initialization.
+        - If `True`, lines that are purely comments are skipped during parsing.
+    - **Importance**: Helps in filtering out irrelevant lines during parsing, making the process faster and more efficient.
+3. **`file_explorer`** (`FileExplorer`):
+    - **Purpose**: Handles reading from the source file.
+    - **How it works**:
+        - Uses the `FileExplorer` class to read the file and return its contents as a list of lines.
+    - **Importance**: Provides modular and reusable file handling.
+4. **`parsed_lines`** (`list` of `SourceCodeLine`):
+    - **Purpose**: Stores the parsed lines as `SourceCodeLine` objects.
+    - **How it works**:
+        - Each element is an instance of `SourceCodeLine`, which represents a single line after parsing.
+    - **Importance**: Makes parsed lines available for further processing, such as validation, symbol table management, and object code generation.
+### Methods
+#### Core Methods
+These methods handle the main parsing tasks, including reading from the file, processing each line, and managing the parsed output.
+1. **`__init__(self, file_explorer=None, skip_comment_lines=True)`**
+    - **Purpose**: Initializes the `ParsingHandler` with default attributes.
+    - **How it works**:
+        - Sets `file_explorer` to a new instance of `FileExplorer` if not provided.
+        - Sets `skip_comment_lines` to control comment skipping behavior.
+    - **Importance**: Prepares the object for handling source code and sets the default behavior for parsing.
+2. **`load_source_code(self, file_name)`**
+    - **Purpose**: Loads the source code from a file using the `FileExplorer`.
+    - **How it works**:
+        - Uses `file_explorer.process_file(file_name)` to read the file.
+        - Populates the `source_lines` attribute with the raw lines from the file.
+        - Raises an error if the file cannot be read.
+    - **Importance**: Ensures that the source code is loaded before parsing begins.
+3. **`parse_source_code(self)`**
+    - **Purpose**: Parses the source code line-by-line.
+    - **How it works**:
+        - Iterates through each line in `source_lines`.
+        - Skips comment-only lines if `skip_comment_lines` is enabled.
+        - Calls `parse_line()` to tokenize and process each line.
+        - Appends each parsed line to `parsed_lines`.
+    - **Importance**: Performs the main parsing operation, preparing lines for further use.
+4. **`parse_line(self, line_number, line_text)`**
+    - **Purpose**: Tokenizes a single line into label, opcode, operands, and comments.
+    - **How it works**:
+        - Trims leading and trailing spaces from the line.
+        - Separates comments (indicated by a dot `.`) from the line.
+        - Splits the remaining part by whitespace to extract tokens.
+        - Identifies the label if it ends with a colon (`:`).
+        - Identifies the opcode as the next token.
+        - Groups remaining tokens as operands, split by commas.
+        - Returns a `SourceCodeLine` instance with parsed components.
+    - **Importance**: Handles the core parsing logic for each line, making it easy to work with components separately.
+5. **`_parse_operands(self, tokens)`**
+    - **Purpose**: Extracts operands from a list of tokens.
+    - **How it works**:
+        - Joins the tokens and splits them by commas.
+        - Trims each operand and returns them as a list.
+    - **Importance**: Separates operands correctly, even if they have spaces, ensuring they are easily identifiable.
+6. **`_is_comment_line(self, line_text)`**
+    - **Purpose**: Determines if a line is purely a comment.
+    - **How it works**:
+        - Strips the line and checks if it starts with a variable called commentstyle (for now, it will be a dot (`.`)) or is empty.
+    - **Importance**: Helps in filtering out comment-only lines when needed.
+7. **`get_parsed_lines(self)`**
+    - **Purpose**: Returns the list of parsed lines.
+    - **How it works**:
+        - Provides access to the `parsed_lines` attribute, which contains `SourceCodeLine` objects.
+    - **Importance**: Enables other classes, such as `AssemblerPass1`, to access the parsed lines.
+
+#### Additional Methods (Optional Enhancements)
+These are additional methods that can enhance the functionality of the class and improve integration with other components of the assembler.
+1. **`print_parsed_lines(self)`**
+    - **Purpose**: Prints a detailed representation of each parsed line for debugging.
+    - **How it works**:
+        - Iterates over `parsed_lines` and prints each one.
+    - **Importance**: Useful for debugging and verifying the parsing process.
+2. **`reset(self)`**
+    - **Purpose**: Resets the parsing state.
+    - **How it works**:
+        - Clears `source_lines` and `parsed_lines`.
+    - **Importance**: Allows reusing the same instance for parsing a different file.
+3. **`get_line_by_number(self, line_number)`**
+    - **Purpose**: Retrieves a specific parsed line by its line number.
+    - **How it works**:
+        - Searches `parsed_lines` for a matching `line_number`.
+        - Returns the `SourceCodeLine` instance if found, else returns `None`.
+    - **Importance**: Provides a way to retrieve specific lines for validation or error handling.
+### Integration with Other Classes
+To ensure seamless integration with other classes in the assembler, the `ParsingHandler` should:
+- Return `SourceCodeLine` objects that can be validated by `LineValidator`.
+- Provide parsed lines to `AssemblerPass1` for further processing, like symbol table management and location counter updates.
+- Be able to work independently or in conjunction with other handlers (e.g., `OpcodeHandler` for opcode checks).
+## `SourceProcessor`
+
+## `LocationCounter`
+
+## `LineValidator`
+
+## `AssemblerPass1` (Driver Class)
+
+---
+# Existing Classes
+## `SymbolTable`
+## `LiteralTable`
+## `FileExplorer`
+## `ErrorLogHandler`
 
 
 ---
