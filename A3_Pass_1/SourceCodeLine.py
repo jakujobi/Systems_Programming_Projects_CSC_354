@@ -1,126 +1,173 @@
 class SourceCodeLine:
     """
-    Represents a single line of assembly code.
-
-    This class serves as a data container for all the components of an assembly instruction.
-    It does not perform any parsing or validation; instead, it allows its attributes to be
-    set and retrieved, facilitating manipulation and viewing within the assembler.
-
-    Attributes:
-        line_number (int): The line number in the source file.
-        address (int): The memory address assigned to the instruction (set by LOCCTR).
-        label (str): The label of the instruction, if present.
-        opcode (str): The operation code or assembler directive.
-        instr_format (int): The final format of the instruction (e.g., 1, 2, 3/4).
-        operands (list): The operands of the instruction.
-        object_code (str): The object code generated (if any).
-        comment (str): The comment associated with the line, if any.
-        is_comment (bool): True if the line is a comment.
-        errors (list): A list to store any errors associated with the line.
+    Represents a single line of assembly code in a SIC/XE assembler.
     """
-    
-    directives = ['START', 'END', 'BYTE', 'WORD', 'RESB', 'RESW', 'EQU', 'ORG', 'EXTDEF', 'EXTREF']
 
+    # List of recognized assembler directives
+    directives = ['START', 'END', 'BYTE', 'WORD', 'RESB', 'RESW', 
+                  'EQU', 'ORG', 'EXTDEF', 'EXTREF']
 
-    def __init__(self, line_number):
+    def __init__(self, line_number, line_text):
         """
         Initializes a SourceCodeLine instance.
-
+        
         :param line_number: The line number in the source file.
+        :param line_text: The original line text as read from the source file.
         """
-        self.line_number = line_number    # The line number in the source file
-        self.address = None               # Memory address assigned to the instruction
-        self.label = None                 # Label of the instruction, if present
-        self.opcode = None                # Operation code or assembler directive
-        self.instr_format = None          # Format of the instruction (e.g., 1, 2, 3/4)
-        self.operands = []                # List of operands
-        self.object_code = None           # Object code generated (if any)
-        self.comment = ''                 # Comment associated with the line
-        self.is_comment = False           # True if the line is a comment
-        self.errors = []                  # List of errors for this line
-        self.instruction_length = 0     # Length of the instruction in bytes
+        try:
+            self.line_number = int(line_number)
+        except ValueError:
+            raise ValueError(f"Invalid line number: {line_number}. It should be an integer.")
 
-    def has_label(self):
+        self.address = None
+        self.label = None
+        self.opcode = None
+        self.instr_format = None
+        self.operands = []
+        self.object_code = None
+        self.comment = ''
+        self.is_comment = False
+        self.errors = []
+        self.line_text = line_text
+        
+        # Derived attributes
+        self.instruction_length = 0
+
+    # Basic Methods
+    def __str__(self):
         """
-        Checks if the line contains a label.
-
-        :return: True if label exists, False otherwise.
+        Provides a detailed string representation of the line for debugging or output.
         """
-        return self.label is not None
+        line_info = f"Line {self.line_number}: "
+        line_info += f"{self.label or ''} {self.opcode or ''} "
+        line_info += f"{', '.join(self.operands)} "
+        line_info += f"(Addr: {self.address or 'N/A'}, Obj Code: {self.object_code or 'N/A'})"
+        if self.comment:
+            line_info += f" ; {self.comment}"
+        return line_info
 
+    # Validation & Error Management Methods
     def add_error(self, error_message):
         """
-        Adds an error message to the list of errors for this line.
-
+        Adds an error message to the list of errors for the line.
         :param error_message: The error message to add.
         """
-        self.errors.append(error_message)
+        if isinstance(error_message, str):
+            self.errors.append(error_message)
+        else:
+            raise TypeError("Error message must be a string.")
 
     def has_errors(self):
         """
-        Checks if there are any errors associated with this line.
-
-        :return: True if there are errors, False otherwise.
+        Returns True if there are errors associated with this line.
+        :return: True if errors are present, False otherwise.
         """
-        return len(self.errors) > 0
-    
-    @property
+        return bool(self.errors)
+
+    def clear_errors(self):
+        """
+        Clears all stored errors for the line.
+        """
+        self.errors.clear()
+
+    # Line Attribute Checkers
+    def has_label(self):
+        """
+        Returns True if a label is present.
+        :return: True if the label is not None, False otherwise.
+        """
+        return self.label is not None
+
     def is_directive(self):
         """
-        Checks if the line contains an assembler directive.
-
-        :return: True if the opcode is a directive, False otherwise.
+        Returns True if the opcode is an assembler directive.
+        :return: True if the opcode is a recognized directive, False otherwise.
         """
-        return self.opcode and self.opcode.upper() in {'START', 'END', 'BYTE', 'WORD', 'RESB', 'RESW', 'EQU', 'EXTDEF', 'EXTREF'}
+        return self.opcode in self.directives
 
-    @property
     def is_instruction(self):
         """
-        Checks if the line contains an instruction mnemonic.
-
-        :return: True if the opcode is an instruction, False otherwise.
+        Returns True if the opcode is a machine instruction.
+        :return: True if the opcode is not a directive and is defined, False otherwise.
         """
-        return not self.is_directive and self.opcode is not None
+        return self.opcode is not None and not self.is_directive()
 
-
-    def __str__(self):
+    def is_extended_format(self):
         """
-        Provides a string representation of the line for debugging.
-
-        :return: A formatted string with details of the source line.
+        Returns True if the instruction is in extended format (format 4).
+        :return: True if the opcode starts with '+', False otherwise.
         """
-        label_str = f"{self.label}:" if self.label else ""
-        operands_str = ', '.join(self.operands) if self.operands else ""
-        errors_str = '; '.join(self.errors) if self.errors else "None"
-        comment_str = f"; {self.comment}" if self.comment else ""
-        return (f"Line {self.line_number}: {label_str} {self.opcode or ''} {operands_str} "
-                f"(Address: {hex(self.address) if self.address is not None else 'N/A'}, "
-                f"Object Code: {self.object_code or 'N/A'}, Errors: {errors_str}){comment_str}")
+        return self.opcode is not None and self.opcode.startswith('+')
 
-    # Additional helper methods can be added as needed
+    def is_indexed_addressing(self):
+        """
+        Returns True if the addressing mode is indexed (e.g., BUFFER,X).
+        :return: True if the last character of the operand is 'X', False otherwise.
+        """
+        return any(',' in operand and operand.split(',')[-1].strip() == 'X' for operand in self.operands)
 
-# Example usage
-if __name__ == "__main__":
-    # Create an instance of SourceCodeLine
-    line = SourceCodeLine(line_number=1)
+    # Derived Attribute Methods
+    def calculate_instruction_length(self):
+        """
+        Calculates the instruction length based on the format and sets the instruction_length attribute.
+        """
+        if self.instr_format is not None:
+            # Standard instruction formats
+            if self.instr_format == 1:
+                self.instruction_length = 1
+            elif self.instr_format == 2:
+                self.instruction_length = 2
+            elif self.instr_format in [3, 4]:
+                self.instruction_length = 4 if self.is_extended_format() else 3
+            else:
+                self.add_error(f"Unknown instruction format: {self.instr_format}")
+                self.instruction_length = 0  # Unknown format
+        elif self.is_directive():
+            # Directives can affect location counter, but typically have no instruction length
+            self.instruction_length = 0
+        else:
+            self.add_error("Instruction length cannot be determined without a valid format or directive.")
 
-    # Manually set attributes (parsing is done elsewhere)
-    line.label = "START"
-    line.opcode = "LDA"
-    line.operands = ["BUFFER,X"]
-    line.address = 0x1000
-    line.instr_format = 3
-    line.object_code = "00AF"
-    line.comment = "Load accumulator"
-    line.is_comment = False
+    def get_operand_count(self):
+        """
+        Returns the number of operands present.
+        :return: The number of operands in the operands list.
+        """
+        return len(self.operands)
 
-    # Check if the line has a label
-    print(f"Has label: {line.has_label()}")
+    # Utility Methods
+    def set_operands(self, operands):
+        """
+        Sets the operands for the line.
+        :param operands: A list of operands to set.
+        """
+        if isinstance(operands, list):
+            self.operands = operands
+        else:
+            error_msg = "Operands must be provided as a list."
+            self.add_error(error_msg)
+            raise TypeError(error_msg)
 
-    # Print the line's string representation
-    print(line)
+    def set_address(self, address):
+        """
+        Sets the address of the line.
+        :param address: The address to set.
+        """
+        if isinstance(address, int) and address >= 0:
+            self.address = address
+        else:
+            error_msg = f"Invalid address: {address}. Address must be a non-negative integer."
+            self.add_error(error_msg)
+            raise ValueError(error_msg)
 
-    # Add an error
-    line.add_error("Undefined symbol 'BUFFER'")
-    print(f"Has errors: {line.has_errors()}")
-    print(line)
+    def update_object_code(self, code):
+        """
+        Updates the object code for the line.
+        :param code: The object code to set.
+        """
+        if isinstance(code, str):
+            self.object_code = code
+        else:
+            error_msg = "Object code must be a string."
+            self.add_error(error_msg)
+            raise TypeError(error_msg)
