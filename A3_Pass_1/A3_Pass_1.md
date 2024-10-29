@@ -478,56 +478,115 @@ The `OpcodeHandler` class serves to:
 
 
 ## `ParsingHandler`
-The **ParsingHandler** is responsible for parsing a line of assembly code into its individual components, such as label, opcode, operands, and comments. The goal is to convert the raw line of code into a structured format, specifically updating a given `SourceCodeLine` instance.
-### Core Attributes
-- **`source_line`** (`SourceCodeLine`):
-  - The `SourceCodeLine` instance to be updated with the parsed components of the line.
-- **`line_text`** (`str`):
-  - The raw line of assembly code that needs to be parsed.
-- **`regex_pattern`** (`str`):
-  - A regex pattern used for parsing the line into label, opcode, operands, and comments.
-### Regex Pattern
-The regex pattern is designed to parse labels, opcodes, operands, and comments efficiently:
-```regex
-^(\w+)?\s*(\+?[A-Z]+)?\s*(.*?)(\s*\.\s*.*)?$
-```
-- **Explanation**:
-  - `^(\w+)?`: Matches a label, which is any word character (letters, digits, or underscores), at the start of the line.
-  - `\s*`: Matches any whitespace that separates components.
-  - `(\+?[A-Z]+)?`: Matches the opcode, which can be prefixed with a `+` for extended format and contains uppercase letters.
-  - `\s*`: Matches whitespace between components.
-  - `(.*?)`: Matches the operands, which can be anything between the opcode and comment.
-  - `(\s*\.\s*.*)?$`: Matches comments, which start with the comment symbol (`.`) and include any following characters.
+The `ParsingHandler` is designed to handle the parsing of assembly code lines into individual components, validate them as needed, and log errors or actions. It aims to process each line of code and convert it into structured parts, such as label, opcode, operands, and comments, with optional validation.
+### Key Features
+1. **Component Parsing**: The class breaks down a line of code into components.
+2. **Validation**: It validates the components according to assembly language rules when the `validate_parsing` flag is set to `True`.
+3. **Error Handling**: Uses the `ErrorLogHandler` to log errors and issues during parsing.
+4. **Opcode Validation**: Uses the `OpcodeHandler` to verify whether an opcode is valid.
+5. **Integration with `SourceCodeLine`**: Updates the `SourceCodeLine` instance with parsed data and errors.
+### Class Attributes
+
+| Attribute | Type | Description |
+| --- | --- | --- |
+| `source_line` | `SourceCodeLine` | Instance to store the parsed data and errors of the current line. |
+| `line_text` | `str` | Raw line of assembly code to be parsed. |
+| `validate_parsing` | `bool` | Flag to enable or disable validation of line components. |
+| `logger` | `ErrorLogHandler` | Logger instance for error and action logging. |
+| `opcode_handler` | `OpcodeHandler` | Handles opcode validation and related operations. |
 ### Methods
-#### Initialization & Setup
-- **`__init__(self, source_line, line_text)`**:
-  - Initializes the ParsingHandler with a `SourceCodeLine` instance and a line of assembly code.
-  - Sets up the regex pattern for parsing.
-  - Attributes:
-    - `source_line`: An instance of `SourceCodeLine` to store parsed results.
-    - `line_text`: The raw line of code to parse.
-#### Parsing Methods
-- **`parse_line(self)`**:
-	- Main method to parse the line into components: label, opcode, operands, and comments.
-	- Uses the regex pattern to break down the line into these components and updates the `SourceCodeLine` instance.
-	- Handles empty lines and comment-only lines appropriately.
-	- If the line contains only a comment, sets `is_comment` to `True` in `SourceCodeLine`.
-- **`extract_label(self, match)`**:
-	- Extracts the label from the regex match and updates the `label` attribute of `SourceCodeLine`.
-- **`extract_opcode(self, match)`**:
-	- Extracts the opcode from the regex match and updates the `opcode` attribute of `SourceCodeLine`.
-- **`extract_operands(self, match)`**:
-	- Extracts the operands from the regex match, splits them if needed, and updates the `operands` list in `SourceCodeLine`.
-- **`extract_comment(self, match)`**:
-	- Extracts the comment from the regex match and updates the `comment` attribute of `SourceCodeLine`.
-- **`handle_empty_line(self)`**:
-	- Handles lines that are empty or contain only whitespace. Sets the `is_comment` attribute to `True`.
-- **`handle_comment_line(self)`**:
-	- Handles lines that are comment-only and sets `is_comment` to `True` in `SourceCodeLine`.
-#### Utility Methods
-- **`reset_source_line(self)`**:
-  - Clears the attributes of `SourceCodeLine` before parsing a new line.
-  - Ensures that previous data doesn’t interfere with the new parsing process.
+#### 1. `__init__()`
+Initializes the `ParsingHandler` with necessary components, including:
+- `source_line`: Stores parsed results.
+- `line_text`: Raw code line to parse.
+- `validate_parsing`: Boolean to enable validation.
+- `logger`: Logs errors and actions.
+- `opcode_handler`: Validates opcodes.
+**Parameters:**
+- `source_line`: `SourceCodeLine` instance.
+- `line_text`: The raw line to parse.
+- `validate_parsing`: Enables or disables validation.
+- `logger`: Instance of `ErrorLogHandler`.
+- `opcode_handler`: Instance of `OpcodeHandler`.
+#### 2. `parse_line()`
+Parses the line of code into components (label, opcode, operands, and comments). It also performs validation if enabled.
+**Logic:**
+- Strips the line of leading/trailing whitespaces.
+- Splits line into code and comments based on the comment symbol (`.`).
+- Splits code into tokens and extracts label, opcode, and operands.
+- Updates `source_line` with parsed components.
+- Calls `validate_line()` if `validate_parsing` is enabled.
+#### 3. `reset_source_line()`
+Resets the `SourceCodeLine` attributes before parsing a new line. Clears all fields to avoid interference with new parsing.
+
+**Functionality:**
+- Sets `label`, `opcode`, `operands`, `comment`, and `is_comment` to default values.
+- Clears any existing errors in `source_line`.
+
+#### 4. `handle_comment_line()`
+Handles lines that are purely comments. Sets the `is_comment` flag to `True` and updates the `comment` attribute in `source_line`.
+**Logic:**
+- If the line starts with a comment symbol or is empty, it is treated as a comment.
+#### 5. `validate_line()`
+Validates the parsed line components (label, opcode, and operands) using respective methods.
+**Logic:**
+- Calls `validate_label()`, `validate_opcode()`, and `validate_operands()` to ensure components follow assembly language rules.
+#### 6. `validate_label()`
+Validates the label according to assembly language rules:
+- Starts with a letter and contains only alphanumeric characters.
+- Maximum length is 10 characters.
+**Validation:**
+- Adds an error if the label is invalid.
+#### 7. `validate_opcode()`
+Checks if the opcode is valid using the `OpcodeHandler`.
+**Validation:**
+- Adds an error if the opcode is not found in `OpcodeHandler`.
+#### 8. `validate_operands()`
+Validates operands to ensure they conform to assembly rules, such as:
+- Balanced parentheses.
+- Matching quotes.
+**Validation:**
+- Adds errors for unbalanced parentheses or unmatched quotes.
+#### 9. `print_full_opcodes()`
+Prints the full opcode information of the parsed line for debugging and verification.
+#### 10. `test()`
+Runs unit tests to verify the functionality of the `ParsingHandler`. It tests various parsing scenarios, including:
+- Valid lines.
+- Lines with label errors, opcode errors, and operand errors.
+- Comment-only lines and empty lines.
+**Logic:**
+- Defines a set of test cases with expected results.
+- Iterates through each test case, parsing it and comparing the results to expected outputs.
+- Logs passed and failed tests.
+### Improvements & Extensions
+1. **Dynamic Validation**: Allow dynamic extension of validation rules based on specific requirements.
+2. **Error Aggregation**: Enhance error reporting to aggregate and format multiple errors for better readability.
+3. **Performance Optimization**: Optimize parsing by caching common patterns or pre-compiling regular expressions.
+4. **Logging Enhancements**: Improve logging by adding detailed context, such as line numbers and file names.
+5. **Advanced Operand Handling**: Extend operand parsing to handle complex expressions, literal values, and special addressing modes.
+6. **Directive Handling**: Add support for directives like `START`, `END`, etc., and validate them differently from instructions.
+### Usage Example
+```python
+from SourceCodeLine import SourceCodeLine
+from ErrorLogHandler import ErrorLogHandler
+from OpcodeHandler import OpcodeHandler
+
+# Example usage of ParsingHandler
+source_line = SourceCodeLine(line_number=1, line_text="LDA BUFFER,X . Load accumulator")
+logger = ErrorLogHandler()
+opcode_handler = OpcodeHandler()
+
+parser = ParsingHandler(source_line, source_line.line_text, validate_parsing=True, logger=logger, opcode_handler=opcode_handler)
+parser.parse_line()
+
+print(f"Label: {source_line.label}")
+print(f"Opcode: {source_line.opcode}")
+print(f"Operands: {source_line.operands}")
+print(f"Comment: {source_line.comment}")
+print(f"Errors: {source_line.errors}")
+```
+### Conclusion
+The `ParsingHandler` is designed to be a robust component for handling assembly line parsing, making it easy to integrate into larger assembler projects. It is extensible, supporting different levels of validation and enhanced error reporting, making it suitable for educational and production-grade assemblers.
 #### Testing Method
 - **`test(cls)`**:
 	- A class method to test various parsing scenarios for `ParsingHandler`.
