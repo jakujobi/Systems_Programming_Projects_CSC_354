@@ -102,6 +102,15 @@ class OpcodeHandler:
             self.logger.log_error(str(e), "Hex Retrieval Error")
             raise
 
+    def is_opcode(self, name):
+        """
+        Checks if the given name is a valid opcode.
+        
+        :param name: The name to check.
+        :return: True if the name is a valid opcode, False otherwise.
+        """
+        return name in self.opcodes
+
     def print_opcodes(self):
         """
         Prints all loaded opcodes to the screen in a readable format.
@@ -118,7 +127,139 @@ class OpcodeHandler:
             hex_str = f"{info['hex']:02X}"  # Convert hex to uppercase string
             print(f"{name:<10} {hex_str:<10} {format_str:<10}")
 
+    @staticmethod
+    def test():
+        """
+        Thoroughly tests the OpcodeHandler class.
+        """
+        passed_tests = 0
+        failed_tests = 0
+        failed_test_details = []
 
+        def log_test_result(test_name, success, exception=None):
+            nonlocal passed_tests, failed_tests
+            if success:
+                passed_tests += 1
+                print(f"{test_name}: Passed")
+            else:
+                failed_tests += 1
+                print(f"{test_name}: Failed - {exception}")
+                failed_test_details.append(f"{test_name}: {exception}")
+
+        # Create a logger for testing
+        logger = ErrorLogHandler()
+
+        # Test initialization with a valid file
+        print("=== Testing Initialization with Valid File ===")
+        try:
+            handler = OpcodeHandler(file_path='opcodes.txt', logger=logger)
+            log_test_result("Initialization with Valid File", True)
+        except Exception as e:
+            log_test_result("Initialization with Valid File", False, e)
+
+        # Test initialization with an invalid file
+        print("\n=== Testing Initialization with Invalid File ===")
+        try:
+            handler = OpcodeHandler(file_path='invalid_file.txt', logger=logger)
+            log_test_result("Initialization with Invalid File", False, "No exception raised")
+        except FileNotFoundError:
+            log_test_result("Initialization with Invalid File", True)
+        except Exception as e:
+            log_test_result("Initialization with Invalid File", False, e)
+
+        # Test get_opcode with a valid opcode
+        print("\n=== Testing get_opcode with Valid Opcode ===")
+        try:
+            handler = OpcodeHandler(file_path='opcodes.txt', logger=logger)
+            opcode_info = handler.get_opcode('ADD')
+            print(f"Opcode Info: {opcode_info}")
+            log_test_result("get_opcode with Valid Opcode", True)
+        except Exception as e:
+            log_test_result("get_opcode with Valid Opcode", False, e)
+
+        # Test get_opcode with an invalid opcode
+        print("\n=== Testing get_opcode with Invalid Opcode ===")
+        try:
+            handler = OpcodeHandler(file_path='opcodes.txt', logger=logger)
+            handler.get_opcode('INVALID')
+            log_test_result("get_opcode with Invalid Opcode", False, "No exception raised")
+        except ValueError:
+            log_test_result("get_opcode with Invalid Opcode", True)
+        except Exception as e:
+            log_test_result("get_opcode with Invalid Opcode", False, e)
+
+        # Test get_format with a valid opcode
+        print("\n=== Testing get_format with Valid Opcode ===")
+        try:
+            handler = OpcodeHandler(file_path='opcodes.txt', logger=logger)
+            format_type = handler.get_format('ADD')
+            print(f"Format: {format_type}")
+            log_test_result("get_format with Valid Opcode", True)
+        except Exception as e:
+            log_test_result("get_format with Valid Opcode", False, e)
+
+        # Test get_format with an invalid opcode
+        print("\n=== Testing get_format with Invalid Opcode ===")
+        try:
+            handler = OpcodeHandler(file_path='opcodes.txt', logger=logger)
+            handler.get_format('INVALID')
+            log_test_result("get_format with Invalid Opcode", False, "No exception raised")
+        except ValueError:
+            log_test_result("get_format with Invalid Opcode", True)
+        except Exception as e:
+            log_test_result("get_format with Invalid Opcode", False, e)
+
+        # Test get_hex with a valid opcode
+        print("\n=== Testing get_hex with Valid Opcode ===")
+        try:
+            handler = OpcodeHandler(file_path='opcodes.txt', logger=logger)
+            hex_code = handler.get_hex('ADD')
+            print(f"Hex Code: {hex_code:02X}")
+            log_test_result("get_hex with Valid Opcode", True)
+        except Exception as e:
+            log_test_result("get_hex with Valid Opcode", False, e)
+
+        # Test get_hex with an invalid opcode
+        print("\n=== Testing get_hex with Invalid Opcode ===")
+        try:
+            handler = OpcodeHandler(file_path='opcodes.txt', logger=logger)
+            handler.get_hex('INVALID')
+            log_test_result("get_hex with Invalid Opcode", False, "No exception raised")
+        except ValueError:
+            log_test_result("get_hex with Invalid Opcode", True)
+        except Exception as e:
+            log_test_result("get_hex with Invalid Opcode", False, e)
+
+        # Test is_opcode with a valid opcode
+        print("\n=== Testing is_opcode with Valid Opcode ===")
+        try:
+            handler = OpcodeHandler(file_path='opcodes.txt', logger=logger)
+            is_valid = handler.is_opcode('ADD')
+            print(f"Is Valid Opcode: {is_valid}")
+            log_test_result("is_opcode with Valid Opcode", is_valid)
+        except Exception as e:
+            log_test_result("is_opcode with Valid Opcode", False, e)
+
+        # Test is_opcode with an invalid opcode
+        print("\n=== Testing is_opcode with Invalid Opcode ===")
+        try:
+            handler = OpcodeHandler(file_path='opcodes.txt', logger=logger)
+            is_valid = handler.is_opcode('INVALID')
+            print(f"Is Valid Opcode: {is_valid}")
+            log_test_result("is_opcode with Invalid Opcode", not is_valid)
+        except Exception as e:
+            log_test_result("is_opcode with Invalid Opcode", False, e)
+
+        # Summary of test results
+        print("\n=== Test Results Summary ===")
+        print(f"Total Tests Passed: {passed_tests}")
+        print(f"Total Tests Failed: {failed_tests}")
+        if failed_tests > 0:
+            print("\nFailed Test Details:")
+            for detail in failed_test_details:
+                print(detail)
+
+        print("\n=== All Tests Completed ===")
 
 def main():
     # Create an instance of ErrorLogHandler
@@ -146,9 +287,12 @@ def main():
     test_mnemonics = ['ADD', 'SUB', 'LDA', 'INVALID']
     for mnemonic in test_mnemonics:
         try:
-            logger.log_action(f"\nRetrieving details for '{mnemonic}':, False")
-            opcode_info = opcode_handler.get_opcode(mnemonic)
-            print(f"Format: {opcode_info['format']}, Hex Code: {opcode_info['hex']:02X}")
+            logger.log_action(f"\nRetrieving details for '{mnemonic}':", False)
+            if opcode_handler.is_opcode(mnemonic):
+                opcode_info = opcode_handler.get_opcode(mnemonic)
+                print(f"Format: {opcode_info['format']}, Hex Code: {opcode_info['hex']:02X}")
+            else:
+                print(f"'{mnemonic}' is not a valid opcode.")
         except ValueError as e:
             logger.log_error(str(e), "Lookup Error")
         except Exception as e:
@@ -158,6 +302,9 @@ def main():
     logger.display_log()
     logger.display_errors()
 
+    # Run tests
+    print("\n=== Running OpcodeHandler Tests ===")
+    OpcodeHandler.test()
 
 # Run the main program
 if __name__ == "__main__":
