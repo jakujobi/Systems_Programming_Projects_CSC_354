@@ -477,114 +477,91 @@ The `OpcodeHandler` class serves to:
    - The `print_opcodes()` method outputs all loaded opcodes in a human-readable format, useful for debugging or verification.
 
 
-
 ## `ParsingHandler`
-The `ParsingHandler` class is responsible for reading source code, breaking down each line into components, and preparing it for further processing by other classes (e.g., `AssemblerPass1`, `LineValidator`).
-### Purpose
-- Load source code from a file.
-- Iterate through each line and tokenize it into label, opcode, operands, and comments.
-- Skip comment-only lines if specified.
-- Return parsed lines as instances of `SourceCodeLine`.
-There should be a variable called `commentstyle` which is currently a dot `.`
-### Attributes
-#### Core Attributes
-1. **`source_lines`** (`list` of `str`):
-    - **Purpose**: Stores raw lines of source code loaded from the file.
-    - **How it works**:
-        - Populated when the source code is read from the file.
-        - Each element in this list is a string representing a single line of the source code.
-    - **Importance**: Provides a base for line-by-line parsing.
-2. **`skip_comment_lines`** (`bool`):
-    - **Purpose**: Determines whether to skip lines that only contain comments.
-    - **How it works**:
-        - Set to `True` by default but can be toggled during initialization.
-        - If `True`, lines that are purely comments are skipped during parsing.
-    - **Importance**: Helps in filtering out irrelevant lines during parsing, making the process faster and more efficient.
-3. **`file_explorer`** (`FileExplorer`):
-    - **Purpose**: Handles reading from the source file.
-    - **How it works**:
-        - Uses the `FileExplorer` class to read the file and return its contents as a list of lines.
-    - **Importance**: Provides modular and reusable file handling.
-4. **`parsed_lines`** (`list` of `SourceCodeLine`):
-    - **Purpose**: Stores the parsed lines as `SourceCodeLine` objects.
-    - **How it works**:
-        - Each element is an instance of `SourceCodeLine`, which represents a single line after parsing.
-    - **Importance**: Makes parsed lines available for further processing, such as validation, symbol table management, and object code generation.
+The **ParsingHandler** is responsible for parsing a line of assembly code into its individual components, such as label, opcode, operands, and comments. The goal is to convert the raw line of code into a structured format, specifically updating a given `SourceCodeLine` instance.
+### Core Attributes
+- **`source_line`** (`SourceCodeLine`):
+  - The `SourceCodeLine` instance to be updated with the parsed components of the line.
+- **`line_text`** (`str`):
+  - The raw line of assembly code that needs to be parsed.
+- **`regex_pattern`** (`str`):
+  - A regex pattern used for parsing the line into label, opcode, operands, and comments.
+### Regex Pattern
+The regex pattern is designed to parse labels, opcodes, operands, and comments efficiently:
+```regex
+^(\w+)?\s*(\+?[A-Z]+)?\s*(.*?)(\s*\.\s*.*)?$
+```
+- **Explanation**:
+  - `^(\w+)?`: Matches a label, which is any word character (letters, digits, or underscores), at the start of the line.
+  - `\s*`: Matches any whitespace that separates components.
+  - `(\+?[A-Z]+)?`: Matches the opcode, which can be prefixed with a `+` for extended format and contains uppercase letters.
+  - `\s*`: Matches whitespace between components.
+  - `(.*?)`: Matches the operands, which can be anything between the opcode and comment.
+  - `(\s*\.\s*.*)?$`: Matches comments, which start with the comment symbol (`.`) and include any following characters.
 ### Methods
-#### Core Methods
-These methods handle the main parsing tasks, including reading from the file, processing each line, and managing the parsed output.
-1. **`__init__(self, file_explorer=None, skip_comment_lines=True)`**
-    - **Purpose**: Initializes the `ParsingHandler` with default attributes.
-    - **How it works**:
-        - Sets `file_explorer` to a new instance of `FileExplorer` if not provided.
-        - Sets `skip_comment_lines` to control comment skipping behavior.
-    - **Importance**: Prepares the object for handling source code and sets the default behavior for parsing.
-2. **`load_source_code(self, file_name)`**
-    - **Purpose**: Loads the source code from a file using the `FileExplorer`.
-    - **How it works**:
-        - Uses `file_explorer.process_file(file_name)` to read the file.
-        - Populates the `source_lines` attribute with the raw lines from the file.
-        - Raises an error if the file cannot be read.
-    - **Importance**: Ensures that the source code is loaded before parsing begins.
-3. **`parse_source_code(self)`**
-    - **Purpose**: Parses the source code line-by-line.
-    - **How it works**:
-        - Iterates through each line in `source_lines`.
-        - Skips comment-only lines if `skip_comment_lines` is enabled.
-        - Calls `parse_line()` to tokenize and process each line.
-        - Appends each parsed line to `parsed_lines`.
-    - **Importance**: Performs the main parsing operation, preparing lines for further use.
-4. **`parse_line(self, line_number, line_text)`**
-    - **Purpose**: Tokenizes a single line into label, opcode, operands, and comments.
-    - **How it works**:
-        - Trims leading and trailing spaces from the line.
-        - Separates comments (indicated by a dot `.`) from the line.
-        - Splits the remaining part by whitespace to extract tokens.
-        - Identifies the label if it ends with a colon (`:`).
-        - Identifies the opcode as the next token.
-        - Groups remaining tokens as operands, split by commas.
-        - Returns a `SourceCodeLine` instance with parsed components.
-    - **Importance**: Handles the core parsing logic for each line, making it easy to work with components separately.
-5. **`_parse_operands(self, tokens)`**
-    - **Purpose**: Extracts operands from a list of tokens.
-    - **How it works**:
-        - Joins the tokens and splits them by commas.
-        - Trims each operand and returns them as a list.
-    - **Importance**: Separates operands correctly, even if they have spaces, ensuring they are easily identifiable.
-6. **`_is_comment_line(self, line_text)`**
-    - **Purpose**: Determines if a line is purely a comment.
-    - **How it works**:
-        - Strips the line and checks if it starts with a variable called commentstyle (for now, it will be a dot (`.`)) or is empty.
-    - **Importance**: Helps in filtering out comment-only lines when needed.
-7. **`get_parsed_lines(self)`**
-    - **Purpose**: Returns the list of parsed lines.
-    - **How it works**:
-        - Provides access to the `parsed_lines` attribute, which contains `SourceCodeLine` objects.
-    - **Importance**: Enables other classes, such as `AssemblerPass1`, to access the parsed lines.
+#### Initialization & Setup
+- **`__init__(self, source_line, line_text)`**:
+  - Initializes the ParsingHandler with a `SourceCodeLine` instance and a line of assembly code.
+  - Sets up the regex pattern for parsing.
+  - Attributes:
+    - `source_line`: An instance of `SourceCodeLine` to store parsed results.
+    - `line_text`: The raw line of code to parse.
+#### Parsing Methods
+- **`parse_line(self)`**:
+	- Main method to parse the line into components: label, opcode, operands, and comments.
+	- Uses the regex pattern to break down the line into these components and updates the `SourceCodeLine` instance.
+	- Handles empty lines and comment-only lines appropriately.
+	- If the line contains only a comment, sets `is_comment` to `True` in `SourceCodeLine`.
+- **`extract_label(self, match)`**:
+	- Extracts the label from the regex match and updates the `label` attribute of `SourceCodeLine`.
+- **`extract_opcode(self, match)`**:
+	- Extracts the opcode from the regex match and updates the `opcode` attribute of `SourceCodeLine`.
+- **`extract_operands(self, match)`**:
+	- Extracts the operands from the regex match, splits them if needed, and updates the `operands` list in `SourceCodeLine`.
+- **`extract_comment(self, match)`**:
+	- Extracts the comment from the regex match and updates the `comment` attribute of `SourceCodeLine`.
+- **`handle_empty_line(self)`**:
+	- Handles lines that are empty or contain only whitespace. Sets the `is_comment` attribute to `True`.
+- **`handle_comment_line(self)`**:
+	- Handles lines that are comment-only and sets `is_comment` to `True` in `SourceCodeLine`.
+#### Utility Methods
+- **`reset_source_line(self)`**:
+  - Clears the attributes of `SourceCodeLine` before parsing a new line.
+  - Ensures that previous data doesn’t interfere with the new parsing process.
+#### Testing Method
+- **`test(cls)`**:
+	- A class method to test various parsing scenarios for `ParsingHandler`.
+	- It will create instances of `SourceCodeLine` and use different lines of assembly code as input.
+	- It will cover the following scenarios:
+		1. **Parsing a line with a label, opcode, and operands**.
+		2. **Parsing a line with only a label**.
+		3. **Parsing a line with only an opcode**.
+		4. **Parsing a line with an opcode and operands**.
+		5. **Parsing a comment-only line**.
+		6. **Parsing an empty line**.
+		7. **Parsing a line with an extended format opcode** (e.g., `+LDA`).
+		8. **Parsing a line with indexed addressing** (e.g., `BUFFER,X`).
+		9. **Parsing a line with indirect addressing** (e.g., `@BUFFER`).
+		10. **Parsing a line with immediate addressing** (e.g., `#BUFFER`).
+  - The method should print results for each test, indicating whether the parsing was successful and how the `SourceCodeLine` attributes were updated.
+### Example of How Parsing Works
+#### Input
+```assembly
+LOOP:   LDA   BUFFER,X   . Load A register with BUFFER indexed
+```
+#### Parsing Breakdown
+- **Label**: `LOOP`
+- **Opcode**: `LDA`
+- **Operands**: `BUFFER,X`
+- **Comment**: `. Load A register with BUFFER indexed`
+#### Updated `SourceCodeLine`
+- `label`: `LOOP`
+- `opcode`: `LDA`
+- `operands`: `['BUFFER,X']`
+- `comment`: `. Load A register with BUFFER indexed`
+### Class Summary
+The **ParsingHandler** will focus solely on parsing. It breaks down the line and updates the attributes of the provided `SourceCodeLine` instance. It is not responsible for validation; the `LineValidator` will handle any validation checks.
 
-#### Additional Methods (Optional Enhancements)
-These are additional methods that can enhance the functionality of the class and improve integration with other components of the assembler.
-1. **`print_parsed_lines(self)`**
-    - **Purpose**: Prints a detailed representation of each parsed line for debugging.
-    - **How it works**:
-        - Iterates over `parsed_lines` and prints each one.
-    - **Importance**: Useful for debugging and verifying the parsing process.
-2. **`reset(self)`**
-    - **Purpose**: Resets the parsing state.
-    - **How it works**:
-        - Clears `source_lines` and `parsed_lines`.
-    - **Importance**: Allows reusing the same instance for parsing a different file.
-3. **`get_line_by_number(self, line_number)`**
-    - **Purpose**: Retrieves a specific parsed line by its line number.
-    - **How it works**:
-        - Searches `parsed_lines` for a matching `line_number`.
-        - Returns the `SourceCodeLine` instance if found, else returns `None`.
-    - **Importance**: Provides a way to retrieve specific lines for validation or error handling.
-### Integration with Other Classes
-To ensure seamless integration with other classes in the assembler, the `ParsingHandler` should:
-- Return `SourceCodeLine` objects that can be validated by `LineValidator`.
-- Provide parsed lines to `AssemblerPass1` for further processing, like symbol table management and location counter updates.
-- Be able to work independently or in conjunction with other handlers (e.g., `OpcodeHandler` for opcode checks).
 ## `SourceProcessor`
 
 ## `LocationCounter`
