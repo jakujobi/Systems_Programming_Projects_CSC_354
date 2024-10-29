@@ -10,11 +10,12 @@ class OpcodeHandler:
         Creates an instance of FileExplorer to handle file operations.
         Uses ErrorLogHandler to manage error and action logging.
         """
-        self.opcodes = {}  # Dictionary to store opcode info
-        self.file_explorer = FileExplorer()  # Create a new instance of FileExplorer
-        self.logger = logger if logger else ErrorLogHandler()  # Use provided logger or create one
+        self.opcodes = {}
+        self.directives = set(['START', 'END', 'BYTE', 'WORD', 'RESB', 'RESW', 'EQU', 'ORG', 'BASE', 'NOBASE', 'LTORG', 'USE', 'CSECT'])
+        self.file_explorer = FileExplorer()
+        self.logger = logger if logger else ErrorLogHandler()
         self.file_path = file_path
-        self._load_opcodes()  # Private method to load opcodes on initialization
+        self._load_opcodes()
 
     def _load_opcodes(self):
         """
@@ -109,7 +110,7 @@ class OpcodeHandler:
         :param name: The name to check.
         :return: True if the name is a valid opcode, False otherwise.
         """
-        return name in self.opcodes
+        return name in self.opcodes or name in self.directives
 
     def print_opcodes(self):
         """
