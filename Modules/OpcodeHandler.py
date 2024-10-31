@@ -4,6 +4,10 @@ from FileExplorer import FileExplorer
 from ErrorLogHandler import ErrorLogHandler
 
 class OpcodeHandler:
+    directives = ['START', 'END', 'BYTE', 'WORD', 'RESB', 'RESW', 'EQU', 'ORG', 'EXTDEF', 'EXTREF']
+    pseudo_ops = ['EXTDEF', 'EXTREF', 'EQU', 'ORG']
+    
+    
     def __init__(self, file_path='opcodes.txt', logger=None):
         """
         Initializes the OpcodeHandler with an empty opcode dictionary.
@@ -11,7 +15,6 @@ class OpcodeHandler:
         Uses ErrorLogHandler to manage error and action logging.
         """
         self.opcodes = {}
-        self.directives = set(['START', 'END', 'BYTE', 'WORD', 'RESB', 'RESW', 'EQU', 'ORG', 'BASE', 'NOBASE', 'LTORG', 'USE', 'CSECT'])
         self.file_explorer = FileExplorer()
         self.logger = logger if logger else ErrorLogHandler()
         self.file_path = file_path
@@ -110,7 +113,7 @@ class OpcodeHandler:
         :param name: The name to check.
         :return: True if the name is a valid opcode, False otherwise.
         """
-        return name in self.opcodes or name in self.directives
+        return name in self.opcodes or name in self.directives or name in self.pseudo_ops
 
     def print_opcodes(self):
         """
