@@ -187,33 +187,6 @@ class FileExplorer:
         ***    - str: The valid file path.                                  ***
         ********************************************************************/
         """
-        # while True:
-        #     print("\nFinding Menu:")
-        #     print(f"1. Type the {file_name} file path manually.")
-        #     if tkinter_available:
-        #         print(f"2. Use your system file explorer to locate the {file_name} file.")
-            
-        #     choice = input("Choose an option (1 or 2): ").strip()
-
-        #     if choice == "1":
-        #         file_path = input(f"Enter the full path to {file_name}: ").strip()
-        #         if os.path.isfile(file_path):
-        #             return file_path
-        #         else:
-        #             print(f"Error: Invalid typed file path for {file_name}. Please try again.\n Make sure you type the system full path to the file.\n For example: c:/Users/wolverine/SDSU-Courses/Systems_Programming_Projects_CSC_354/Symbol Table Project/SYMS.DAT")
-            
-        #     elif choice == "2" and tkinter_available:
-        #         try:
-        #             file_path = self.use_system_explorer()
-        #             if os.path.isfile(file_path):
-        #                 return file_path
-        #             else:
-        #                 print(f"Error: Invalid file path for {file_name} from system explorer. Please try again.")
-        #         except Exception as e:
-        #             print(f"Unexpected Error: {e} @ prompt_for_file")
-        #     else:
-        #         print("Invalid choice. Please select 1 or 2.")
-                
         retry_limit = 5
         retries = 0
 
@@ -339,6 +312,27 @@ class FileExplorer:
         
         return lines
 
+    def read_file_raw(self, file_name):
+        """
+        Reads the file without making any changes to its content.
+        
+        :param file_name: The name of the file to read.
+        :return: A list of lines from the file or None if an error occurs.
+        """
+        try:
+            file_path = self.find_file(file_name)
+            if file_path is None:
+                print(f"Error: Could not find the file '{file_name}'.")
+                return None
+
+            with open(file_path, 'r', encoding='utf-8') as file:
+                lines = file.readlines()
+            return lines
+        except FileNotFoundError:
+            print(f"File not found: {file_name}.")
+        except Exception as e:
+            print(f"An error occurred: {e}")
+            return None
 
     def use_system_explorer(self):
         """
