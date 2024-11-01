@@ -1,8 +1,15 @@
 # LocationCounter.py
+import os
+import sys
+
+
+repo_home_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.append(repo_home_path)
+
 from Modules.ErrorLogHandler import ErrorLogHandler
 from Modules.Symbol_Table_Builder import SymbolTable
-from OpcodeHandler import OpcodeHandler
-from SourceCodeLine import SourceCodeLine
+from Modules.OpcodeHandler import OpcodeHandler
+from Modules.SourceCodeLine import SourceCodeLine
 from Modules.FileExplorer import FileExplorer
 
 class LocationCounter:
