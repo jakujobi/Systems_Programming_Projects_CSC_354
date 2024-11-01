@@ -7,15 +7,14 @@ from pathlib import Path
 repo_home_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.append(repo_home_path)
 
-from Modules.SourceCodeLine import SourceCodeLine
-from Modules.ParsingHandler import ParsingHandler
-from Modules.OpcodeHandler import OpcodeHandler
-from Modules.LocationCounter import LocationCounter
-from Modules.ErrorLogHandler import ErrorLogHandler
+from Modules.SourceCodeLine import *
+from Modules.ParsingHandler import *
+from Modules.OpcodeHandler import *
+from Modules.LocationCounter import *
+from Modules.ErrorLogHandler import *
 from Modules.Symbol_Table_Builder import *
-
-
-
+from Modules.Literal_Table_Builder import *
+from Modules.FileExplorer import *
 
 class AssemblerPass1:
     """
@@ -23,25 +22,58 @@ class AssemblerPass1:
     It processes the source code, builds the symbol table, and computes addresses.
     """
 
-    def __init__(self, source_file_path, logger=None):
+    def __init__(self, filename: str, logger: ErrorLogHandler = None):
         """
         Initializes the AssemblerPass1 instance.
 
         :param source_file_path: Path to the source code file.
         :param logger: Instance of ErrorLogHandler for logging.
         """
-        self.source_file_path = source_file_path
+        self.source_file = filename
+        self.intermediate_file = None
+        self.log_file = None
+        
+        
+        
+        
         self.source_lines = []
+        self.generated_lines = []
+        self.FileExplorer = FileExplorer()
         self.symbol_table = SymbolTable()
         self.opcode_handler = OpcodeHandler()
         self.logger = logger or ErrorLogHandler()
-        self.location_counter = LocationCounter(opcode_handler=self.opcode_handler,
-                                                symbol_table=self.symbol_table,
-                                                logger=self.logger)
+        self.location_counter = LocationCounter(opcode_handler=self.opcode_handler, symbol_table=self.symbol_table, logger=self.logger)
         self.program_name = None
         self.program_start_address = 0
         self.program_length = 0
+    
+        self.run()
 
+    def run(self):
+        """
+        Executes the first pass of the assembler.
+        """
+        # Load the source code from the file
+        self.load_source_file()
+        
+        # Create the intermediate file and keep it open for writing
+        self.create_intermediate_file()
+        
+        # Process all the source code lines
+        self.process_source_lines(self.source_lines)
+        
+        # After processing all lines, calculate program length
+        self.calculate_program_length()
+        
+        # Display the symbol table and write it to the generated file
+        self.add_symbol_table(add_to_file=True)
+        
+        # Display the literal table and write it to the generated file
+        self.add_literal_table(add_to_file=True)
+        
+        # Display the error log and write it to the generated file
+        self.create_log_file()
+        
     def load_source_file(self):
         """
         Loads the source code from the file into source_lines list.
@@ -49,96 +81,166 @@ class AssemblerPass1:
         if not os.path.exists(self.source_file_path):
             raise FileNotFoundError(f"Source file '{self.source_file_path}' not found.")
 
-        with open(self.source_file_path, 'r') as file:
-            lines = file.readlines()
-
-        for idx, line in enumerate(lines, start=1):
-            source_line = SourceCodeLine(line_number=idx, line_text=line.rstrip('\n'))
-            self.source_lines.append(source_line)
-
-    def process_lines(self):
+        lines = []
+        lines = self.
+    
+    def process_source_lines(self, lines):
         """
-        Processes each line in the source code.
+        Processes multiple lines of source code.
         """
-        # Initialize the location counter
         self.location_counter.set_start_address(0)
+        for line in lines:
+            self.process_single_line(line)
 
-        for source_line in self.source_lines:
-            # Create a ParsingHandler for the line
-            parser = ParsingHandler(source_line, source_line.line_text, validate_parsing=True,
-                                    logger=self.logger, opcode_handler=self.opcode_handler)
-            parser.parse_line()
-
-            # Handle START directive
-            if source_line.opcode and source_line.opcode.upper() == 'START':
-                # Set starting address
-                if source_line.operands:
-                    try:
-                        start_address = int(source_line.operands, 16)
-                        self.program_start_address = start_address
-                        self.location_counter.set_start_address(start_address)
-                        if source_line.label:
-                            self.program_name = source_line.label
-                            # Also, add program name to symbol table
-                            self.symbol_table.insert_symbol(source_line.label, start_address)
-                        continue  # Skip further processing for START line
-                    except ValueError:
-                        error_msg = f"Invalid starting address '{source_line.operands}'."
-                        self.logger.log_error(error_msg)
-                        source_line.add_error(error_msg)
-                else:
-                    error_msg = "Missing starting address in START directive."
-                    self.logger.log_error(error_msg)
-                    source_line.add_error(error_msg)
-                    continue  # Skip further processing for START line
-
-            # Handle END directive
-            if source_line.opcode and source_line.opcode.upper() == 'END':
-                # Optionally, handle any necessary processing for END
-                break  # Assuming END indicates end of source code
-
-            # Set the current label in location counter (for directives like EQU)
-            # Note: The label is used in handle_equ_directive()
-            self.location_counter.current_label = source_line.label
-
-            # Increment the location counter
-            self.location_counter.increment(source_line)
-
-        # After processing all lines, calculate program length
-        self.program_length = self.location_counter.calculate_program_length()
-
-    def run(self):
+    def process_single_line(self, source_line: SourceCodeLine):
         """
-        Runs the assembler pass 1.
+        Processes a single line of source code.
         """
-        try:
-            self.load_source_file()
-            self.process_lines()
-            # Optionally, generate intermediate file
-            # self.generate_intermediate_file()
-            # Display symbol table
-            self.display_symbol_table()
-            # Display program length
-            print(f"\nProgram Length: {self.program_length:04X}h")
-        except Exception as e:
-            print(f"An error occurred during Pass 1: {e}")
+        # Create a ParsingHandler for the line and parse it
+        parser = ParsingHandler(source_line, source_line.line_text, validate_parsing=True, logger=self.logger, opcode_handler=self.opcode_handler)
+        parser.parse_line()
 
-    def display_symbol_table(self):
-        """
-        Displays the symbol table.
-        """
-        print("\nSymbol Table:")
-        self.symbol_table.view()
+        # Handle directives
+        self.check_for_directives(source_line, handle_directives=True)
 
-    def generate_intermediate_file(self, output_file_path="Pass1.txt"):
-        """
-        Generates an intermediate file for use in Pass 2.
+        # Calculate instruction length
+        self.calculate_instruction_length(source_line)
 
-        :param output_file_path: Path to the intermediate file.
+        # Update the symbol table
+        self.update_symbol_table(source_line)
+
+        # Update the literal table
+        self.update_literal_table(source_line)
+
+        # Increment the location counter
+        self.location_counter.increment(source_line.instruction_length)
+
+        # Update the source line with address and object code
+        self.update_source_line(source_line)
+
+        # Check for errors
+        self.check_for_errors(source_line)
+
+        # Print the source line with address and object code
+        self.print_source_line(source_line)
+
+        # Add line to generated file
+        self.add_line_to_generated_file(source_line)
+
+    def check_for_directives(self, source_line: SourceCodeLine, handle_directives: bool = True):
         """
-        with open(output_file_path, 'w') as file:
-            for source_line in self.source_lines:
-                # Use the line's address if available, else '----'
-                address = f"{source_line.address:04X}" if hasattr(source_line, 'address') else '----'
-                line = f"{address} {source_line.line_text}"
-                file.write(line + "\n")
+        Checks for directives in the source line.
+        """
+
+    def handle_directive(self, source_line: SourceCodeLine):
+        """
+        Handles a directive in the source line.
+        """
+        
+        
+    def handle_START_directive(self, source_line: SourceCodeLine):
+        """
+        Handles the START directive.
+        """
+        # Set starting address
+        # If it has an operand, verify, then set the starting address
+        # If it doesn't have an operand, set the starting address to 0
+
+
+    def handle_EQU_directive(self, source_line: SourceCodeLine):
+        """
+        Handles the EQU directive.
+        """
+        # Update the symbol table
+
+    def handle_END_directive(self, source_line: SourceCodeLine):
+        """
+        Handles the END directive.
+        """
+        # Set the program length
+
+    def handle_other_directives(self, source_line: SourceCodeLine):
+        """
+        Handles other directives.
+        """
+        pass
+
+    def calculate_instruction_length(self, source_line: SourceCodeLine):
+        """
+        Calculates the instruction length for the source line.
+        """
+        # Calculate instruction length based on opcode and operands
+        pass
+
+    def update_symbol_table(self, source_line: SourceCodeLine):
+        """
+        Updates the symbol table with the source line information.
+        """
+        # Update symbol table
+        pass
+
+    def update_literal_table(self, source_line: SourceCodeLine):
+        """
+        Updates the literal table with the source line information.
+        """
+        # Update literal table
+        pass
+
+    def update_source_line(self, source_line: SourceCodeLine):
+        """
+        Updates the source line with address and object code.
+        """
+        # Update source line
+        pass
+
+    def check_for_errors(self, source_line: SourceCodeLine):
+        """
+        Checks for errors in the source line.
+        """
+        # Check for errors
+        pass
+
+    def print_source_line(self, source_line: SourceCodeLine):
+        """
+        Prints the source line with address and object code.
+        """
+        # Print source line
+        pass
+
+    def add_line_to_generated_file(self, source_line: SourceCodeLine):
+        """
+        Adds the source line to the generated file.
+        """
+        # Add line to generated file
+        pass
+
+    def calculate_program_length(self):
+        """
+        Calculates the program length.
+        """
+        self.program_length = self.location_counter.get_current_address() - self.program_start_address
+
+    def add_symbol_table(self, add_to_file: bool = False):
+        """
+        Adds the symbol table to the output.
+        """
+        # Display and write the symbol table
+        pass
+
+    def add_literal_table(self, add_to_file: bool = False):
+        """
+        Adds the literal table to the output.
+        """
+        # Display and write the literal table
+        pass
+
+    def create_log_file(self):
+        """
+        Creates the log file with errors and actions.
+        """
+        # Create log file
+        pass
+
+# Example usage
+if __name__ == "__main__":
+    assembler = AssemblerPass1("source.asm")
