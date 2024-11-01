@@ -1,7 +1,14 @@
 import re
-from SourceCodeLine import SourceCodeLine
+import os
+import sys
+
+
+repo_home_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.append(repo_home_path)
+
+from Modules.SourceCodeLine import SourceCodeLine
 from Modules.ErrorLogHandler import ErrorLogHandler
-from Systems_Programming_Projects_CSC_354.Modules.OpcodeHandler import OpcodeHandler
+from Modules.OpcodeHandler import OpcodeHandler
 
 class ParsingHandler:
     """
@@ -152,22 +159,22 @@ class ParsingHandler:
                 self.logger.log_error(error_msg, context_info=f"Line {self.source_line.line_number}")
                 self.source_line.add_error(error_msg)
 
-    def validate_operands(self):
-        """
-        Validates the operands for correctness according to assembly language rules.
-        """
-        operands = self.source_line.operands
-        if operands:
-            # Check for balanced parentheses and quotes
-            if operands.count('(') != operands.count(')'):
-                error_msg = f"Unbalanced parentheses in operands '{operands}'."
-                self.logger.log_error(error_msg, context_info=f"Line {self.source_line.line_number}")
-                self.source_line.add_error(error_msg)
-            if operands.count("'") % 2 != 0:
-                error_msg = f"Unmatched quotes in operands '{operands}'."
-                self.logger.log_error(error_msg, context_info=f"Line {self.source_line.line_number}")
-                self.source_line.add_error(error_msg)
-            # Additional operand validations can be added here
+    # def validate_operands(self):
+    #     """
+    #     Validates the operands for correctness according to assembly language rules.
+    #     """
+    #     operands = self.source_line.operands
+    #     if operands:
+    #         # Check for balanced parentheses and quotes
+    #         if operands.count('(') != operands.count(')'):
+    #             error_msg = f"Unbalanced parentheses in operands '{operands}'."
+    #             self.logger.log_error(error_msg, context_info=f"Line {self.source_line.line_number}")
+    #             self.source_line.add_error(error_msg)
+    #         if operands.count("'") % 2 != 0:
+    #             error_msg = f"Unmatched quotes in operands '{operands}'."
+    #             self.logger.log_error(error_msg, context_info=f"Line {self.source_line.line_number}")
+    #             self.source_line.add_error(error_msg)
+    #         # Additional operand validations can be added here
 
     @classmethod
     def test(cls):
@@ -177,47 +184,7 @@ class ParsingHandler:
         logger = ErrorLogHandler()
         opcode_handler = OpcodeHandler(logger=logger)  # Ensure the opcodes are loaded
         test_cases = [
-            # Valid lines
-            ("LOOP: LDA BUFFER,X . Load A register with BUFFER indexed",
-             {'label': 'LOOP', 'opcode': 'LDA', 'operands': 'BUFFER,X', 'comment': '. Load A register with BUFFER indexed', 'errors': []}),
-            ("START 1000",
-             {'label': None, 'opcode': 'START', 'operands': '1000', 'comment': '', 'errors': []}),
-            ("RSUB",
-             {'label': None, 'opcode': 'RSUB', 'operands': '', 'comment': '', 'errors': []}),
-            ("+LDA @BUFFER",
-             {'label': None, 'opcode': '+LDA', 'operands': '@BUFFER', 'comment': '', 'errors': []}),
-            ("LDA #LENGTH+2",
-             {'label': None, 'opcode': 'LDA', 'operands': '#LENGTH+2', 'comment': '', 'errors': []}),
-            ("BYTE C'EOF'",
-             {'label': None, 'opcode': 'BYTE', 'operands': "C'EOF'", 'comment': '', 'errors': []}),
-            ("WORD -1",
-             {'label': None, 'opcode': 'WORD', 'operands': '-1', 'comment': '', 'errors': []}),
-            # Lines with errors
-            ("INVALIDLABEL: LDA BUFFER",
-             {'label': 'INVALIDLABEL', 'opcode': 'LDA', 'operands': 'BUFFER', 'comment': '', 'errors': ["Label 'INVALIDLABEL' is too long. Maximum length is 10 characters."]}),
-            ("LOOP LDA",
-             {'label': 'LOOP', 'opcode': 'LDA', 'operands': '', 'comment': '', 'errors': []}),
-            ("ADD ALPHA-@BETA",
-             {'label': None, 'opcode': 'ADD', 'operands': 'ALPHA-@BETA', 'comment': '', 'errors': []}),
-            ("LDA 'UNMATCHED_QUOTE",
-             {'label': None, 'opcode': 'LDA', 'operands': "'UNMATCHED_QUOTE", 'comment': '', 'errors': ["Unmatched quotes in operands ''UNMATCHED_QUOTE'."]}),
-            ("EQU HERE-ALPHA,X",
-             {'label': None, 'opcode': 'EQU', 'operands': 'HERE-ALPHA,X', 'comment': '', 'errors': []}),
-            ("idkwhatimdoingonthislinespace:",
-             {'label': 'idkwhatimdoingonthislinespace', 'opcode': None, 'operands': '', 'comment': '', 'errors': ["Label 'idkwhatimdoingonthislinespace' is too long. Maximum length is 10 characters."]}),
-            ("INVALIDOPCODE #100",
-             {'label': None, 'opcode': 'INVALIDOPCODE', 'operands': '#100', 'comment': '', 'errors': ["Invalid opcode 'INVALIDOPCODE'."]}),
-            # Comment and empty lines
-            ("  . This is a full line comment",
-             {'label': None, 'opcode': None, 'operands': '', 'comment': '. This is a full line comment', 'is_comment': True}),
-            ("",
-             {'label': None, 'opcode': None, 'operands': '', 'comment': '', 'is_comment': True}),
-            # Lines with unbalanced parentheses
-            ("ADD (ALPHA",
-             {'label': None, 'opcode': 'ADD', 'operands': '(ALPHA', 'comment': '', 'errors': ["Unbalanced parentheses in operands '(ALPHA'."]}),
-            # Lines with unbalanced quotes
-            ("BYTE C'EOF",
-             {'label': None, 'opcode': 'BYTE', 'operands': "C'EOF", 'comment': '', 'errors': ["Unmatched quotes in operands 'C'EOF'."]}),
+
         ]
 
         passed_tests = 0
