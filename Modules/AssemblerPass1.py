@@ -1,12 +1,21 @@
 # AssemblerPass1.py
 
 import os
-from SourceCodeLine import SourceCodeLine
-from ParsingHandler import ParsingHandler
-from OpcodeHandler import OpcodeHandler
-from LocationCounter import LocationCounter
+import sys
+from pathlib import Path
+
+repo_home_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.append(repo_home_path)
+
+from Modules.SourceCodeLine import SourceCodeLine
+from Modules.ParsingHandler import ParsingHandler
+from Modules.OpcodeHandler import OpcodeHandler
+from Modules.LocationCounter import LocationCounter
 from Modules.ErrorLogHandler import ErrorLogHandler
 from Modules.Symbol_Table_Builder import *
+
+
+
 
 class AssemblerPass1:
     """
@@ -121,7 +130,7 @@ class AssemblerPass1:
         print("\nSymbol Table:")
         self.symbol_table.view()
 
-    def generate_intermediate_file(self, output_file_path="intermediate.txt"):
+    def generate_intermediate_file(self, output_file_path="Pass1.txt"):
         """
         Generates an intermediate file for use in Pass 2.
 
