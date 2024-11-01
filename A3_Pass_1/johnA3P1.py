@@ -21,7 +21,7 @@ from Modules.SourceCodeLine import *
 
 if __name__ == "__main__":
     # Get the source file from the command-line argument or use the default
-    source_file = sys.argv[1] if len(sys.argv) > 1 else "source_code.asm"
+    source_file = sys.argv[1] if len(sys.argv) > 1 else "source.asm"
     
     # Create an instance of AssemblerPass1 with the source file
     assembler_pass1 = AssemblerPass1(source_file)
