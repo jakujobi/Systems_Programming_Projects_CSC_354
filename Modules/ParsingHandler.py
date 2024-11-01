@@ -15,22 +15,9 @@ class ParsingHandler:
     Handles parsing of a single line of assembly code into components: label, opcode, operands, and comments.
     Includes validation if validate_parsing is set to True.
     """
-
-    def __init__(self, source_line, line_text, validate_parsing=False, logger=None, opcode_handler=None):
-        """
-        Initializes the ParsingHandler with a SourceCodeLine instance and a line of assembly code.
-
-        :param source_line: An instance of SourceCodeLine to store parsed results.
-        :param line_text: The raw line of code to parse.
-        :param validate_parsing: Boolean flag to enable or disable validation.
-        :param logger: An instance of ErrorLogHandler for logging errors and actions.
-        :param opcode_handler: An instance of OpcodeHandler for opcode validation.
-        """
-        if not isinstance(source_line, SourceCodeLine):
-            raise TypeError("source_line must be an instance of SourceCodeLine")
-
+    
+    def __init__(self, source_line, validate_parsing=False, logger=None, opcode_handler=None):
         self.source_line = source_line
-        self.line_text = line_text
         self.validate_parsing = validate_parsing
         self.logger = logger or ErrorLogHandler()
         self.opcode_handler = opcode_handler
@@ -41,7 +28,6 @@ class ParsingHandler:
         Validates the components if validate_parsing is True.
         Updates the SourceCodeLine instance accordingly.
         """
-        self.reset_source_line()
         line = self.line_text.strip()
 
         # Handle empty or comment lines
@@ -110,6 +96,18 @@ class ParsingHandler:
         self.source_line.comment = ''
         self.source_line.is_comment = False
         self.source_line.clear_errors()
+
+    def check_if_empty_line(self):
+        """
+        Checks if the line is empty or contains only whitespace.
+        """
+        return not self.source_line.label and not self.source_line.opcode and not self.source_line.operands and not self.source_line.comment
+
+
+    def handle_empty_line(self):
+        """ Handles empty lines in the source code.
+        Sets is_empty to True in SourceCodeLine.
+        """
 
     def handle_comment_line(self, line):
         """
