@@ -43,9 +43,6 @@ class SourceCodeLine:
         self.errors = []
         self.instruction_length = 0
 
-        # Initialize line attributes
-        self._initialize_line()
-
     def __str__(self) -> str:
         """
         Provides a string representation of the SourceCodeLine object.
