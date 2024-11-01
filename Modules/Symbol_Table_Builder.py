@@ -32,7 +32,11 @@
 
 import sys
 import os
-from FileExplorer import FileExplorer
+
+repo_home_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.append(repo_home_path)
+
+from Modules.FileExplorer import FileExplorer
 
 # Try to import Tkinter for GUI file explorer. If not available, fallback to manual entry.
 try:
@@ -910,31 +914,31 @@ class SymbolTableDriver:
             print(f"Error in user input: {e}")
             return
 
-def main():
-    """
-    /********************************************************************
-    ***  FUNCTION : main                                              ***
-    ***  CLASS  :                                                     ***
-    *********************************************************************
-    ***  DESCRIPTION: Main function that initializes and runs the app ***
-    ***  with optional command-line arguments. If a search file is     ***
-    ***  provided as a command-line argument, it is used; otherwise,   ***
-    ***  the program asks for the search file name interactively.      ***
-    ********************************************************************/
-    """
-    try:
-        print("Welcome to the Symbol Table Manager!\n")
-        driver = SymbolTableDriver()
+# def main():
+#     """
+#     /********************************************************************
+#     ***  FUNCTION : main                                              ***
+#     ***  CLASS  :                                                     ***
+#     *********************************************************************
+#     ***  DESCRIPTION: Main function that initializes and runs the app ***
+#     ***  with optional command-line arguments. If a search file is     ***
+#     ***  provided as a command-line argument, it is used; otherwise,   ***
+#     ***  the program asks for the search file name interactively.      ***
+#     ********************************************************************/
+#     """
+#     try:
+#         print("Welcome to the Symbol Table Manager!\n")
+#         driver = SymbolTableDriver()
 
-        # Check if the user provided a command-line argument for the search file
-        if len(sys.argv) > 1:
-            search_file = sys.argv[1]  # First argument is the search file
-            driver.run(search_file)
-        else:
-            # If no argument provided, fallback to interactive file finding
-            driver.run()
-    except Exception as e:
-        print(f"An unexpected error occurred: {e}")
+#         # Check if the user provided a command-line argument for the search file
+#         if len(sys.argv) > 1:
+#             search_file = sys.argv[1]  # First argument is the search file
+#             driver.run(search_file)
+#         else:
+#             # If no argument provided, fallback to interactive file finding
+#             driver.run()
+#     except Exception as e:
+#         print(f"An unexpected error occurred: {e}")
 
-if __name__ == "__main__":
-    main()
+# if __name__ == "__main__":
+#     main()
