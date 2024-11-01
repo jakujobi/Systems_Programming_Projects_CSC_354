@@ -95,8 +95,13 @@
 
 import sys
 import os
-from Symbol_Table_Builder import SymbolTableDriver, FileExplorer
-from ErrorLogHandler import ErrorLogHandler
+
+# Add the parent directory to the Python path
+repo_home_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.append(repo_home_path)
+
+from Modules.Symbol_Table_Builder import SymbolTableDriver, FileExplorer
+from Modules.ErrorLogHandler import ErrorLogHandler
 
 
 
