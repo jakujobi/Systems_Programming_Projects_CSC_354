@@ -39,7 +39,7 @@ from pathlib import Path
 repo_home_path = Path(__file__).resolve().parent.parent
 sys.path.append(str(repo_home_path))
                 
-from Modules.test_symbol_table import SymbolTableDriver
+from Modules.Symbol_Table_Builder import SymbolTableDriver
 
 
 def main():
