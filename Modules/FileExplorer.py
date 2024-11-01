@@ -136,7 +136,7 @@ class FileExplorer:
             return None
         file_generator = self.open_file(file_path)
     
-    def find_file(self, file_name):
+    def find_file(self, file_name, create_if_missing=False):
         """
         /********************************************************************
         ***  FUNCTION : find_file                                           ***
@@ -144,17 +144,22 @@ class FileExplorer:
         *********************************************************************
         ***  DESCRIPTION : Checks if the specified file exists in the same  ***
         ***  directory as the main program. If not, prompts the user to     ***
-        ***  input the file path or use the system file explorer.           ***
+        ***  input the file path or use the system file explorer. Optionally***
+        ***  creates a new file if 'create_if_missing' is True and the file ***
+        ***  doesn't exist.                                                 ***
         ***                                                                 ***
         ***  INPUTS :                                                       ***
         ***    - file_name (str): The name of the file to find.             ***
+        ***    - create_if_missing (bool): Whether to create the file if it ***
+        ***      doesn't exist. Default is True.                            ***
         ***  RETURNS :                                                      ***
         ***    - str or None: The file path or None if not found.           ***
         ********************************************************************/
         """
         main_program_directory = os.path.dirname(os.path.realpath(sys.argv[0]))
         default_path = os.path.join(main_program_directory, file_name)
-        
+        print(f"Checking for file at: {default_path}")  # Debugging statement
+    
         if os.path.isfile(default_path):
             print(f"\nFound {file_name} in the main program directory ({main_program_directory}).")
             use_found_file = input(f"Do you want to use this {file_name}? (y/n): ").strip().lower()
@@ -167,7 +172,16 @@ class FileExplorer:
             else:
                 # Invalid response handling
                 self.handle_invalid_input("Do you want to use this file?", 5)
-        
+        elif create_if_missing:
+            try:
+                with open(default_path, "w") as file:
+                    pass  # Create an empty file
+                print(f"Created a new file: {file_name}")
+                return default_path
+            except Exception as e:
+                print(f"Error creating the file '{file_name}': {e}")
+                return None
+    
         return self.prompt_for_file(file_name)
 
 
@@ -426,29 +440,6 @@ class FileExplorer:
         except Exception as e:
             print(f"An error occurred while appending to the file: {e}")
             return False
-
-
-    def find_file(self, file_name, create_if_missing=True):
-        """
-        Checks if the specified file exists in the same directory as the script.
-        Creates a new file if 'create_if_missing' is True and the file doesn't exist.
-        """
-        script_directory = os.path.dirname(os.path.realpath(__file__))
-        default_path = os.path.join(script_directory, file_name)
-
-        if os.path.isfile(default_path):
-            return default_path
-        elif create_if_missing:
-            try:
-                with open(default_path, "w") as file:
-                    pass  # Create an empty file
-                print(f"Created a new file: {file_name}")
-                return default_path
-            except Exception as e:
-                print(f"Error creating the file '{file_name}': {e}")
-                return None
-
-        return self.prompt_for_file(file_name)
 
 
 
