@@ -2,7 +2,6 @@ import re
 import os
 import sys
 
-
 repo_home_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.append(repo_home_path)
 
@@ -29,45 +28,79 @@ class ParsingHandler:
         Validates the components if validate_parsing is True.
         Updates the SourceCodeLine instance accordingly.
         """
-        # Check if the line is empty
+        if self.is_empty_or_comment():
+            return
+
+        line = self.source_line.line_text.strip()
+        line = self.extract_label(line)
+        line = self.extract_comment(line)
+        line = self.extract_opcode(line)
+        line = self.extract_operands(line)
+        self.check_remaining_characters(line)
+
+    def is_empty_or_comment(self) -> bool:
+        """
+        Checks if the line is empty or a comment.
+        """
         if self.source_line.is_empty_line():
             self.logger.log_action(f"Skipping empty line on Line {self.source_line.line_number}: {self.source_line.line_text}")
-            return
+            return True
 
-        # Check if the line is a comment
         if self.source_line.is_comment():
             self.source_line.comment = self.source_line.line_text.strip()
-            return
-        
-        # Copy the line text to avoid modifying the original line        
-        copy_of_line = self.source_line.line_text
-        # strip the line text
-        copy_of_line = copy_of_line.strip()
-        
-        
-        ### Now we know that the line is not empty and not a comment
-        #Fish out the label. It ends with the symbol stored in source_line.label_suffix_symbol. For example, in "LABEL:", the label is "LABEL".
-        self.source_line.label = copy_of_line.split(SourceCodeLine.label_suffix_symbol)[0].strip()
-        #Remove the label from the line
-        copy_of_line = copy_of_line.replace(self.source_line.label, "").strip()
+            return True
 
-        # Extract the comment if it exists
-        self.source_line.comment = copy_of_line.split(SourceCodeLine.comment_symbol, 1)[-1].strip()
-        # Remove the comment from the line
-        copy_of_line = copy_of_line.split(SourceCodeLine.comment_symbol, 1)[0].strip()
-        
-        # Extract the opcode
-        self.source_line.opcode_mnemonic = copy_of_line.split()[0].strip()
-        # Remove the opcode from the line
-        copy_of_line = copy_of_line.replace(self.source_line.opcode_mnemonic, "").strip()
-        
-        # Extract the operands
-        self.source_line.operands = copy_of_line.strip()
-        # Remove the operands from the line
-        copy_of_line = copy_of_line.replace(self.source_line.operands, "").strip()
-        
-        # Check if there are any remaining characters after removing the label, opcode, and operands
-        if copy_of_line.strip():
-            error_message = f"Invalid syntax on Line {self.source_line.line_number}: {self.source_line.line_text}\n Remaining characters after parsing: {copy_of_line}"
+        return False
+
+    def extract_label(self, line: str) -> str:
+        """
+        Extracts the label from the line.
+        """
+        label_end_index = line.find(SourceCodeLine.label_suffix_symbol)
+        if label_end_index != -1:
+            self.source_line.label = line[:label_end_index].strip()
+            line = line[label_end_index + 1:].strip()
+        return line
+
+    def extract_comment(self, line: str) -> str:
+        """
+        Extracts the comment from the line.
+        """
+        comment_start_index = line.find(SourceCodeLine.comment_symbol)
+        if comment_start_index != -1:
+            self.source_line.comment = line[comment_start_index + 1:].strip()
+            line = line[:comment_start_index].strip()
+        return line
+
+    def extract_opcode(self, line: str) -> str:
+        """
+        Extracts the opcode from the line.
+        """
+        parts = line.split()
+        if parts:
+            self.source_line.opcode_mnemonic = parts[0].strip()
+            line = line[len(self.source_line.opcode_mnemonic):].strip()
+        return line
+
+    def extract_operands(self, line: str) -> str:
+        """
+        Extracts the operands from the line.
+        """
+        self.source_line.operands = line.strip()
+        return ''
+
+    def check_remaining_characters(self, line: str):
+        """
+        Checks if there are any remaining characters after removing the label, opcode, and operands.
+        """
+        if line.strip():
+            error_message = f"Invalid syntax on Line {self.source_line.line_number}: {self.source_line.line_text}\n Remaining characters after parsing: {line}"
             self.logger.log_error(error_message)
             raise SyntaxError(error_message)
+
+# Example usage
+if __name__ == "__main__":
+    source_line = SourceCodeLine(line_number=1, line_text="LABEL: LDA BUFFER,X . This is a comment")
+    parser = ParsingHandler(source_line, validate_parsing=True)
+    parser.parse_line()
+    print(source_line)
