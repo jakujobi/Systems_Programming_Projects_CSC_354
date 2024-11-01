@@ -1,13 +1,17 @@
 import re
+import sys
+import os
+
+repo_home_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.append(repo_home_path)
+
+from OpcodeHandler import OpcodeHandler
 
 class SourceCodeLine:
     """
     Represents a single line of assembly code in a SIC/XE assembler.
     """
     comment_symbol = '.'  # Default comment symbol
-    directives = ['START', 'END', 'BYTE', 'WORD', 'RESB', 'RESW',
-                  'EQU', 'ORG', 'EXTDEF', 'EXTREF']
-    pseudo_ops = ['EXTDEF', 'EXTREF', 'EQU', 'ORG']
 
     def __init__(self, line_number, line_text):
         try:
@@ -19,14 +23,15 @@ class SourceCodeLine:
         self.label = None
         self.opcode = None
         self.instr_format = None
-        self.operands = ''          # Changed from list to string
-        self.operands_list = []     # List to store parsed operands when needed
+        self.operand = ''          # Changed from list to string
         self.object_code = None
         self.comment = ''
         self.is_comment = False
         self.errors = []
         self.line_text = line_text
         self.instruction_length = 0
+        self.is_directive = False
+        self.is_pseudo_op = False
         self._initialize_line()
 
     def __str__(self):
@@ -83,39 +88,11 @@ class SourceCodeLine:
     def has_label(self):
         return self.label is not None
 
-    def is_directive(self):
-        return self.opcode in self.directives
-
     def is_instruction(self):
         return self.opcode is not None and not self.is_directive()
 
-    def is_pseudo_op(self):
-        """
-        Checks if the opcode is a pseudo-operation (like EXTDEF, EQU).
-        """
-        return self.opcode in self.pseudo_ops
-
     def is_extended_format(self):
         return self.opcode is not None and self.opcode.startswith('+')
-
-    def is_indexed_addressing(self):
-        """
-        Determines if indexed addressing is used.
-        This method now relies on operands_list after parsing operands.
-        """
-        # Ensure operands are parsed before checking
-        if not self.operands_list:
-            self.parse_operands()
-        # Check for ',X' at the end of the operand
-        return any(operand.strip().endswith(',X') for operand in self.operands_list)
-
-    def get_operand_count(self):
-        """
-        Returns the number of operands after parsing.
-        """
-        if not self.operands_list:
-            self.parse_operands()
-        return len(self.operands_list)
 
     def set_operands(self, operands_str):
         """
@@ -126,24 +103,6 @@ class SourceCodeLine:
             self.add_error(error_msg)
             raise TypeError(error_msg)
         self.operands = operands_str.strip()
-
-    def parse_operands(self):
-        """
-        Parses the operands string into a list, handling special cases.
-        """
-        # Clear previous operands_list
-        self.operands_list = []
-
-        if self.operands:
-            # Instructions with multiple operands
-            if self.opcode in ['ADDR', 'COMPR', 'SHIFTL', 'SHIFTR', 'RMO', 'SVC', 'COMPR', 'DIVR', 'MULR', 'SUBR', 'TIXR', 'CLEAR']:
-                # Split operands by comma
-                self.operands_list = [operand.strip() for operand in self.operands.split(',')]
-            else:
-                # Single operand instructions or directives
-                self.operands_list = [self.operands.strip()]
-        else:
-            self.operands_list = []
 
     def set_address(self, address):
         if isinstance(address, int) and address >= 0:
@@ -178,8 +137,9 @@ class SourceCodeLine:
         print(f"Comment: {self.comment}")
         print(f"Is Comment: {self.is_comment}")
         print(f"Errors: {self.errors}")
-        print(f"Line Text: {self.line_text}")
         print(f"Instruction Length: {self.instruction_length}")
+        print(f"Line Text: {self.line_text}")
+
 
     @staticmethod
     def test():
