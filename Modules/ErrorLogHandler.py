@@ -68,6 +68,7 @@
 ***                                                                ***
 ********************************************************************/
 """
+import inspect
 
 
 class ErrorLogHandler:
@@ -98,6 +99,20 @@ class ErrorLogHandler:
         self.error_log: list[str] = []
 
 
+    def get_caller_info(self) -> str:
+        """
+        Retrieves information about the caller of the log method.
+
+        :return: A string containing the class name, method name, and line number of the caller.
+        """
+        frame = inspect.currentframe().f_back.f_back
+        class_name = frame.f_locals.get('self', None).__class__.__name__ if 'self' in frame.f_locals else ''
+        method_name = frame.f_code.co_name
+        line_number = frame.f_lineno
+        return f"{class_name}.{method_name} (line {line_number})"
+
+
+
     def log_action(self, message: str, print_actions: bool = True):
         """
         /***************************************************************************************
@@ -117,8 +132,10 @@ class ErrorLogHandler:
         :param message: The message describing the action.
         :param print_actions: Whether to print the message to the console.
         """
-        self.log_entries.append(f"[ACTION]: {message}")
-        
+        caller_info = self.get_caller_info()
+        log_message = f"[ACTION] {caller_info}: {message}"
+        self.log_entries.append(log_message)
+           
         if print_actions:
             print(f"[ACTION]: {message}")
             # Paginate after every 18 lines of actions
@@ -144,15 +161,70 @@ class ErrorLogHandler:
         :param error_message: The error message to be logged.
         :param context_info: Additional context about where the error occurred (optional).
         """
-        full_message = f"[ERROR] {context_info}: {error_message}" if context_info else f"[ERROR]: {error_message}"
-        self.error_log.append(full_message)
-        print(full_message)  # Immediate feedback for critical errors
-
+        caller_info = self.get_caller_info()
+        log_message = f"[ERROR] {caller_info}: {error_message}"
+        if context_info:
+            log_message += f" | Context: {context_info}"
+        self.error_log.append(log_message)
+        
+        self.print_colored(log_message, 'red', 'black')
         # Paginate after every 18 lines of errors
         if len(self.error_log) % 18 == 0:
             self.paginate_output(self.error_log, "Displaying Error Log")
 
-    
+    @staticmethod
+    def print_colored(text, color, bg_color='black'):
+        """
+        Prints the given text in the specified foreground and background colors.
+
+        Parameters:
+        - text (str): The string to be printed.
+        - color (str): The foreground color name.
+        - bg_color (str, optional): The background color name. Defaults to 'black'.
+        
+        Supported Colors:
+        - black, red, green, yellow, blue, magenta, cyan, white
+        """
+        
+        # Mapping of color names to ANSI codes
+        colors = {
+            'black': '30',
+            'red': '31',
+            'green': '32',
+            'yellow': '33',
+            'blue': '34',
+            'magenta': '35',
+            'cyan': '36',
+            'white': '37'
+        }
+
+        bg_colors = {
+            'black': '40',
+            'red': '41',
+            'green': '42',
+            'yellow': '43',
+            'blue': '44',
+            'magenta': '45',
+            'cyan': '46',
+            'white': '47'
+        }
+
+        # Get the ANSI codes for the specified colors
+        color_code = colors.get(color.lower())
+        bg_color_code = bg_colors.get(bg_color.lower(), '40')  # Default to black background
+
+        if color_code is None:
+            raise ValueError(f"Unsupported color: '{color}'. Supported colors are: {', '.join(colors.keys())}")
+
+        if bg_color_code is None:
+            raise ValueError(f"Unsupported background color: '{bg_color}'. Supported colors are: {', '.join(bg_colors.keys())}")
+
+        # ANSI escape sequence
+        ansi_sequence = f"\033[{color_code};{bg_color_code}m{text}\033[0m"
+
+        print(ansi_sequence)
+
+        
     def display_log(self):
         """
         /***************************************************************************************
