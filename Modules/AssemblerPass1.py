@@ -78,17 +78,22 @@ class AssemblerPass1:
         """
         Loads the source code from the file into source_lines list.
         """
-        if not os.path.exists(self.source_file_path):
-            raise FileNotFoundError(f"Source file '{self.source_file_path}' not found.")
-
-        lines = []
-        lines = self.
+        self.source_lines = self.FileExplorer.read_file_raw(self.source_file)
+        # Check if the file is empty
+        if not self.source_lines:
+            self.logger.log_error(f"The file '{self.source_file}' is empty.")
+            return
+        # Log the number of lines read
+        self.logger.log_action(f"Read {len(self.source_lines)} lines from '{self.source_file}'.")
+        
     
     def process_source_lines(self, lines):
         """
         Processes multiple lines of source code.
         """
         self.location_counter.set_start_address(0)
+        # Log the start of processing
+        self.logger.log_action(f"Starting processing of source code lines.")
         for line in lines:
             self.process_single_line(line)
 
