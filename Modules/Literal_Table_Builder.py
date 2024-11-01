@@ -82,8 +82,6 @@
 *** NAME : John Akujobi                                                             ***
 *** CLASS : CSc 354 - Systems Programming                                           ***
 *** ASSIGNMENT : Assignment 2                                                       ***
-*** DUE DATE : Oct, 2024                                                            ***
-*** INSTRUCTOR : GEORGE HAMER                                                       ***
 ***************************************************************************************
 *** DESCRIPTION :                                                                   ***
 ***                                                                                 ***
