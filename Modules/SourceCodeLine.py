@@ -52,6 +52,18 @@ class SourceCodeLine:
     def is_empty_line(self):
         return not self.line_text.strip()
     
+    def has_label(self):
+        return bool(self.label)
+    
+    def has_opcode_mnemonic(self):
+        return bool(self.opcode_mnemonic)
+    
+    def has_operands(self):
+        return bool(self.operands)
+    
+    def has_comment(self):
+        return bool(self.comment)
+
     def has_errors(self):
         return bool(self.errors)
     
@@ -72,18 +84,6 @@ class SourceCodeLine:
             operands = self.operands if self.operands else ''
             comment = self.comment if self.comment else ''
             print(f"{self.line_number:>{column_width}} {label:<{column_width}} {self.opcode_mnemonic:<{column_width}} {operands:<{column_width}} {comment:<{column_width}}")
-        
-    def has_label(self):
-        return bool(self.label)
-    
-    def has_opcode_mnemonic(self):
-        return bool(self.opcode_mnemonic)
-    
-    def has_operands(self):
-        return bool(self.operands)
-    
-    def has_comment(self):
-        return bool(self.comment)
     
     def remove_comment(self):
         self.comment = ''
