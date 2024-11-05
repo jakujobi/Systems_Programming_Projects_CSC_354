@@ -504,6 +504,7 @@ class Validator:
                 return f"Error: Symbol '{symbol}' contains invalid character '{char}'."
         
         return "Success"
+    
 
     def validate_value(self, value):
         """
