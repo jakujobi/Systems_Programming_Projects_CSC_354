@@ -16,6 +16,70 @@ from Modules.Symbol_Table_Builder import *
 from Modules.Literal_Table_Builder import *
 from Modules.FileExplorer import *
 
+
+class Validator:
+    """
+    Validator class for validating almost everything in the SIC/XE assembler.
+    """
+    
+    
+    def validate_label(symbol: str, error_list: list = None) -> bool:
+        """
+        /********************************************************************
+        ***  FUNCTION : validate_label                                      ***
+        ***  CLASS  : Validator                                             ***
+        *********************************************************************
+        ***  DESCRIPTION : Validates a label based on the following rules:  ***
+        ***  - Must be at most 10 characters.                               ***
+        ***  - Must start with a letter.                                    ***
+        ***  - Cannot be just an underscore.                                ***
+        ***  - Can contain only letters, digits, and underscores.           ***
+        ********************************************************************/
+        """
+        label = label.strip().rstrip(":").upper()
+
+        Errors = []
+        # Check if the label length exceeds 10 characters
+        if len(label) > 10:
+            Errors.append(f"'{label}' length exceeds 10 characters.")
+
+        # Check if the label starts with a letter
+        if not label[0].isalpha():
+            Errors.append(f"'{label}' must start with a letter.")
+        
+        # Check if the entire label is "_"
+        if label == "_":
+            Errors.append(f"'{label}' cannot be an underscore ('_') only.")
+            return False
+
+        # Check for invalid characters
+        for char in symbol:
+            if not (char.isalnum()):
+                Errors.append(f"Symbol '{label}' contains invalid character '{char}'.")
+                
+        # Check if there are any errors
+        if Errors:
+            if error_list:
+                error_list.extend(Errors)
+            return False
+        return True
+    
+    def validate_opcode_mnemonic(mnemonic: str, error_list: list = None) -> bool:
+        """
+        Validates an opcode mnemonic based on the SIC/XE instruction set.
+        """
+        Errors = []
+        if not mnemonic:
+            Errors.append(f"Empty opcode mnemonic.")
+        elif not OpcodeHandler.is_valid_opcode(mnemonic):
+            Errors.append(f"Invalid opcode mnemonic: '{mnemonic}'.")
+        
+        if Errors:
+            if error_list:
+                error_list.extend(Errors)
+            return False
+        return True
+
 class AssemblerPass1:
     """
     AssemblerPass1 handles the first pass of the SIC/XE assembler.
