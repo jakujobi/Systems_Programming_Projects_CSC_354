@@ -52,37 +52,45 @@ class LocationCounter:
         """
         return self.current_address
 
-    def increment(self, source_line):
+    # def increment(self, source_line):
+    #     """
+    #     Increments the location counter based on the instruction or directive in the source line.
+
+    #     :param source_line: An instance of SourceCodeLine containing parsed line components.
+    #     """
+    #     if source_line.is_comment or source_line.has_errors():
+    #         # Do not increment for comments or lines with errors
+    #         return
+
+    #     label = source_line.label
+    #     opcode = source_line.opcode
+    #     operands = source_line.operands
+
+    #     # Update symbol table if there's a label
+    #     if label:
+    #         try:
+    #             self.update_symbol_table(label)
+    #         except ValueError as e:
+    #             source_line.add_error(str(e))
+    #             return
+
+    #     # Calculate increment value
+    #     try:
+    #         increment_value = self.calculate_increment(opcode, operands)
+    #         self.current_address += increment_value
+    #         self.log_action(f"LOCCTR incremented by {increment_value} to {self.current_address:X}")
+    #     except Exception as e:
+    #         error_msg = f"Error incrementing LOCCTR: {e}"
+    #         self.log_error(error_msg)
+    #         source_line.add_error(error_msg)
+    
+    def increment_by_decimal(self, increment_value: int):
         """
-        Increments the location counter based on the instruction or directive in the source line.
-
-        :param source_line: An instance of SourceCodeLine containing parsed line components.
+        Increments the location counter by a decimal value.
         """
-        if source_line.is_comment or source_line.has_errors():
-            # Do not increment for comments or lines with errors
-            return
-
-        label = source_line.label
-        opcode = source_line.opcode
-        operands = source_line.operands
-
-        # Update symbol table if there's a label
-        if label:
-            try:
-                self.update_symbol_table(label)
-            except ValueError as e:
-                source_line.add_error(str(e))
-                return
-
-        # Calculate increment value
-        try:
-            increment_value = self.calculate_increment(opcode, operands)
-            self.current_address += increment_value
-            self.log_action(f"LOCCTR incremented by {increment_value} to {self.current_address:X}")
-        except Exception as e:
-            error_msg = f"Error incrementing LOCCTR: {e}"
-            self.log_error(error_msg)
-            source_line.add_error(error_msg)
+        self.current_address += increment_value
+        self.log_action(f"LOCCTR incremented by integer {increment_value} to {self.current_address:X}")
+        
 
     def calculate_increment(self, opcode, operands):
         """
