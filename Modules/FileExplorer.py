@@ -300,6 +300,26 @@ class FileExplorer:
         except Exception as e:
             print(f"An unexpected error occurred while opening {file_path}: {e} @ open_file")
 
+    def create_new_file_in_main(self, file_name: str, extension: str) -> str:
+        """
+        Creates a new file with the specified extension in the same directory as the main program.
+
+        :param file_name: The name of the file to create.
+        :param extension: The extension of the file to create.
+        :return: The path to the created file or None if an error occurs.
+        """
+        main_program_directory = os.path.dirname(os.path.realpath(sys.argv[0]))
+        file_path = os.path.join(main_program_directory, f"{file_name}.{extension}")
+
+        try:
+            with open(file_path, "w") as file:
+                pass  # Create an empty file
+            print(f"Successfully created the file: {file_path}")
+            return file_path
+        except Exception as e:
+            print(f"An error occurred while creating the file '{file_path}': {e}")
+            return None
+
     def read_file(self, file):
         """
         /********************************************************************
