@@ -5,8 +5,6 @@ import os
 repo_home_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.append(repo_home_path)
 
-from OpcodeHandler import OpcodeHandler
-
 class SourceCodeLine:
     """
     Represents a single line of assembly code in a SIC/XE assembler.
