@@ -82,10 +82,13 @@ class OpcodeHandler:
         Uses ErrorLogHandler to manage error and action logging.
         """
         self.opcodes = {}
+        self.format_4 =[]
         self.file_explorer = FileExplorer()
         self.logger = logger if logger else ErrorLogHandler()
         self.file_path = file_path
         self._load_opcodes()
+        self.make_format_4()
+        
 
     def _load_opcodes(self):
         """
@@ -138,6 +141,12 @@ class OpcodeHandler:
         except Exception as e:
             self.logger.log_error(f"Unexpected error while loading opcodes: {e}", "Unexpected Error")
 
+    def make_format_4(self):
+        # check for opcodes that have format 3, insert a `+` in front of the opcode then add them to format 4 list
+        for opcode in self.opcodes:
+            if self.opcodes[opcode]['format'] == 3:
+                self.format_4.append('+' + opcode)
+        
     def get_opcode(self, name):
         """
         Retrieves the opcode information for the given mnemonic.
@@ -180,7 +189,32 @@ class OpcodeHandler:
         :param name: The name to check.
         :return: True if the name is a valid opcode, False otherwise.
         """
-        return name in self.opcodes or name in self.directives or name in self.pseudo_ops
+        return name in self.opcodes or name in self.directives or name in self.pseudo_ops or name in self.format_4
+    
+    def is_directive(self, name ) -> bool:
+        """
+        Checks if the given name is a valid directive.
+
+        :param name: The name to check.
+        :return: True if the name is a valid directive, False otherwise.
+        """
+        return name in self.directives
+    
+    def is_pseudo_op(self, name) -> bool:
+        """
+        Checks if the given name is a valid pseudo-op.
+        :param name: The name to check.
+        :return: True if the name is a valid pseudo-op, False otherwise.
+        """
+        return name in self.pseudo_ops
+    
+    def is_valid_format_4(self, opcode) -> bool:
+        """
+        Checks if the given opcode is a valid format 4 opcode.
+        :param opcode: The opcode to check.
+        :return: True if the opcode is a valid format 4 opcode, False otherwise.
+        """
+        return opcode in self.format_4
 
     def print_opcodes(self):
         """
