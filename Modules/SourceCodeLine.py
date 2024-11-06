@@ -45,10 +45,24 @@ class SourceCodeLine:
         """
         Provides a string representation of the SourceCodeLine object.
         """
-        label = f"{self.label}{self.label_suffix_symbol}" if self.label else ''
-        operands = self.operands if self.operands else ''
-        comment = self.comment if self.comment else ''
-        return f"{self.line_number}    {label}    {self.opcode_mnemonic}    {operands}    {comment}"
+        spacing = ' ' * 4
+        column_size_line_number = 10
+        line_number = f"{self.line_number:<{column_size_line_number}}"
+        
+        column_size_address = 6
+        address = f"{self.address:04X:<{column_size_address}}{spacing}" if self.address is not None else ''
+        
+        column_size_label = 11
+        raw_label = f"{self.label}{self.label_suffix_symbol}" if self.label else ''
+        label = f"{raw_label:<{column_size_label}}" if self.label else (' ' * column_size_label)
+        
+        column_size_opcode_mnemonic = 8
+        opcode_mnemonic = f"{self.opcode_mnemonic:<{column_size_opcode_mnemonic}}" if self.opcode_mnemonic else (' ' * column_size_opcode_mnemonic)
+        
+        operands = f"{self.operands}{spacing}" if self.operands else ''
+        comment = f"{self.comment}{spacing}" if self.comment else ''
+        errors = f"[ERROR: {'; '.join(self.errors)}]{spacing}" if self.errors else ''
+        return f"{line_number} {address}{errors}{label} {opcode_mnemonic} {operands}{comment}"
 
     def is_comment(self) -> bool:
         """
@@ -82,19 +96,19 @@ class SourceCodeLine:
         """
         self.errors = []
 
-    def print_core_attributes(self, column_width: int = 20):
-        """
-        Prints the core attributes of the SourceCodeLine object.
+    # def print_core_attributes(self, column_width: int = 20):
+    #     """
+    #     Prints the core attributes of the SourceCodeLine object.
 
-        :param column_width: The width of each column in the output.
-        """
-        if self.has_errors():
-            print(f"Error: {', '.join(self.errors)} on line {self.line_number}: {self.line_text}")
-        else:
-            label = f"{self.label}{self.label_suffix_symbol}" if self.label else ''
-            operands = self.operands if self.operands else ''
-            comment = self.comment if self.comment else ''
-            print(f"{self.line_number:>{column_width}} {label:<{column_width}} {self.opcode_mnemonic:<{column_width}} {operands:<{column_width}} {comment:<{column_width}}")
+    #     :param column_width: The width of each column in the output.
+    #     """
+    #     if self.has_errors():
+    #         print(f"Error: {', '.join(self.errors)} on line {self.line_number}: {self.line_text}")
+    #     else:
+    #         label = f"{self.label}{self.label_suffix_symbol}" if self.label else ''
+    #         operands = self.operands if self.operands else ''
+    #         comment = self.comment if self.comment else ''
+    #         print(f"{self.line_number:>{column_width}} {label:<{column_width}} {self.opcode_mnemonic:<{column_width}} {operands:<{column_width}} {comment:<{column_width}}")
 
     def has_label(self) -> bool:
         """

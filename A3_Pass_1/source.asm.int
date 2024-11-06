@@ -1,143 +1,143 @@
-1    PROG:    START    1000    
-2    FIRST:    STL    ReTADR    first comment
-3        LdB    #LENGTH    
-4        BaSE    LENGTH    
-5        lDA    DATA,X    
-6        COMp    LENGTH    
-7        +JEQ    END    
-8    LOOP:    ADDR    A, B    
-9        SUBR    X,L    
-10        MULR    S, T    
-11        DIVR    SW, PC    
-12        AND    DATA    
-13        OR    COUNT    
-14        SHIFTL    Y, 4    
-15        SHIFTR    F, P    bad
-16        TIXR    T    
-17        CLEAR    X    
-18        JSUB    PRINT    
-19        LDT    @#DATA,X    
-20        LDX    @#DATA    
-21    idkwhatimdoingonthislinespace:            
-22    ikcwhatimdoingonthisline:            
-23        +LDCH    CHARZ,X    
-24        +STCH    @CHARZ    
-25    HERE:    +LDF    #FLOATZ    
-26        +STF    @#FLOATZ    
-27        +STCH    @CHARZ,X    
-28        +LDF    #FLOATZ,X    
-29        +STF    @#FLOATZ,X    
-30        MULF    COUNT    random comment
-31        ADDF    RETADR    
-32        ADD    #2    
-33        DIV    3    
-34        MUL    #5    
-35        SUB    4    
-36        SUBF    =0x45    
-37        DIVF    =0cdw    
-38        SUBF    0xf3    
-39        DIVF    =0xCs    
-40        COMPF    DATa    
-41        EXTREF    GOTEM    
-42        J    GOTEM    
-43        JLT    LOOP    
-44        JGT    LOOP    
-45        +TD    DEVICE    
-46        RD    DEVICE    tabs here
-47        +WD    DEVICE    
-48        FIX        
-49        FLOAT        
-50        HIO        
-51        STB    #FOUR    
-52        STI    @FOUR    
-53        STS    #@FOUR    
-54        STT    #ONE,X    
-55        STX    @ONE,X    
-56        NORM        
-57        RMO    B    
-58        SVC    #HERE    
-59        SIO        
-60    EQUAL:    EQU    HERE    
-61    ALPHA:    EQU    #1000    
-62    BETA:    EQU    ALPHA    
-63        ADD    ALPHA-@BETA    
-64        ADD    ALPHA+#BETA    
-65        ADD    @EQUAL+HERE    
-66        ADD    #EQUAL-HERE    
-67        ADD    ALPHA-HERE,X    
-68        ADD    HERE-ALPHA,X    
-69        ADD    ALPHA+HERE    
-70        ADD    HERE+ALPHA    
-71        ADD    16+HERE    
-72        ADD    HERE+#16    
-73        ADD    #HERE+ALPHA    
-74        TIO        
-75        SVC    @ALPHA    
-76        LPS    BREAK    
-77        SSK    DEVICE    
-78        COMPR    A, 5    bad
-79        TIX    COUNT    
-80        CLEAR    S    
-81        RSUB        
-82        LDA    WHAT    
-83        BAD    #3    
-84        STSW    FOUR    
-85    PRINT:    LDS    LENGTH    
-86        STA    RETADR    
-87        LDL    CHARZ    
-88        RSUB        
-89                
-90    DATA:    BYTE    0Xf1    
-91    DATA:    BYTE    0XF1    
-92    DATA:    BYTE    =0XF1    
-93    DA_2:    BYTE    0XF11    
-94    DAT3:    BYTE    0XG1    
-95    DAT4:    BYTE    X'G1'    
-96    !BAD:    BYTE    d    
-97    1BAD:    BYTE    =    
-98    _GOOD:    BYTE    1    
-99    t123456789:    BYTE    1    
-100    t1234567890:    BYTE    1    
-101    GOO:    BYTE    1    
-102    BA3D:    BYTE    #1    
-103    BA#D:    BYTE    1    
-104    Z:    BYTE    20    
-105    CHARZ:    BYTE    0CA    
-106    FLOATZ:    BYTE    0C'\"1    dD
-107    FOUR:    RESB    #4    
-108    HABR:    RESW    637    should make anything past use B reg
-109    COUNT:    WORD    #1    
-110    LENGTH:    WORD    4096    
-111    ONE:    RESB    1    
-112    RETaDR:    RESW    #1    
-113    BREAK:    RESb    1911    should make anything past use format 4
-114    DEVICE:    BYTE    0X'\"F8'    
-115        RESB    DATA    
-116        RESB    HERE-ALPHA    
-117        RESB    ALpHA-7777    
-118    ZA:    EQU    ALPHA-BETA    
-119    ZB:    EQU    ALPHA+BETA    
-120    ZC:    EQU    EQUAL+HERE    
-121    ZD:    EQU    eQUAL-HERE    
-122    ZE:    EQU    ALPHA-HERE    
-123    ZF:    EQU    HERE-ALPHA    
-124    ZG:    EQU    ALPHA+HERE    
-125    ZH:    EQU    HERE+ALPHA    
-126    ZI:    EQU    16+HERE    
-127    ZJ:    EQU    HERE+#16    
-128    ZK:    EQU    #HERE+ALPHA    
-129    ZL:    EQU        
-130    TEST:    EQU    heir    
-131        EQU    HERE!    
-132        EQU    #HERE    
-133    ZZ:    EQU    =0CABC    
-134        EXTDEF    ZA, ZB,DEVICE, ZD,ZE,ZF,AH,Zz    
-135        EXTDEF    ZG    
-136        EXTREF    OTRFUN,AAA ,AAB    
-137        JSUB    PRINT    
-138        JSUB    TEST    
-139        JSUB    OTRFUN    
-140        +JSUB    OTRFUN    
-141        LDA    OTRFUN    
-142        +LDA    TEST    
-143        END    PROG    
+1          PROG:       START    1000    
+2          FIRST:      STL      ReTADR    first comment    
+3                      LDB      #LENGTH    
+4          [ERROR: Invalid opcode mnemonic: 'BASE'. ]                BASE     LENGTH    
+5                      LDA      DATA,X    
+6                      COMP     LENGTH    
+7                      +JEQ     END    
+8          LOOP:       ADDR     A, B    
+9                      SUBR     X,L    
+10                     MULR     S, T    
+11                     DIVR     SW, PC    
+12                     AND      DATA    
+13                     OR       COUNT    
+14                     SHIFTL   Y, 4    
+15                     SHIFTR   F, P    bad    
+16                     TIXR     T    
+17                     CLEAR    X    
+18                     JSUB     PRINT    
+19                     LDT      @#DATA,X    
+20                     LDX      @#DATA    
+21         [ERROR: 'IDKWHATIMDOINGONTHISLINESPACE' length exceeds 10 characters.]    idkwhatimdoingonthislinespace:          
+22         [ERROR: 'IKCWHATIMDOINGONTHISLINE' length exceeds 10 characters.]    ikcwhatimdoingonthisline:          
+23                     +LDCH    CHARZ,X    
+24                     +STCH    @CHARZ    
+25         HERE:       +LDF     #FLOATZ    
+26                     +STF     @#FLOATZ    
+27                     +STCH    @CHARZ,X    
+28                     +LDF     #FLOATZ,X    
+29                     +STF     @#FLOATZ,X    
+30                     MULF     COUNT    random comment    
+31                     ADDF     RETADR    
+32                     ADD      #2    
+33                     DIV      3    
+34                     MUL      #5    
+35                     SUB      4    
+36                     SUBF     =0x45    
+37                     DIVF     =0cdw    
+38                     SUBF     0xf3    
+39                     DIVF     =0xCs    
+40                     COMPF    DATa    
+41                     EXTREF   GOTEM    
+42                     J        GOTEM    
+43                     JLT      LOOP    
+44                     JGT      LOOP    
+45                     +TD      DEVICE    
+46                     RD       DEVICE    tabs here    
+47                     +WD      DEVICE    
+48                     FIX      
+49                     FLOAT    
+50                     HIO      
+51                     STB      #FOUR    
+52                     STI      @FOUR    
+53                     STS      #@FOUR    
+54                     STT      #ONE,X    
+55                     STX      @ONE,X    
+56                     NORM     
+57                     RMO      B    
+58                     SVC      #HERE    
+59                     SIO      
+60         EQUAL:      EQU      HERE    
+61         ALPHA:      EQU      #1000    
+62         BETA:       EQU      ALPHA    
+63                     ADD      ALPHA-@BETA    
+64                     ADD      ALPHA+#BETA    
+65                     ADD      @EQUAL+HERE    
+66                     ADD      #EQUAL-HERE    
+67                     ADD      ALPHA-HERE,X    
+68                     ADD      HERE-ALPHA,X    
+69                     ADD      ALPHA+HERE    
+70                     ADD      HERE+ALPHA    
+71                     ADD      16+HERE    
+72                     ADD      HERE+#16    
+73                     ADD      #HERE+ALPHA    
+74                     TIO      
+75                     SVC      @ALPHA    
+76                     LPS      BREAK    
+77                     SSK      DEVICE    
+78                     COMPR    A, 5    bad    
+79                     TIX      COUNT    
+80                     CLEAR    S    
+81                     RSUB     
+82                     LDA      WHAT    
+83         [ERROR: Invalid opcode mnemonic: 'BAD'. ]                BAD      #3    
+84                     STSW     FOUR    
+85         PRINT:      LDS      LENGTH    
+86                     STA      RETADR    
+87                     LDL      CHARZ    
+88                     RSUB     
+89                              
+90         DATA:       BYTE     0Xf1    
+91         DATA:       BYTE     0XF1    
+92         DATA:       BYTE     =0XF1    
+93         [ERROR: Symbol 'DA_2' contains invalid character '_'. ]    DA_2:       BYTE     0XF11    
+94         DAT3:       BYTE     0XG1    
+95         DAT4:       BYTE     X'G1'    
+96         [ERROR: '!BAD' must start with a letter.; Symbol '!BAD' contains invalid character '!'. ]    !BAD:       BYTE     d    
+97         [ERROR: '1BAD' must start with a letter.]    1BAD:       BYTE     =    
+98         [ERROR: '_GOOD' must start with a letter.; Symbol '_GOOD' contains invalid character '_'. ]    _GOOD:      BYTE     1    
+99         t123456789: BYTE     1    
+100        [ERROR: 'T1234567890' length exceeds 10 characters.]    t1234567890: BYTE     1    
+101        GOO:        BYTE     1    
+102        BA3D:       BYTE     #1    
+103        [ERROR: Symbol 'BA#D' contains invalid character '#'. ]    BA#D:       BYTE     1    
+104        Z:          BYTE     20    
+105        CHARZ:      BYTE     0CA    
+106        FLOATZ:     BYTE     0C'\"1    dD    
+107        FOUR:       RESB     #4    
+108        HABR:       RESW     637    should make anything past use B reg    
+109        COUNT:      WORD     #1    
+110        LENGTH:     WORD     4096    
+111        ONE:        RESB     1    
+112        RETaDR:     RESW     #1    
+113        BREAK:      RESB     1911    should make anything past use format 4    
+114        DEVICE:     BYTE     0X'\"F8'    
+115                    RESB     DATA    
+116                    RESB     HERE-ALPHA    
+117                    RESB     ALpHA-7777    
+118        ZA:         EQU      ALPHA-BETA    
+119        ZB:         EQU      ALPHA+BETA    
+120        ZC:         EQU      EQUAL+HERE    
+121        ZD:         EQU      eQUAL-HERE    
+122        ZE:         EQU      ALPHA-HERE    
+123        ZF:         EQU      HERE-ALPHA    
+124        ZG:         EQU      ALPHA+HERE    
+125        ZH:         EQU      HERE+ALPHA    
+126        ZI:         EQU      16+HERE    
+127        ZJ:         EQU      HERE+#16    
+128        ZK:         EQU      #HERE+ALPHA    
+129        ZL:         EQU      
+130        TEST:       EQU      heir    
+131                    EQU      HERE!    
+132                    EQU      #HERE    
+133        ZZ:         EQU      =0CABC    
+134                    EXTDEF   ZA, ZB,DEVICE, ZD,ZE,ZF,AH,Zz    
+135                    EXTDEF   ZG    
+136                    EXTREF   OTRFUN,AAA ,AAB    
+137                    JSUB     PRINT    
+138                    JSUB     TEST    
+139                    JSUB     OTRFUN    
+140                    +JSUB    OTRFUN    
+141                    LDA      OTRFUN    
+142                    +LDA     TEST    
+143                    END      PROG    
