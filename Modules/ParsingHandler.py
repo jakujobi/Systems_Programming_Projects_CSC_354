@@ -43,7 +43,7 @@ class ParsingHandler:
         Checks if the line is empty or a comment.
         """
         if self.source_line.is_empty_line():
-            self.logger.log_action(f"Skipping empty line on Line {self.source_line.line_number}: {self.source_line.line_text}")
+            #self.logger.log_action(f"Skipping empty line on Line {self.source_line.line_number}: {self.source_line.line_text}")
             return True
 
         if self.source_line.is_comment():
