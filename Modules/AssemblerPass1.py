@@ -17,70 +17,73 @@ from Modules.Literal_Table_Builder import *
 from Modules.FileExplorer import *
 
 
-class Validator:
-    """
-    Validator class for validating almost everything in the SIC/XE assembler.
-    """
-    
-    
-    def validate_label(symbol: str, error_list: list = None) -> bool:
-        """
-        /********************************************************************
-        ***  FUNCTION : validate_label                                      ***
-        ***  CLASS  : Validator                                             ***
-        *********************************************************************
-        ***  DESCRIPTION : Validates a label based on the following rules:  ***
-        ***  - Must be at most 10 characters.                               ***
-        ***  - Must start with a letter.                                    ***
-        ***  - Cannot be just an underscore.                                ***
-        ***  - Can contain only letters, digits, and underscores.           ***
-        ********************************************************************/
-        """
-        label = label.strip().rstrip(":").upper()
-
-        Errors = []
-        # Check if the label length exceeds 10 characters
-        if len(label) > 10:
-            Errors.append(f"'{label}' length exceeds 10 characters.")
-
-        # Check if the label starts with a letter
-        if not label[0].isalpha():
-            Errors.append(f"'{label}' must start with a letter.")
-        
-        # Check if the entire label is "_"
-        if label == "_":
-            Errors.append(f"'{label}' cannot be an underscore ('_') only.")
-            return False
-
-        # Check for invalid characters
-        for char in symbol:
-            if not (char.isalnum()):
-                Errors.append(f"Symbol '{label}' contains invalid character '{char}'.")
-                
-        # Check if there are any errors
-        if Errors:
-            if error_list:
-                error_list.extend(Errors)
-            return False
-        return True
-    
-    def validate_opcode_mnemonic(mnemonic: str, error_list: list = None) -> bool:
-        """
-        Validates an opcode mnemonic based on the SIC/XE instruction set.
-        """
-        Errors = []
-        if not mnemonic:
-            Errors.append(f"Empty opcode mnemonic.")
-        elif not OpcodeHandler.is_valid_opcode(mnemonic):
-            Errors.append(f"Invalid opcode mnemonic: '{mnemonic}'.")
-        
-        if Errors:
-            if error_list:
-                error_list.extend(Errors)
-            return False
-        return True
 
 class AssemblerPass1:
+    
+    class Validator:
+        """
+        Validator class for validating almost everything in the SIC/XE assembler.
+        """
+        
+        def validate_label(symbol: str, error_list: list = None) -> bool:
+            """
+            /********************************************************************
+            ***  FUNCTION : validate_label                                      ***
+            ***  CLASS  : Validator                                             ***
+            *********************************************************************
+            ***  DESCRIPTION : Validates a label based on the following rules:  ***
+            ***  - Must be at most 10 characters.                               ***
+            ***  - Must start with a letter.                                    ***
+            ***  - Cannot be just an underscore.                                ***
+            ***  - Can contain only letters, digits, and underscores.           ***
+            ********************************************************************/
+            """
+            label = label.strip().rstrip(":").upper()
+
+            Errors = []
+            # Check if the label length exceeds 10 characters
+            if len(label) > 10:
+                Errors.append(f"'{label}' length exceeds 10 characters.")
+
+            # Check if the label starts with a letter
+            if not label[0].isalpha():
+                Errors.append(f"'{label}' must start with a letter.")
+            
+            # Check if the entire label is "_"
+            if label == "_":
+                Errors.append(f"'{label}' cannot be an underscore ('_') only.")
+                return False
+
+            # Check for invalid characters
+            for char in symbol:
+                if not (char.isalnum()):
+                    Errors.append(f"Symbol '{label}' contains invalid character '{char}'.")
+                    
+            # Check if there are any errors
+            if Errors:
+                if error_list:
+                    error_list.extend(Errors)
+                return False
+            return True
+        
+        def validate_opcode_mnemonic(mnemonic: str, error_list: list = None) -> bool:
+            """
+            Validates an opcode mnemonic based on the SIC/XE instruction set.
+            """
+            Errors = []
+            if not mnemonic:
+                Errors.append(f"Empty opcode mnemonic.")
+            elif not OpcodeHandler.is_valid_opcode(mnemonic):
+                Errors.append(f"Invalid opcode mnemonic: '{mnemonic}'.")
+            
+            if Errors:
+                if error_list:
+                    error_list.extend(Errors)
+                return False
+            return True
+    
+    
+    
     """
     AssemblerPass1 handles the first pass of the SIC/XE assembler.
     It processes the source code, builds the symbol table, and computes addresses.
@@ -126,17 +129,22 @@ class AssemblerPass1:
         # Process all the source code lines
         self.process_source_lines(self.source_lines)
         
-        # After processing all lines, calculate program length
-        self.calculate_program_length()
+        # # After processing all lines, calculate program length
+        # self.calculate_program_length()
         
-        # Display the symbol table and write it to the generated file
-        self.add_symbol_table(add_to_file=True)
+        # # Display the symbol table and write it to the generated file
+        # self.add_symbol_table(add_to_file=True)
         
-        # Display the literal table and write it to the generated file
-        self.add_literal_table(add_to_file=True)
+        # # Display the literal table and write it to the generated file
+        # self.add_literal_table(add_to_file=True)
         
-        # Display the error log and write it to the generated file
-        self.create_log_file()
+        # # Display the error log and write it to the generated file
+        # self.create_log_file()
+        
+        # Close the intermediate file after processing
+        if self.intermediate_file:
+            self.intermediate_file.close()
+            self.logger.log_action(f"Closed intermediate file.")
         
     def load_source_file(self):
         """
@@ -150,7 +158,25 @@ class AssemblerPass1:
         # Log the number of lines read
         self.logger.log_action(f"Read {len(self.source_lines)} lines from '{self.source_file}'.")
         
+    def create_intermediate_file(self):
+        """
+        Creates the intermediate file for writing.
+        """
+        # Create the intermediate file
+        intermediate_file_path = self.FileExplorer.create_new_file_in_main(self.source_file, "int")
+        if intermediate_file_path is None:
+            self.logger.log_error(f"Failed to create intermediate file for '{self.source_file}'.")
+            return
     
+        # Open the intermediate file for writing and keep the file object
+        try:
+            self.intermediate_file = open(intermediate_file_path, "w")
+            self.logger.log_action(f"Created and opened intermediate file '{intermediate_file_path}' for writing.")
+        except Exception as e:
+            self.logger.log_error(f"An error occurred while opening the intermediate file '{intermediate_file_path}': {e}")
+            self.intermediate_file = None
+        
+
     def process_source_lines(self, lines):
         """
         Processes multiple lines of source code.
@@ -158,43 +184,57 @@ class AssemblerPass1:
         self.location_counter.set_start_address(0)
         # Log the start of processing
         self.logger.log_action(f"Starting processing of source code lines.")
+        line_number = 0
         for line in lines:
-            self.process_single_line(line)
+            line_number += 1
+            source_line = SourceCodeLine(line_number, line)
+            self.process_single_line(source_line)
 
     def process_single_line(self, source_line: SourceCodeLine):
         """
         Processes a single line of source code.
         """
         # Create a ParsingHandler for the line and parse it
-        parser = ParsingHandler(source_line, source_line.line_text, validate_parsing=True, logger=self.logger, opcode_handler=self.opcode_handler)
+        
+        parser = ParsingHandler(source_line,  validate_parsing=True, logger=self.logger, opcode_handler=self.opcode_handler)
+        
         parser.parse_line()
+        
+        
+        # parser = ParsingHandler(source_line,  validate_parsing=True, logger=self.logger, opcode_handler=self.opcode_handler)
+        # parser.parse_line()
+        
+        # #print the parsed line
+        # print(parser.source_line)
 
-        # Handle directives
-        self.check_for_directives(source_line, handle_directives=True)
+        # # Handle directives
+        # self.check_for_directives(source_line, handle_directives=True)
 
-        # Calculate instruction length
-        self.calculate_instruction_length(source_line)
+        # # Calculate instruction length
+        # self.calculate_instruction_length(source_line)
 
-        # Update the symbol table
-        self.update_symbol_table(source_line)
+        # # Update the symbol table
+        # self.update_symbol_table(source_line)
 
-        # Update the literal table
-        self.update_literal_table(source_line)
+        # # Update the literal table
+        # self.update_literal_table(source_line)
 
-        # Increment the location counter
-        self.location_counter.increment(source_line.instruction_length)
+        # # Increment the location counter
+        # self.location_counter.increment(source_line.instruction_length)
 
-        # Update the source line with address and object code
-        self.update_source_line(source_line)
+        # # Update the source line with address and object code
+        # self.update_source_line(source_line)
 
-        # Check for errors
-        self.check_for_errors(source_line)
+        # # Check for errors
+        # self.check_for_errors(source_line)
 
         # Print the source line with address and object code
         self.print_source_line(source_line)
 
         # Add line to generated file
         self.add_line_to_generated_file(source_line)
+        
+        pass
 
     def check_for_directives(self, source_line: SourceCodeLine, handle_directives: bool = True):
         """
@@ -273,15 +313,22 @@ class AssemblerPass1:
         """
         Prints the source line with address and object code.
         """
-        # Print source line
+        # Print the source line with address and object code
+        print (source_line)
         pass
 
     def add_line_to_generated_file(self, source_line: SourceCodeLine):
         """
         Adds the source line to the generated file.
         """
-        # Add line to generated file
-        pass
+        if self.intermediate_file:
+            try:
+                self.intermediate_file.write(str(source_line) + "\n")
+                self.logger.log_action(f"Added line {source_line} to the generated file.", False)
+            except Exception as e:
+                self.logger.log_error(f"An error occurred while writing to the intermediate file: {e}")
+        else:
+            self.logger.log_error("Intermediate file is not open for writing.")
 
     def calculate_program_length(self):
         """
