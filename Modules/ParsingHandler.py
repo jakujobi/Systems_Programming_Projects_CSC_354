@@ -78,7 +78,8 @@ class ParsingHandler:
         """
         parts = line.split()
         if parts:
-            self.source_line.opcode_mnemonic = parts[0].strip()
+            # make it uppercase
+            self.source_line.opcode_mnemonic = parts[0].strip().upper()
             line = line[len(self.source_line.opcode_mnemonic):].strip()
         return line
 
@@ -253,7 +254,7 @@ def test_parsing_handler():
         parser = ParsingHandler(source_line, validate_parsing=True)
         try:
             parser.parse_line()
-            print(f"Line {idx}: {source_line}")
+            print(f"Line {idx}: label = {source_line.label}, opcode = {source_line.opcode_mnemonic}, operands = {source_line.operands}, comment = {source_line.comment}")
         except SyntaxError as e:
             print(f"Line {idx}: {e}")
 
