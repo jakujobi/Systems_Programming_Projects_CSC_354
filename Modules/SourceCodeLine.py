@@ -33,7 +33,7 @@ class SourceCodeLine:
         self.comment = ''
 
         self.opcode_hex = None  # Opcode in hexadecimal
-        self.address = 0x0
+        self.address = 0x00000  # Address of the instruction
         self.object_code = None
         self.instr_format = None
 
