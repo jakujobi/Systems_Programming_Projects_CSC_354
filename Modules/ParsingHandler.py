@@ -58,7 +58,8 @@ class ParsingHandler:
         """
         label_end_index = line.find(SourceCodeLine.label_suffix_symbol)
         if label_end_index != -1:
-            self.source_line.label = line[:label_end_index].strip()
+            _label = line[:label_end_index].strip()
+            self.source_line.set_label(_label)
             line = line[label_end_index + 1:].strip()
         return line
 
@@ -79,7 +80,8 @@ class ParsingHandler:
         parts = line.split()
         if parts:
             # make it uppercase
-            self.source_line.opcode_mnemonic = parts[0].strip().upper()
+            opcode_mnemonic = parts[0].strip().upper()
+            self.source_line.set_opcode_mnemonic(opcode_mnemonic)
             line = line[len(self.source_line.opcode_mnemonic):].strip()
         return line
 
@@ -87,7 +89,9 @@ class ParsingHandler:
         """
         Extracts the operands from the line.
         """
-        self.source_line.operands = line.strip()
+        _operands = line.strip()
+        if _operands:
+            self.source_line.set_operands(_operands)
         return ''
 
     def check_remaining_characters(self, line: str):
