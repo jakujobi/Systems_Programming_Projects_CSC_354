@@ -190,24 +190,19 @@ class AssemblerPass1:
         
         self.source_file = filename
         self.intermediate_file = None
-        self.log_file = None
         
         self.allow_error_lines_in_generated_document = True
         self.stop_on_error = False
         
-        
         self.source_lines = []
-        self.generated_lines = []
+        
         self.FileExplorer = FileExplorer()
-        self.symbol_table = SymbolTable()
+        self.symbol_table = SymbolTableDriver()
+        self.literal_table = LiteralTableDriver()
         self.opcode_handler = OpcodeHandler()
-        
         self.logger = logger or ErrorLogHandler()
-        
-        
         self.location_counter = LocationCounter(opcode_handler=self.opcode_handler, symbol_table=self.symbol_table, logger=self.logger)
         
-
         self.program_name = None
         self.program_start_address = 0
         self.program_length = 0
@@ -227,27 +222,16 @@ class AssemblerPass1:
         # Process all the source code lines
         self.process_source_lines(self.source_lines)
         
-        # # After processing all lines, calculate program length
-        # self.calculate_program_length()
-        
-        # # Display the symbol table and write it to the generated file
-        # self.add_symbol_table(add_to_file=True)
-        
-        # # Display the literal table and write it to the generated file
-        # self.add_literal_table(add_to_file=True)
-        
-        # # Display the error log and write it to the generated file
-        # self.create_log_file()
+        # Print the length of the program using the location counter
+        self.program_length = self.calculate_program_length()
+        program_length_hex = format(self.program_length, '05X')
+        self.logger.log_action(f"Program length (HEX): {program_length_hex}")
+        self.logger.log_action(f"Program length (INT): {self.program_length}")
         
         # Close the intermediate file after processing
         if self.intermediate_file:
             self.intermediate_file.close()
             self.logger.log_action(f"Closed intermediate file.")
-            
-        # Close the log file after processing
-        if self.log_file:
-            self.log_file.close()
-            self.logger.log_action(f"Closed log file.")
             
         # Close tthe program and exit
         self.logger.log_action(f"Program completed.")
@@ -318,12 +302,6 @@ class AssemblerPass1:
             else:
                 line_number -= 1
                 continue
-        
-        # Print the length of the program using the location counter
-        self.program_length = self.calculate_program_length()
-        program_length_hex = format(self.program_length, '05X')
-        self.logger.log_action(f"Program length (HEX): {program_length_hex}")
-        self.logger.log_action(f"Program length (INT): {self.program_length}")
         
         # Log the end of processing
         self.logger.log_action(f"Finished processing of source code lines. {lines_with_errors} lines had errors.")
@@ -474,13 +452,6 @@ class AssemblerPass1:
         Adds the literal table to the output.
         """
         # Display and write the literal table
-        pass
-
-    def create_log_file(self):
-        """
-        Creates the log file with errors and actions.
-        """
-        # Create log file
         pass
     
     # *Directives* _________________________________________________________________________________________
