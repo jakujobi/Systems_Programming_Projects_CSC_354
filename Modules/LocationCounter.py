@@ -45,13 +45,21 @@ class LocationCounter:
         _action = f"Start address set to {self.start_address:X}"
         self.logger.log_action(_action, False)
 
-    def get_current_address(self):
+    def get_current_address_int(self):
         """
         Returns the current location counter address.
 
-        :return: Current address as an integer.
+        :return: Current address.
         """
         return self.current_address
+    
+    def get_current_address_hex(self):
+        """
+        Returns the current location counter address in hexadecimal.
+
+        :return: Current address in hexadecimal.
+        """
+        return hex(self.current_address)
     
     def increment_by_decimal(self, increment_value: int):
         """
