@@ -1331,7 +1331,7 @@ class LiteralTableDriver:
     """
 
 
-    def __init__(self):
+    def __init__(self, log_handler=None, symbol_table_driver=None, literal_table=None, file_explorer=None):
         """
         /***************************************************************************************
         ***  METHOD : __init__                                                                ***
