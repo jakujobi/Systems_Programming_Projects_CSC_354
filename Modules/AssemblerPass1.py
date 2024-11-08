@@ -319,7 +319,7 @@ class AssemblerPass1:
             self.add_line_to_generated_file(source_line)
         
         # Print the length of the program using the location counter
-        self.logger.log_action(f"Program length: {self.location_counter.get_current_address() - self.program_start_address}")
+        self.logger.log_action(f"Program length: {self.location_counter.get_current_address_int() - self.program_start_address}")
         
                 
         # Log the end of processing
@@ -347,7 +347,7 @@ class AssemblerPass1:
             return
 
         # Set address for the line
-        source_line.address = self.location_counter.get_current_address()
+        source_line.address = self.location_counter.get_current_address_int()
         
         # Check for START directive
         if source_line.opcode_mnemonic == "START":
@@ -494,7 +494,7 @@ class AssemblerPass1:
         """
         Calculates the program length.
         """
-        self.program_length = self.location_counter.get_current_address() - self.program_start_address
+        self.program_length = self.location_counter.get_current_address_int() - self.program_start_address
 
     def add_symbol_table(self, add_to_file: bool = False):
         """
