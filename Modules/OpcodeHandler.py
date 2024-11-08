@@ -165,8 +165,12 @@ class OpcodeHandler:
         Returns the format of the specified opcode, if found.
         """
         try:
-            opcode = self.get_opcode(name)
-            return opcode['format']
+            # check the format 4 list for the opcode
+            if name in self.format_4:
+                return 4
+            else:
+                opcode = self.get_opcode(name)
+                return opcode['format']
         except ValueError as e:
             self.logger.log_error(str(e), "Format Retrieval Error")
             raise
