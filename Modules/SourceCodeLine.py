@@ -12,7 +12,7 @@ class SourceCodeLine:
     comment_symbol = '.'  # Default comment symbol
     label_suffix_symbol = ':'
 
-    def __init__(self, line_number: int, line_text: str):
+    def __init__(self, line_number: int, line_text: str, label = '', opcode_mnemonic = '', operands = '', comment = ''):
         """
         Initializes a SourceCodeLine object.
 
@@ -33,7 +33,7 @@ class SourceCodeLine:
         self.comment = ''
 
         self.opcode_hex = None  # Opcode in hexadecimal
-        self.address = None
+        self.address = 0x0
         self.object_code = None
         self.instr_format = None
 
@@ -50,13 +50,13 @@ class SourceCodeLine:
         line_number = f"{self.line_number:<{column_size_line_number}}"
         
         column_size_address = 6
-        address = f"{self.address:04X:<{column_size_address}}{spacing}" if self.address is not None else ''
+        address = f"{self.address:<{column_size_address}}{spacing}" if self.address is not None else ' ' * (column_size_address)
         
         column_size_label = 11
         raw_label = f"{self.label}{self.label_suffix_symbol}" if self.label else ''
         label = f"{raw_label:<{column_size_label}}" if self.label else (' ' * column_size_label)
         
-        column_size_opcode_mnemonic = 8
+        column_size_opcode_mnemonic = 10
         opcode_mnemonic = f"{self.opcode_mnemonic:<{column_size_opcode_mnemonic}}" if self.opcode_mnemonic else (' ' * column_size_opcode_mnemonic)
         
         operands = f"{self.operands}{spacing}" if self.operands else ''
@@ -95,20 +95,6 @@ class SourceCodeLine:
         Clears all errors associated with the line.
         """
         self.errors = []
-
-    # def print_core_attributes(self, column_width: int = 20):
-    #     """
-    #     Prints the core attributes of the SourceCodeLine object.
-
-    #     :param column_width: The width of each column in the output.
-    #     """
-    #     if self.has_errors():
-    #         print(f"Error: {', '.join(self.errors)} on line {self.line_number}: {self.line_text}")
-    #     else:
-    #         label = f"{self.label}{self.label_suffix_symbol}" if self.label else ''
-    #         operands = self.operands if self.operands else ''
-    #         comment = self.comment if self.comment else ''
-    #         print(f"{self.line_number:>{column_width}} {label:<{column_width}} {self.opcode_mnemonic:<{column_width}} {operands:<{column_width}} {comment:<{column_width}}")
 
     def has_label(self) -> bool:
         """
@@ -162,7 +148,9 @@ class SourceCodeLine:
 
         :param opcode: The opcode in hexadecimal format to set.
         """
-        self.opcode_hex = opcode
+        if not re.fullmatch(r'[0-9A-Fa-f]+', opcode):
+            raise ValueError(f"Opcode '{opcode}' is not a valid hexadecimal string.")
+        self.opcode_hex = opcode.upper()
 
     def set_operands(self, operands: str):
         """
