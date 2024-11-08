@@ -70,7 +70,7 @@ class AssemblerPass1:
 
         # Check for invalid characters
         for char in label:
-            if not (char.isalnum()):
+            if not (char.isalnum() or char == '_'):
                 Errors.append(f"Symbol '{label}' contains invalid character '{char}'.")
                 self.logger.log_error(f"Symbol '{label}' contains invalid character '{char}'.")
 
@@ -116,7 +116,7 @@ class AssemblerPass1:
 
         # Check for invalid characters
         for char in label:
-            if not (char.isalnum()):
+            if not (char.isalnum() or char == '_'):
                 Error = f"Symbol '{label}' contains invalid character '{char}'. "
                 Errors.append(Error)
                 line.add_error(Error)
@@ -185,6 +185,9 @@ class AssemblerPass1:
         :param source_file_path: Path to the source code file.
         :param logger: Instance of ErrorLogHandler for logging.
         """
+        self.character_literal_prefix = '0C'
+        self.hex_literal_prefix = '0X'
+        
         self.source_file = filename
         self.intermediate_file = None
         self.log_file = None
@@ -314,7 +317,10 @@ class AssemblerPass1:
             
             # Add line to generated file 
             self.add_line_to_generated_file(source_line)
-           
+        
+        # Print the length of the program using the location counter
+        self.logger.log_action(f"Program length: {self.location_counter.get_current_address() - self.program_start_address}")
+        
                 
         # Log the end of processing
         self.logger.log_action(f"Finished processing of source code lines. {lines_with_errors} lines had errors.")
@@ -340,19 +346,21 @@ class AssemblerPass1:
         if not self.allow_error_lines_in_generated_document and source_line.has_errors():
             return
 
+        # Set address for the line
+        source_line.address = self.location_counter.get_current_address()
         
         # Check for START directive
         if source_line.opcode_mnemonic == "START":
-            self.handle_START_directive(source_line)
+            self.directive_START(source_line)
             return
         
         if source_line.opcode_mnemonic == "END":
-            self.handle_END_directive(source_line)
+            self.directive_END(source_line)
             return
         
         # if there is a symbol in the label field, process it
         if source_line.label:
-            self.process_label_filed(source_line)
+            self.process_label_field(source_line)
             
         # if theres an opcode mnemonic, process it
         if source_line.opcode_mnemonic:
@@ -373,16 +381,16 @@ class AssemblerPass1:
         # # Update the literal table
         # self.update_literal_table(source_line)
 
-        # # Increment the location counter
-        # self.location_counter.increment(source_line.instruction_length)
+        # if the line is not an error, then add its instruction length to the location counter
+        if not source_line.has_errors():
+            self.location_counter.increment_by_decimal(source_line.instruction_length)
 
-        # # Update the source line with address and object code
-        # self.update_source_line(source_line)
+
 
         # # Check for errors
         # self.check_for_errors(source_line)
         
-    def process_label_filed(self, source_line: SourceCodeLine):
+    def process_label_field(self, source_line: SourceCodeLine):
         """
         Processes the label in the source line.
         """
@@ -393,7 +401,33 @@ class AssemblerPass1:
         """
         Processes the opcode in the source line.
         """
+        _opcode_mnemonic = source_line.opcode_mnemonic
+        # Check if the opcode is a valid mnemonic
+        if self.opcode_handler.is_opcode_mnemonic(_opcode_mnemonic):
+            # check if it is a byte directive
+            if self.opcode_handler.is_directive(_opcode_mnemonic):
+                self.check_for_directives(source_line, handle_directives=True)
+                return
+            #Else, process the opcode
+            self.process_opcode(source_line)
         # Process the opcode
+        pass
+    
+    def process_opcode(self, source_line: SourceCodeLine):
+        """
+        Processes the opcode in the source line.
+        """
+        # Process the opcode
+        # get the opcode format
+        try:
+            instr_format = self.opcode_handler.get_format(source_line.opcode_mnemonic)
+            # add the instruction length to the source line
+            source_line.instruction_length = instr_format
+        except ValueError as e:
+            Error = f"Could not get instruction format for opcode '{source_line.opcode_mnemonic}': {e}"
+            self.logger.log_error(Error)
+            source_line.add_error(Error)
+            raise ValueError(Error)
         pass
 
     def add_symbol_to_symbol_table(self, source_line: SourceCodeLine):
@@ -489,16 +523,24 @@ class AssemblerPass1:
         """
         Checks for directives in the source line.
         """
-        pass
+        if handle_directives:
+            directives = {
+                "START": self.directive_START,
+                "END": self.directive_END,
+                "EQU": self.directive_EQU,
+                "ORG": self.directive_ORG,
+                "BYTE": self.directive_BYTE,
+                "WORD": self.directive_WORD,
+                "RESB": self.directive_RESB,
+                "RESW": self.directive_RESW,
+            }
 
-    def handle_directive(self, source_line: SourceCodeLine):
-        """
-        Handles a directive in the source line.
-        """
-        pass
+            directive_handler = directives.get(source_line.opcode_mnemonic)
+            if directive_handler:
+                directive_handler(source_line)
         
         
-    def handle_START_directive(self, source_line: SourceCodeLine):
+    def directive_START(self, source_line: SourceCodeLine):
         """
         Handles the START directive.
         """
@@ -517,7 +559,9 @@ class AssemblerPass1:
                 # Set the starting address
                 self.program_start_address = int(hex_operand, 16)
             except ValueError:
-                source_line.add_error(f"Invalid operand for START directive: '{source_line.operands[0]}'.")
+                Error = f"Invalid operand for START directive: '{source_line.operands[0]}'."
+                self.logger.log_error(Error)
+                source_line.add_error(Error)
         else:
             self.program_start_address = 0
         # Set the program name
@@ -532,53 +576,106 @@ class AssemblerPass1:
         self.location_counter.set_start_address(self.program_start_address) 
 
 
-    def handle_END_directive(self, source_line: SourceCodeLine):
+    def directive_END(self, source_line: SourceCodeLine):
         """
         Handles the END directive.
         """
-        # Set the program length
-        self.calculate_program_length()
-        # Add 0 to loocation counter
-        self.location_counter.increment_by_decimal(0)
-        self.logger.log_action(f"END directive reached")
+        try:
+            # Set the program length
+            self.calculate_program_length()
+            # add 0 to the instruction length
+            source_line.instruction_length = 0
+            self.logger.log_action(f"END directive reached")
+        except ValueError:
+            Error = f"Issue with END directive"
+            self.logger.log_error(Error)
+            source_line.add_error(Error)
 
-    def handle_other_directives(self, source_line: SourceCodeLine):
-        """
-        Handles other directives.
-        """
-        pass
 
-    def handle_BYTE_directive(self, source_line: SourceCodeLine):
+    def directive_BYTE(self, source_line: SourceCodeLine):
         """
         Handles the BYTE directive.
         """
         # find length of constant in bytes
-        # add length to location counter
-        pass
-    
-    def handle_WORD_directive(self, source_line: SourceCodeLine):
+        # add length to instruction length
+        try:
+            source_line.instruction_length = self.calculate_byte_size(source_line.operands)
+        except ValueError as e:
+            Error = f"Invalid operand for BYTE directive: '{source_line.operands}'."
+            self.logger.log_error(Error)
+            source_line.add_error(Error)
+            # raise ValueError(Error)
+
+    def calculate_byte_size(self, operand):
+        """
+        Calculates the size of the BYTE directive.
+
+        :param operand: The operand for the BYTE directive.
+        :return: The size in bytes as an integer.
+        """
+        operand = operand.strip()
+        try:
+            if operand.startswith(self.character_literal_prefix):
+                value = operand[2:]
+                return len(value) - 1
+            elif operand.startswith(self.hex_literal_prefix):
+                value = operand[2:]
+                if len(value) % 2 != 0:
+                    raise ValueError("Hex string in BYTE directive must have even length")
+                return len(value) // 2
+            else:
+                raise ValueError(f"Invalid operand '{operand}' for BYTE directive")
+        except ValueError as e:
+            self.logger.log_error(str(e))
+            return 0
+  
+    def directive_WORD(self, source_line: SourceCodeLine):
         """
         Handles the WORD directive.
         """
-        pass
+        # add 3 to instruction length
+        source_line.instruction_length = 3
     
-    def handle_RESB_directive(self, source_line: SourceCodeLine):
+    def directive_RESB(self, source_line: SourceCodeLine):
         """
         Handles the RESB directive.
         """
-        pass
+        try:
+            n = int(source_line.operands)
+            # self.location_counter.increment_by_decimal(n)
+            source_line.instruction_length = n
+        except ValueError:
+            Error = f"Invalid operand on line: '{source_line.operands}' for RESB"
+            self.logger.log_error(Error)
+            source_line.add_error(Error)
+            # raise ValueError(Error)
     
-    def handle_RESW_directive(self, source_line: SourceCodeLine):
+    def directive_RESW(self, source_line: SourceCodeLine):
         """
         Handles the RESW directive.
         """
-        pass
+        try:
+            n = int(source_line.operands)
+            # self.location_counter.increment_by_decimal(3 * n)
+            source_line.instruction_length = 3 * n
+        except ValueError:
+            Error = f"Invalid operand: '{source_line.operands}' for RESW"
+            source_line.add_error(Error)
+            self.logger.log_error(Error)
+            # raise ValueError(Error)
     
-    def handle_EQU_directive(self, source_line: SourceCodeLine):
+    def directive_EQU(self, source_line: SourceCodeLine):
         """
         Handles the EQU directive.
         """
         pass
+    
+    def directive_ORG(self, source_line: SourceCodeLine):
+        """
+        Handles the ORG directive.
+        """
+        expression = source_line.operands
+
     # endregion
 
 
