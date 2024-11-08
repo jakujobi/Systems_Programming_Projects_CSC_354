@@ -42,7 +42,8 @@ class LocationCounter:
         """
         self.start_address = address
         self.current_address = address
-        self.log_action(f"Start address set to {self.start_address:X}")
+        _action = f"Start address set to {self.start_address:X}"
+        self.logger.log_action(_action, False)
 
     def get_current_address(self):
         """
@@ -54,10 +55,31 @@ class LocationCounter:
     
     def increment_by_decimal(self, increment_value: int):
         """
-        Increments the location counter by a decimal value.
+          Takes an integer value, increments the location counter by its hexadecimal equivalent.
         """
-        self.current_address += increment_value
-        self.log_action(f"LOCCTR incremented by integer {increment_value} to {self.current_address:X}")
+        try:
+            hex_value = int(hex(increment_value), 16)
+            self.current_address += hex_value
+            _action = f"LOCCTR incremented by integer {increment_value} (hex {hex_value:X}) to {self.current_address:X}"
+            self.logger.log_action(_action, False)
+        except ValueError:
+            Error = f"Invalid increment value '{increment_value}'"
+            self.logger.log_error(Error)
+            raise ValueError(Error)
+
+        
+    def increment_by_hexadecimal(self, increment_value: str):
+        """
+        Increments the location counter by a hexadecimal value.
+        """
+        try:
+            increment_value = increment_value.strip()
+            self.current_address += int(increment_value, 16)
+            self.logger.log_action(f"LOCCTR incremented by hex '{increment_value}' to {self.current_address:X}", False)
+        except ValueError:
+            Error = f"Invalid increment value '{increment_value}'"
+            self.logger.log_error(Error)
+            raise ValueError(Error)
         
 
     # def handle_directive(self, directive, operands):
@@ -68,14 +90,6 @@ class LocationCounter:
     #     :param operands: The operands associated with the directive.
     #     :return: The increment value as an integer.
     #     """
-    #     if directive == 'WORD':
-    #         return 3
-    #     elif directive == 'RESW':
-    #         try:
-    #             n = int(operands)
-    #             return 3 * n
-    #         except ValueError:
-    #             raise ValueError(f"Invalid operand '{operands}' for RESW")
     #     elif directive == 'RESB':
     #         try:
     #             n = int(operands)
@@ -94,24 +108,6 @@ class LocationCounter:
     #     else:
     #         raise ValueError(f"Unknown directive '{directive}'")
 
-    # def calculate_byte_size(self, operand):
-    #     """
-    #     Calculates the size of the BYTE directive.
-
-    #     :param operand: The operand for the BYTE directive.
-    #     :return: The size in bytes as an integer.
-    #     """
-    #     operand = operand.strip()
-    #     if operand.startswith('C\'') and operand.endswith('\''):
-    #         value = operand[2:-1]
-    #         return len(value)
-    #     elif operand.startswith('X\'') and operand.endswith('\''):
-    #         value = operand[2:-1]
-    #         if len(value) % 2 != 0:
-    #             raise ValueError("Hex string in BYTE directive must have even length")
-    #         return len(value) // 2
-    #     else:
-    #         raise ValueError(f"Invalid operand '{operand}' for BYTE directive")
 
     # def update_symbol_table(self, label):
     #     """
@@ -121,11 +117,11 @@ class LocationCounter:
     #     """
     #     if self.symbol_table.search(label):
     #         error_msg = f"Duplicate label '{label}' found."
-    #         self.log_error(error_msg)
+    #         self.logger.log_error(error_msg)
     #         raise ValueError(error_msg)
     #     else:
     #         self.symbol_table.insert_symbol(label, self.current_address)
-    #         self.log_action(f"Added label '{label}' with address {self.current_address:X}")
+    #         self.logger.log_action(f"Added label '{label}' with address {self.current_address:X}")
 
     # def handle_equ_directive(self, operands):
     #     """
@@ -144,7 +140,7 @@ class LocationCounter:
     #     # You may need to pass the label as an additional parameter
     #     label = self.current_label  # Assume current_label is set appropriately
     #     self.symbol_table.insert_symbol(label, value, rflag=False)
-    #     self.log_action(f"Set symbol '{label}' to value {value} via EQU directive")
+    #     self.logger.log_action(f"Set symbol '{label}' to value {value} via EQU directive")
 
     # def handle_org_directive(self, operands):
     #     """
@@ -155,7 +151,7 @@ class LocationCounter:
     #     expression = operands.strip()
     #     value = self.evaluate_expression(expression)
     #     self.current_address = value
-    #     self.log_action(f"LOCCTR set to {self.current_address:X} via ORG directive")
+    #     self.logger.log_action(f"LOCCTR set to {self.current_address:X} via ORG directive")
 
     # def evaluate_expression(self, expression):
     #     """
@@ -190,25 +186,7 @@ class LocationCounter:
         """
         self.current_address = self.start_address
         self.program_length = 0
-        self.log_action("Location counter reset")
-
-    def log_action(self, message):
-        """
-        Logs an action message.
-
-        :param message: The message to log.
-        """
-        if self.logger:
-            self.logger.log_action(message)
-
-    def log_error(self, error_message):
-        """
-        Logs an error message.
-
-        :param error_message: The error message to log.
-        """
-        if self.logger:
-            self.logger.log_error(error_message)
+        self.logger.log_action("Location counter reset")
 
     @property
     def current_label(self):
@@ -226,4 +204,4 @@ class LocationCounter:
 
 
 if __name__ == "__main__":
-    
+    pass
