@@ -1,129 +1,143 @@
 1          00000     PROG:       START      1000    
 2          00001     FIRST:      STL        ReTADR    first comment    
 3          00004                 LDB        #LENGTH    
-4          00007                 LDA        DATA,X    
-5          0000A                 COMP       LENGTH    
-6          0000D                 +JEQ       END    
-7          00011     LOOP:       ADDR       A, B    
-8          00013                 SUBR       X,L    
-9          00015                 MULR       S, T    
-10         00017                 DIVR       SW, PC    
-11         00019                 AND        DATA    
-12         0001C                 OR         COUNT    
-13         0001F                 SHIFTL     Y, 4    
-14         00021                 SHIFTR     F, P    bad    
-15         00023                 TIXR       T    
-16         00025                 CLEAR      X    
-17         00027                 JSUB       PRINT    
-18         0002A                 LDT        @#DATA,X    
-19         0002D                 LDX        @#DATA    
-20         00030                 +LDCH      CHARZ,X    
-21         00034                 +STCH      @CHARZ    
-22         00038     HERE:       +LDF       #FLOATZ    
-23         0003C                 +STF       @#FLOATZ    
-24         00040                 +STCH      @CHARZ,X    
-25         00044                 +LDF       #FLOATZ,X    
-26         00048                 +STF       @#FLOATZ,X    
-27         0004C                 MULF       COUNT    random comment    
-28         0004F                 ADDF       RETADR    
-29         00052                 ADD        #2    
-30         00055                 DIV        3    
-31         00058                 MUL        #5    
-32         0005B                 SUB        4    
-33         0005E                 SUBF       =0x45    
-34         00061                 DIVF       =0cdw    
-35         00064                 SUBF       0xf3    
-36         00067                 DIVF       =0xCs    
-37         0006A                 COMPF      DATa    
-38         0006D                 EXTREF     GOTEM    
-39         0006D                 J          GOTEM    
-40         00070                 JLT        LOOP    
-41         00073                 JGT        LOOP    
-42         00076                 +TD        DEVICE    
-43         0007A                 RD         DEVICE    tabs here    
-44         0007D                 +WD        DEVICE    
-45         00081                 FIX        
-46         00082                 FLOAT      
-47         00083                 HIO        
-48         00084                 STB        #FOUR    
-49         00087                 STI        @FOUR    
-50         0008A                 STS        #@FOUR    
-51         0008D                 STT        #ONE,X    
-52         00090                 STX        @ONE,X    
-53         00093                 NORM       
-54         00094                 RMO        B    
-55         00096                 SVC        #HERE    
-56         00098                 SIO        
-57         00099     EQUAL:      EQU        HERE    
-58         00099     ALPHA:      EQU        #1000    
-59         00099     BETA:       EQU        ALPHA    
-60         00099                 ADD        ALPHA-@BETA    
-61         0009C                 ADD        ALPHA+#BETA    
-62         0009F                 ADD        @EQUAL+HERE    
-63         000A2                 ADD        #EQUAL-HERE    
-64         000A5                 ADD        ALPHA-HERE,X    
-65         000A8                 ADD        HERE-ALPHA,X    
-66         000AB                 ADD        ALPHA+HERE    
-67         000AE                 ADD        HERE+ALPHA    
-68         000B1                 ADD        16+HERE    
-69         000B4                 ADD        HERE+#16    
-70         000B7                 ADD        #HERE+ALPHA    
-71         000BA                 TIO        
-72         000BB                 SVC        @ALPHA    
-73         000BD                 LPS        BREAK    
-74         000C0                 SSK        DEVICE    
-75         000C3                 COMPR      A, 5    bad    
-76         000C5                 TIX        COUNT    
-77         000C8                 CLEAR      S    
-78         000CA                 RSUB       
-79         000CD                 LDA        WHAT    
-80         000D0                 STSW       FOUR    
-81         000D3     PRINT:      LDS        LENGTH    
-82         000D6                 STA        RETADR    
-83         000D9                 LDL        CHARZ    
-84         000DC                 RSUB       
-85         000DF                            
-86         000DF     DATA:       BYTE       0Xf1    
-87         000E0     DATA:       BYTE       0XF1    
-88         000E1     DATA:       BYTE       =0XF1    
-89         000E1     DA_2:       BYTE       0XF11    
-90         000E1     DAT3:       BYTE       0XG1    
-91         000E2     DAT4:       BYTE       X'G1'    
-92         000E2     t123456789: BYTE       1    
-93         000E2     GOO:        BYTE       1    
-94         000E2     BA3D:       BYTE       #1    
-95         000E2     Z:          BYTE       20    
-96         000E2     CHARZ:      BYTE       0CA    
-97         000E2     FLOATZ:     BYTE       0C'\"1    dD    
-98         000E5     HABR:       RESW       637    should make anything past use B reg    
-99         0085C     COUNT:      WORD       #1    
-100        0085F     LENGTH:     WORD       4096    
-101        00862     ONE:        RESB       1    
-102        00863     BREAK:      RESB       1911    should make anything past use format 4    
-103        00FDA     DEVICE:     BYTE       0X'\"F8'    
-104        00FDD     ZA:         EQU        ALPHA-BETA    
-105        00FDD     ZB:         EQU        ALPHA+BETA    
-106        00FDD     ZC:         EQU        EQUAL+HERE    
-107        00FDD     ZD:         EQU        eQUAL-HERE    
-108        00FDD     ZE:         EQU        ALPHA-HERE    
-109        00FDD     ZF:         EQU        HERE-ALPHA    
-110        00FDD     ZG:         EQU        ALPHA+HERE    
-111        00FDD     ZH:         EQU        HERE+ALPHA    
-112        00FDD     ZI:         EQU        16+HERE    
-113        00FDD     ZJ:         EQU        HERE+#16    
-114        00FDD     ZK:         EQU        #HERE+ALPHA    
-115        00FDD     ZL:         EQU        
-116        00FDD     TEST:       EQU        heir    
-117        00FDD                 EQU        HERE!    
-118        00FDD                 EQU        #HERE    
-119        00FDD     ZZ:         EQU        =0CABC    
-120        00FDD                 EXTDEF     ZA, ZB,DEVICE, ZD,ZE,ZF,AH,Zz    
-121        00FDD                 EXTDEF     ZG    
-122        00FDD                 EXTREF     OTRFUN,AAA ,AAB    
-123        00FDD                 JSUB       PRINT    
-124        00FE0                 JSUB       TEST    
-125        00FE3                 JSUB       OTRFUN    
-126        00FE6                 +JSUB      OTRFUN    
-127        00FEA                 LDA        OTRFUN    
-128        00FED                 +LDA       TEST    
-129        00FF1                 END        PROG    
+4          00007     [ERROR: Invalid opcode mnemonic: 'BASE'. ]                BASE       LENGTH    
+5          00007                 LDA        DATA,X    
+6          0000A                 COMP       LENGTH    
+7          0000D                 +JEQ       END    
+8          00011     LOOP:       ADDR       A, B    
+9          00013                 SUBR       X,L    
+10         00015                 MULR       S, T    
+11         00017                 DIVR       SW, PC    
+12         00019                 AND        DATA    
+13         0001C                 OR         COUNT    
+14         0001F                 SHIFTL     Y, 4    
+15         00021                 SHIFTR     F, P    bad    
+16         00023                 TIXR       T    
+17         00025                 CLEAR      X    
+18         00027                 JSUB       PRINT    
+19         0002A                 LDT        @#DATA,X    
+20         0002D                 LDX        @#DATA    
+21         00030     [ERROR: 'IDKWHATIMDOINGONTHISLINESPACE' length exceeds 10 characters.]    idkwhatimdoingonthislinespace:            
+22         00030     [ERROR: 'IKCWHATIMDOINGONTHISLINE' length exceeds 10 characters.]    ikcwhatimdoingonthisline:            
+23         00030                 +LDCH      CHARZ,X    
+24         00034                 +STCH      @CHARZ    
+25         00038     HERE:       +LDF       #FLOATZ    
+26         0003C                 +STF       @#FLOATZ    
+27         00040                 +STCH      @CHARZ,X    
+28         00044                 +LDF       #FLOATZ,X    
+29         00048                 +STF       @#FLOATZ,X    
+30         0004C                 MULF       COUNT    random comment    
+31         0004F                 ADDF       RETADR    
+32         00052                 ADD        #2    
+33         00055                 DIV        3    
+34         00058                 MUL        #5    
+35         0005B                 SUB        4    
+36         0005E                 SUBF       =0x45    
+37         00061                 DIVF       =0cdw    
+38         00064                 SUBF       0xf3    
+39         00067                 DIVF       =0xCs    
+40         0006A                 COMPF      DATa    
+41         0006D                 EXTREF     GOTEM    
+42         0006D                 J          GOTEM    
+43         00070                 JLT        LOOP    
+44         00073                 JGT        LOOP    
+45         00076                 +TD        DEVICE    
+46         0007A                 RD         DEVICE    tabs here    
+47         0007D                 +WD        DEVICE    
+48         00081                 FIX        
+49         00082                 FLOAT      
+50         00083                 HIO        
+51         00084                 STB        #FOUR    
+52         00087                 STI        @FOUR    
+53         0008A                 STS        #@FOUR    
+54         0008D                 STT        #ONE,X    
+55         00090                 STX        @ONE,X    
+56         00093                 NORM       
+57         00094                 RMO        B    
+58         00096                 SVC        #HERE    
+59         00098                 SIO        
+60         00099     EQUAL:      EQU        HERE    
+61         00099     ALPHA:      EQU        #1000    
+62         00099     BETA:       EQU        ALPHA    
+63         00099                 ADD        ALPHA-@BETA    
+64         0009C                 ADD        ALPHA+#BETA    
+65         0009F                 ADD        @EQUAL+HERE    
+66         000A2                 ADD        #EQUAL-HERE    
+67         000A5                 ADD        ALPHA-HERE,X    
+68         000A8                 ADD        HERE-ALPHA,X    
+69         000AB                 ADD        ALPHA+HERE    
+70         000AE                 ADD        HERE+ALPHA    
+71         000B1                 ADD        16+HERE    
+72         000B4                 ADD        HERE+#16    
+73         000B7                 ADD        #HERE+ALPHA    
+74         000BA                 TIO        
+75         000BB                 SVC        @ALPHA    
+76         000BD                 LPS        BREAK    
+77         000C0                 SSK        DEVICE    
+78         000C3                 COMPR      A, 5    bad    
+79         000C5                 TIX        COUNT    
+80         000C8                 CLEAR      S    
+81         000CA                 RSUB       
+82         000CD                 LDA        WHAT    
+83         000D0     [ERROR: Invalid opcode mnemonic: 'BAD'. ]                BAD        #3    
+84         000D0                 STSW       FOUR    
+85         000D3     PRINT:      LDS        LENGTH    
+86         000D6                 STA        RETADR    
+87         000D9                 LDL        CHARZ    
+88         000DC                 RSUB       
+89         000DF                            
+90         000DF     DATA:       BYTE       0Xf1    
+91         000E0     DATA:       BYTE       0XF1    
+92         000E1     DATA:       BYTE       =0XF1    
+93         000E1     DA_2:       BYTE       0XF11    
+94         000E1     DAT3:       BYTE       0XG1    
+95         000E2     DAT4:       BYTE       X'G1'    
+96         000E2     [ERROR: '!BAD' must start with a letter.; Symbol '!BAD' contains invalid character '!'. ]    !BAD:       BYTE       d    
+97         000E2     [ERROR: '1BAD' must start with a letter.]    1BAD:       BYTE       =    
+98         000E2     [ERROR: '_GOOD' must start with a letter.]    _GOOD:      BYTE       1    
+99         000E2     t123456789: BYTE       1    
+100        000E2     [ERROR: 'T1234567890' length exceeds 10 characters.]    t1234567890: BYTE       1    
+101        000E2     GOO:        BYTE       1    
+102        000E2     BA3D:       BYTE       #1    
+103        000E2     [ERROR: Symbol 'BA#D' contains invalid character '#'. ]    BA#D:       BYTE       1    
+104        000E2     Z:          BYTE       20    
+105        000E2     CHARZ:      BYTE       0CA    
+106        000E2     FLOATZ:     BYTE       0C'\"1    dD    
+107        000E5     [ERROR: Invalid operand on line: '#4' for RESB]    FOUR:       RESB       #4    
+108        000E5     HABR:       RESW       637    should make anything past use B reg    
+109        0085C     COUNT:      WORD       #1    
+110        0085F     LENGTH:     WORD       4096    
+111        00862     ONE:        RESB       1    
+112        00863     [ERROR: Invalid operand: '#1' for RESW]    RETaDR:     RESW       #1    
+113        00863     BREAK:      RESB       1911    should make anything past use format 4    
+114        00FDA     DEVICE:     BYTE       0X'\"F8'    
+115        00FDD     [ERROR: Invalid operand on line: 'DATA' for RESB]                RESB       DATA    
+116        00FDD     [ERROR: Invalid operand on line: 'HERE-ALPHA' for RESB]                RESB       HERE-ALPHA    
+117        00FDD     [ERROR: Invalid operand on line: 'ALpHA-7777' for RESB]                RESB       ALpHA-7777    
+118        00FDD     ZA:         EQU        ALPHA-BETA    
+119        00FDD     ZB:         EQU        ALPHA+BETA    
+120        00FDD     ZC:         EQU        EQUAL+HERE    
+121        00FDD     ZD:         EQU        eQUAL-HERE    
+122        00FDD     ZE:         EQU        ALPHA-HERE    
+123        00FDD     ZF:         EQU        HERE-ALPHA    
+124        00FDD     ZG:         EQU        ALPHA+HERE    
+125        00FDD     ZH:         EQU        HERE+ALPHA    
+126        00FDD     ZI:         EQU        16+HERE    
+127        00FDD     ZJ:         EQU        HERE+#16    
+128        00FDD     ZK:         EQU        #HERE+ALPHA    
+129        00FDD     ZL:         EQU        
+130        00FDD     TEST:       EQU        heir    
+131        00FDD                 EQU        HERE!    
+132        00FDD                 EQU        #HERE    
+133        00FDD     ZZ:         EQU        =0CABC    
+134        00FDD                 EXTDEF     ZA, ZB,DEVICE, ZD,ZE,ZF,AH,Zz    
+135        00FDD                 EXTDEF     ZG    
+136        00FDD                 EXTREF     OTRFUN,AAA ,AAB    
+137        00FDD                 JSUB       PRINT    
+138        00FE0                 JSUB       TEST    
+139        00FE3                 JSUB       OTRFUN    
+140        00FE6                 +JSUB      OTRFUN    
+141        00FEA                 LDA        OTRFUN    
+142        00FED                 +LDA       TEST    
+143        00FF1                 END        PROG    

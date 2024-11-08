@@ -192,7 +192,7 @@ class AssemblerPass1:
         self.intermediate_file = None
         self.log_file = None
         
-        self.allow_error_lines_in_generated_document = False
+        self.allow_error_lines_in_generated_document = True
         self.stop_on_error = False
         
         
