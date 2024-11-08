@@ -192,7 +192,7 @@ class AssemblerPass1:
         self.intermediate_file = None
         self.log_file = None
         
-        self.allow_error_lines_in_generated_document = True
+        self.allow_error_lines_in_generated_document = False
         self.stop_on_error = False
         
         
@@ -299,24 +299,25 @@ class AssemblerPass1:
             source_line = SourceCodeLine(line_number, line)
             self.process_single_line(source_line)
             
-            #If line has errors, increment a the lines_with_errors counter
+            # If line has errors, increment the lines_with_errors counter
             if source_line.has_errors():
                 lines_with_errors += 1
-                
-            # If allow_error_lines_in_generated_document is False, then stop processing the line if a line has errors
-            if not self.allow_error_lines_in_generated_document and lines_with_errors > 0:
-                line_number -= 1
                 
             # If stop_on_error is True, then stop processing the line if a line has errors
             if self.stop_on_error and lines_with_errors > 0:
                 self.logger.log_action(f"Stopping processing of source code lines after {line_number} lines with errors.")
                 break
             
-            # Print the source line with address and object code
-            print(source_line)
-            
-            # Add line to generated file 
-            self.add_line_to_generated_file(source_line)
+            # If allow_error_lines_in_generated_document is False, then stop processing the line if a line has errors
+            if not source_line.has_errors():
+                print(source_line)
+                self.add_line_to_generated_file(source_line)
+            elif self.allow_error_lines_in_generated_document:
+                print(source_line)
+                self.add_line_to_generated_file(source_line)
+            else:
+                line_number -= 1
+                continue
         
         # Print the length of the program using the location counter
         self.program_length = self.calculate_program_length()
@@ -324,12 +325,9 @@ class AssemblerPass1:
         self.logger.log_action(f"Program length (HEX): {program_length_hex}")
         self.logger.log_action(f"Program length (INT): {self.program_length}")
         
-                
         # Log the end of processing
         self.logger.log_action(f"Finished processing of source code lines. {lines_with_errors} lines had errors.")
         
-        # Mention the number of lines processed, then the number of lines with errors
-        self.logger.log_action(f"Processed {line_number} lines. {lines_with_errors} lines had errors.")
             
 
     def process_single_line(self, source_line: SourceCodeLine):
