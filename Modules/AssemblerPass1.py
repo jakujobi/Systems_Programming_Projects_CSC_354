@@ -319,7 +319,10 @@ class AssemblerPass1:
             self.add_line_to_generated_file(source_line)
         
         # Print the length of the program using the location counter
-        self.logger.log_action(f"Program length: {self.location_counter.get_current_address_int() - self.program_start_address}")
+        self.program_length = self.calculate_program_length()
+        program_length_hex = format(self.program_length, '05X')
+        self.logger.log_action(f"Program length (HEX): {program_length_hex}")
+        self.logger.log_action(f"Program length (INT): {self.program_length}")
         
                 
         # Log the end of processing
@@ -347,7 +350,7 @@ class AssemblerPass1:
             return
 
         # Set address for the line
-        source_line.address = self.location_counter.get_current_address_int()
+        source_line.address = self.location_counter.get_current_address_hex()
         
         # Check for START directive
         if source_line.opcode_mnemonic == "START":
@@ -366,20 +369,6 @@ class AssemblerPass1:
         if source_line.opcode_mnemonic:
             self.process_opcode_field(source_line)
         
-        # Check for errors
-    
-
-        # # Handle directives
-        # self.check_for_directives(source_line, handle_directives=True)
-
-        # # Calculate instruction length
-        # self.calculate_instruction_length(source_line)
-
-        # # Update the symbol table
-        # self.update_symbol_table(source_line)
-
-        # # Update the literal table
-        # self.update_literal_table(source_line)
 
         # if the line is not an error, then add its instruction length to the location counter
         if not source_line.has_errors():
@@ -387,8 +376,6 @@ class AssemblerPass1:
 
 
 
-        # # Check for errors
-        # self.check_for_errors(source_line)
         
     def process_label_field(self, source_line: SourceCodeLine):
         """
@@ -438,13 +425,6 @@ class AssemblerPass1:
         pass
 
 
-    def calculate_instruction_length(self, source_line: SourceCodeLine):
-        """
-        Calculates the instruction length for the source line.
-        """
-        # Calculate instruction length based on opcode and operands
-        pass
-
     def update_symbol_table(self, source_line: SourceCodeLine):
         """
         Updates the symbol table with the source line information.
@@ -459,19 +439,7 @@ class AssemblerPass1:
         # Update literal table
         pass
 
-    def update_source_line(self, source_line: SourceCodeLine):
-        """
-        Updates the source line with address and object code.
-        """
-        # Update source line
-        pass
 
-    def check_for_errors(self, source_line: SourceCodeLine):
-        """
-        Checks for errors in the source line.
-        """
-        # Check for errors
-        pass
 
     def add_line_to_generated_file(self, source_line: SourceCodeLine):
         """
@@ -494,7 +462,7 @@ class AssemblerPass1:
         """
         Calculates the program length.
         """
-        self.program_length = self.location_counter.get_current_address_int() - self.program_start_address
+        return self.location_counter.get_current_address_int() - self.program_start_address
 
     def add_symbol_table(self, add_to_file: bool = False):
         """
