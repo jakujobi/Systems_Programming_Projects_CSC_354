@@ -59,7 +59,8 @@ class LocationCounter:
 
         :return: Current address in hexadecimal.
         """
-        return hex(self.current_address)
+        # return hex(self.current_address)
+        return format(self.current_address, '05X')
     
     def increment_by_decimal(self, increment_value: int):
         """
