@@ -1345,6 +1345,7 @@ class LiteralTableDriver:
         self.literal_table = LiteralTableList(self.log_handler)  # Pass log_handler to LiteralTableList
         self.symbol_table_driver = SymbolTableDriver()  # Use SymbolTableDriver to manage symbol table
         self.file_explorer = FileExplorer()  # File handling for locating files
+        
 
 
     def run(self, expression_file: str = None):
