@@ -652,9 +652,9 @@ class Validator:
 
 class SymbolTableDriver:
     """
-    /********************************************************************
+    /**********************************************************************
     ***  CLASS  : SymbolTableDriver                                     ***
-    *********************************************************************
+    ***********************************************************************
     ***  DESCRIPTION : Manages the high-level logic for file processing ***
     ***  and symbol table management. Handles inserting symbols from    ***
     ***  SYMS.DAT into a symbol table and searching for symbols.        ***
@@ -679,17 +679,17 @@ class SymbolTableDriver:
 
     def process_syms_file(self, file_path):
         """
-        /********************************************************************
+        /**********************************************************************
         ***  FUNCTION : process_syms_file                                   ***
         ***  CLASS  : SymbolTableDriver                                     ***
-        *********************************************************************
+        ***********************************************************************
         ***  DESCRIPTION : Processes the SYMS.DAT file, validating symbols  ***
         ***  and inserting valid symbols into the symbol table. Prints      ***
         ***  a summary of valid and invalid lines processed.                ***
         ***                                                                 ***
         ***  INPUTS :                                                       ***
         ***    - file_path (str): The path to the SYMS.DAT file.            ***
-        ********************************************************************/
+        **********************************************************************/
         """
         try:
             print(f"\nProcessing SYMS.DAT for symbol insertion...\n")
