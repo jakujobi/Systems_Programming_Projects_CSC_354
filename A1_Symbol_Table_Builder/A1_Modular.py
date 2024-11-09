@@ -64,7 +64,8 @@ def main():
             driver.run(search_file)
         else:
             # If no argument provided, fallback to interactive file finding
-            driver.run()
+            File = "SEARCH.TXT"
+            driver.run(File)
     except Exception as e:
         print(f"An unexpected error occurred: {e}")
 
