@@ -37,6 +37,7 @@ repo_home_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.append(repo_home_path)
 
 from Modules.FileExplorer import FileExplorer
+from Modules.ErrorLogHandler import ErrorLogHandler
 
 # Try to import Tkinter for GUI file explorer. If not available, fallback to manual entry.
 try:
@@ -70,7 +71,7 @@ class SymbolData:
     ********************************************************************/
     """
     
-    def __init__(self, symbol, value, rflag, iflag=True, mflag=False):
+    def __init__(self, symbol, value, rflag, iflag=True, mflag=False, address=None):
         """
         /********************************************************************
         ***  FUNCTION : __init__                                            ***
@@ -89,11 +90,15 @@ class SymbolData:
         ***    - mflag (bool, optional): Defaults to False.                 ***
         ********************************************************************/
         """
-        self.symbol = symbol.upper()[:4]  # Only first 4 characters, uppercase
-        self.value = value
-        self.rflag = rflag
-        self.iflag = iflag
-        self.mflag = mflag
+        self.symbol: str = symbol.upper()[:4]  # Only first 4 characters, uppercase
+        self.value: int = value
+        self.rflag: bool = rflag
+        self.iflag: bool = iflag
+        self.mflag: bool = mflag
+        if address is not None:
+            self.address = address
+        else:
+            self.address: int = None
 
 
 class SymbolNode:
@@ -116,7 +121,7 @@ class SymbolNode:
     ********************************************************************/
     """
     # Represents a node in the Binary Search Tree, storing a SymbolData object.
-    def __init__(self, symbol_data):
+    def __init__(self, symbol_data: SymbolData):
         """
         /********************************************************************
         ***  FUNCTION : __init__                                            ***
@@ -131,7 +136,9 @@ class SymbolNode:
         ***    - symbol_data (SymbolData): The symbol's data.               ***
         ********************************************************************/
         """
-        self.symbol_data = symbol_data  # SymbolData object containing symbol info
+        if not isinstance(symbol_data, SymbolData):
+            raise TypeError("symbol_data must be an instance of SymbolData")
+        self.symbol_data: SymbolData = symbol_data  # SymbolData object containing symbol info
         self.left = None  # Left child node
         self.right = None  # Right child node
 
@@ -653,7 +660,7 @@ class SymbolTableDriver:
     ***  SYMS.DAT into a symbol table and searching for symbols.        ***
     ********************************************************************/
     """
-    def __init__(self):
+    def __init__(self, error_log_handler=None):
         """
         /********************************************************************
         ***  FUNCTION : __init__                                            ***
@@ -667,6 +674,7 @@ class SymbolTableDriver:
         self.symbol_table = SymbolTable()
         self.file_explorer = FileExplorer()
         self.validator = Validator()
+        self.error_log_handler = ErrorLogHandler()
 
 
     def process_syms_file(self, file_path):
