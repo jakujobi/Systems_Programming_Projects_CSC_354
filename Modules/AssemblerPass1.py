@@ -195,13 +195,21 @@ class AssemblerPass1:
         self.stop_on_error = False
         
         self.source_lines = []
+        # self.source_code_line = SourceCodeLine()
         
         self.FileExplorer = FileExplorer()
-        self.symbol_table = SymbolTableDriver()
-        self.literal_table = LiteralTableDriver()
-        self.opcode_handler = OpcodeHandler()
         self.logger = logger or ErrorLogHandler()
-        self.location_counter = LocationCounter(opcode_handler=self.opcode_handler, symbol_table=self.symbol_table, logger=self.logger)
+        
+        self.opcode_handler = OpcodeHandler()
+        self.location_counter = LocationCounter(opcode_handler=self.opcode_handler, logger=self.logger)
+
+        # Symbol Table
+        self.symbol_table = SymbolTable()
+        self.symbol_table_driver = SymbolTableDriver(logger=self.logger)
+
+        # Literal Table
+        self.literal_table_driver = LiteralTableDriver(log_handler=self.logger)
+        self.literal_table = LiteralTableList(log_handler=self.logger)
         
         self.program_name = None
         self.program_start_address = 0
@@ -221,6 +229,12 @@ class AssemblerPass1:
         
         # Process all the source code lines
         self.process_source_lines(self.source_lines)
+        
+        # Display the symbol table
+        self.display_symbol_table()
+        # add symbol table to the output
+        self.add_symbol_table_to_output_file()
+        
         
         # Print the length of the program using the location counter
         self.program_length = self.calculate_program_length()
@@ -351,19 +365,42 @@ class AssemblerPass1:
             self.location_counter.increment_by_decimal(source_line.instruction_length)
 
 
-
-        
     def process_label_field(self, source_line: SourceCodeLine):
         """
-        Processes the label in the source line.
+        Processes the label in the source line by inserting it into the symbol table.
+
+        :param source_line: The current SourceCodeLine being processed.
         """
-        # Process the label
-        pass
+        label = source_line.label
+        address = self.location_counter.get_current_address_int()
+        rflag = True  # Assuming all symbols are relocatable; adjust as needed
+
+        # Validate the symbol using Validator
+        validator = Validator()
+        symbol_validation = validator.validate_symbol(label)
+        if symbol_validation != "Success":
+            self.logger.log_error(f"{symbol_validation} in line: '{source_line.line_text}'")
+            return
+
+        # Create a SymbolData instance
+        symbol_data = SymbolData(symbol=label, value=address, rflag=rflag)
+
+        # Insert the symbol into the symbol table
+        try:
+            self.symbol_table.insert(symbol_data)
+            _action = f"Inserted symbol '{label}' at address {hex(address)} into the symbol table."
+            self.logger.log_action(_action, False)
+        except Exception as e:
+            self.logger.log_error(f"Error inserting symbol '{label}': {e}")
+
+
     
     def process_opcode_field(self, source_line: SourceCodeLine):
         """
         Processes the opcode in the source line.
         """
+        _action = f"Processing opcode '{source_line.opcode_mnemonic}' in line {source_line.line_number}."
+        self.logger.log_action(_action, False)
         _opcode_mnemonic = source_line.opcode_mnemonic
         # Check if the opcode is a valid mnemonic
         if self.opcode_handler.is_opcode_mnemonic(_opcode_mnemonic):
@@ -373,6 +410,8 @@ class AssemblerPass1:
                 return
             #Else, process the opcode
             self.process_opcode(source_line)
+        _action = f"Processed opcode '{source_line.opcode_mnemonic}' in line {source_line.line_number}."
+        self.logger.log_action(_action, False)
         # Process the opcode
         pass
     
@@ -382,6 +421,8 @@ class AssemblerPass1:
         """
         # Process the opcode
         # get the opcode format
+        _action = f"Processing opcode '{source_line.opcode_mnemonic}' in line {source_line.line_number}."
+        self.logger.log_action(_action, False)
         try:
             instr_format = self.opcode_handler.get_format(source_line.opcode_mnemonic)
             # add the instruction length to the source line
@@ -392,6 +433,26 @@ class AssemblerPass1:
             source_line.add_error(Error)
             raise ValueError(Error)
         pass
+
+    def process_operands(self, source_line: SourceCodeLine):
+        """
+        Processes operands to detect and handle literals.
+
+        :param source_line: The current SourceCodeLine being processed.
+        """
+        _action = f"Processing operands in line {source_line.line_number}."
+        self.logger.log_action(_action, False)
+        operands = source_line.operands
+        if not operands:
+            return
+
+        # Split operands by comma to handle multiple operands
+        operand_list = [operand.strip() for operand in operands.split(',')]
+        for operand in operand_list:
+            if operand.startswith('='):
+                self.process_literal(operand)
+        _action = f"Processed operands in line {source_line.line_number}."
+        self.logger.log_action(_action, False)
 
     def add_symbol_to_symbol_table(self, source_line: SourceCodeLine):
         """
@@ -415,19 +476,29 @@ class AssemblerPass1:
         # Update literal table
         pass
 
+    def display_symbol_table(self):
+        """
+        Displays the contents of the symbol table.
+        """
+        _action = "Displaying Symbol Table:"
+        self.logger.log_action(_action, False)
+        self.symbol_table.view()
 
 
     def add_line_to_generated_file(self, source_line: SourceCodeLine):
         """
         Adds the source line to the intermediate file, including errors on the same line.
         """
+        _action = f"Adding line {source_line.line_number} to the intermediate file."
+        self.logger.log_action(_action, False)
         if self.intermediate_file:
             try:
                 line_to_write = str(source_line)
                 
                 # Write the line to the intermediate file
                 self.intermediate_file.write(line_to_write + "\n")
-                self.logger.log_action(f"Added line {source_line.line_number} to the intermediate file.", False)
+                _action = f"Added line {source_line.line_number} to the intermediate file."
+                self.logger.log_action(_action, False)
             except Exception as e:
                 self.logger.log_error(f"An error occurred while writing to the intermediate file: {e}")
         else:
@@ -438,16 +509,29 @@ class AssemblerPass1:
         """
         Calculates the program length.
         """
-        return self.location_counter.get_current_address_int() - self.program_start_address
+        try:
+            return self.location_counter.get_current_address_int() - self.program_start_address
+        except ValueError:
+            Error = f"Error calculating program length."
+            self.logger.log_error(Error)
+            raise ValueError(Error)
 
-    def add_symbol_table(self, add_to_file: bool = False):
+    def add_symbol_table_to_output_file(self):
         """
         Adds the symbol table to the output.
         """
-        # Display and write the symbol table
-        pass
+        # add symbol table to the output
+        self.logger.log_action("Adding symbol table to the output.")
+        if self.symbol_table:
+            try:
+                _symbol_table = str(self.symbol_table)
+                self.intermediate_file.write(_symbol_table)
+            except Exception as e:
+                self.logger.log_error(f"An error occurred while writing the symbol table to the output: {e}")
+        else:
+            self.logger.log_error("Symbol table is empty.")
 
-    def add_literal_table(self, add_to_file: bool = False):
+    def add_literal_table(self):
         """
         Adds the literal table to the output.
         """
@@ -613,6 +697,21 @@ class AssemblerPass1:
         """
         expression = source_line.operands
 
+    def directive_EXTREF(self, source_line: SourceCodeLine):
+        """
+        Handles the EXTREF directive.
+        """
+        # does not affect location counter
+        #set instruction length to 0
+        source_line.instruction_length = 0
+        pass
+    
+    def directive_EXTDEF(self, source_line: SourceCodeLine):
+        """
+        Handles the EXTDEF directive.
+        """
+        
+        pass
     # endregion
 
 
