@@ -18,7 +18,7 @@ class LocationCounter:
     Keeps track of the current address and increments it based on instructions and directives.
     """
 
-    def __init__(self, start_address=0, opcode_handler=None, symbol_table=None, logger=None):
+    def __init__(self, start_address=0, opcode_handler=None, logger=None):
         """
         Initializes the LocationCounter.
 
@@ -31,7 +31,6 @@ class LocationCounter:
         self.current_address = start_address
         self.program_length = 0
         self.opcode_handler = opcode_handler
-        self.symbol_table = symbol_table
         self.logger = logger or ErrorLogHandler()
 
     def set_start_address(self, address):
@@ -84,53 +83,13 @@ class LocationCounter:
         try:
             increment_value = increment_value.strip()
             self.current_address += int(increment_value, 16)
-            self.logger.log_action(f"LOCCTR incremented by hex '{increment_value}' to {self.current_address:X}", False)
+            _action = f"LOCCTR incremented by hex '{increment_value}' to {self.current_address:X}"
+            self.logger.log_action(_action, False)
         except ValueError:
             Error = f"Invalid increment value '{increment_value}'"
             self.logger.log_error(Error)
             raise ValueError(Error)
         
-
-    # def handle_directive(self, directive, operands):
-    #     """
-    #     Handles directives that affect the location counter differently.
-
-    #     :param directive: The directive opcode (e.g., BYTE, WORD, RESB).
-    #     :param operands: The operands associated with the directive.
-    #     :return: The increment value as an integer.
-    #     """
-    #     elif directive == 'RESB':
-    #         try:
-    #             n = int(operands)
-    #             return n
-    #         except ValueError:
-    #             raise ValueError(f"Invalid operand '{operands}' for RESB")
-    #     elif directive == 'BYTE':
-    #         return self.calculate_byte_size(operands)
-    #     elif directive == 'EQU':
-    #         # EQU may require expression evaluation
-    #         self.handle_equ_directive(operands)
-    #         return 0
-    #     elif directive == 'ORG':
-    #         self.handle_org_directive(operands)
-    #         return 0
-    #     else:
-    #         raise ValueError(f"Unknown directive '{directive}'")
-
-
-    # def update_symbol_table(self, label):
-    #     """
-    #     Updates the symbol table with the label and current address.
-
-    #     :param label: The label to be added to the symbol table.
-    #     """
-    #     if self.symbol_table.search(label):
-    #         error_msg = f"Duplicate label '{label}' found."
-    #         self.logger.log_error(error_msg)
-    #         raise ValueError(error_msg)
-    #     else:
-    #         self.symbol_table.insert_symbol(label, self.current_address)
-    #         self.logger.log_action(f"Added label '{label}' with address {self.current_address:X}")
 
     # def handle_equ_directive(self, operands):
     #     """
