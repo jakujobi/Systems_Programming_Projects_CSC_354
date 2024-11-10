@@ -1,0 +1,196 @@
+1          00000     PROG:       START      1000    
+2          003E8     FIRST:      STL        ReTADR    first comment    
+3          003EB                 LDB        #LENGTH    
+4          003EE     [ERROR: Invalid opcode mnemonic: 'BASE'. ]                BASE       LENGTH    
+5          003EE                 LDA        DATA,X    
+6          003F1                 COMP       LENGTH    
+7          003F4                 +JEQ       END    
+8          003F8     LOOP:       ADDR       A, B    
+9          003FA                 SUBR       X,L    
+10         003FC                 MULR       S, T    
+11         003FF                 DIVR       SW, PC    
+12         00401                 AND        DATA    
+13         00404                 OR         COUNT    
+14         00407                 SHIFTL     Y, 4    
+15         00409                 SHIFTR     F, P    bad    
+16         0040B                 TIXR       T    
+17         0040D                 CLEAR      X    
+18         0040F                 JSUB       PRINT    
+19         00412                 LDT        @#DATA,X    
+20         00415                 LDX        @#DATA    
+21         00418     [ERROR: 'IDKWHATIMDOINGONTHISLINESPACE' length exceeds 10 characters.]    idkwhatimdoingonthislinespace:            
+22         00418     [ERROR: 'IKCWHATIMDOINGONTHISLINE' length exceeds 10 characters.]    ikcwhatimdoingonthisline:            
+23         00418                 +LDCH      CHARZ,X    
+24         0041C                 +STCH      @CHARZ    
+25         00420     HERE:       +LDF       #FLOATZ    
+26         00424                 +STF       @#FLOATZ    
+27         00428                 +STCH      @CHARZ,X    
+28         0042C                 +LDF       #FLOATZ,X    
+29         00430                 +STF       @#FLOATZ,X    
+30         00434                 MULF       COUNT    random comment    
+31         00437                 ADDF       RETADR    
+32         0043A                 ADD        #2    
+33         0043D                 DIV        3    
+34         00440                 MUL        #5    
+35         00443                 SUB        4    
+36         00446                 SUBF       =0x45    
+37         00449                 DIVF       =0cdw    
+38         0044C                 SUBF       0xf3    
+39         0044F                 DIVF       =0xCs    
+40         00452                 COMPF      DATa    
+41         00455                 EXTREF     GOTEM    
+42         00455                 J          GOTEM    
+43         00458                 JLT        LOOP    
+44         0045B                 JGT        LOOP    
+45         0045E                 +TD        DEVICE    
+46         00462                 RD         DEVICE    tabs here    
+47         00465                 +WD        DEVICE    
+48         00469                 FIX        
+49         0046A                 FLOAT      
+50         0046B                 HIO        
+51         0046C                 STB        #FOUR    
+52         0046F                 STI        @FOUR    
+53         00472                 STS        #@FOUR    
+54         00475                 STT        #ONE,X    
+55         00478                 STX        @ONE,X    
+56         0047B                 NORM       
+57         0047E                 RMO        B    
+58         00480                 SVC        #HERE    
+59         00483                 SIO        
+60         00484     [ERROR: Invalid expression for EQU directive: 'HERE']    EQUAL:      EQU        HERE    
+61         00484     [ERROR: Invalid expression for EQU directive: '#1000']    ALPHA:      EQU        #1000    
+62         00484     [ERROR: Invalid expression for EQU directive: 'ALPHA']    BETA:       EQU        ALPHA    
+63         00484                 ADD        ALPHA-@BETA    
+64         00487                 ADD        ALPHA+#BETA    
+65         0048A                 ADD        @EQUAL+HERE    
+66         0048D                 ADD        #EQUAL-HERE    
+67         00490                 ADD        ALPHA-HERE,X    
+68         00493                 ADD        HERE-ALPHA,X    
+69         00496                 ADD        ALPHA+HERE    
+70         00499                 ADD        HERE+ALPHA    
+71         0049C                 ADD        16+HERE    
+72         0049F                 ADD        HERE+#16    
+73         004A2                 ADD        #HERE+ALPHA    
+74         004A5                 TIO        
+75         004A6                 SVC        @ALPHA    
+76         004A9                 LPS        BREAK    
+77         004AC                 SSK        DEVICE    
+78         004AF                 COMPR      A, 5    bad    
+79         004B1                 TIX        COUNT    
+80         004B4                 CLEAR      S    
+81         004B6                 RSUB       
+82         004B9                 LDA        WHAT    
+83         004BC     [ERROR: Invalid opcode mnemonic: 'BAD'. ]                BAD        #3    
+84         004BC                 STSW       FOUR    
+85         004BF     PRINT:      LDS        LENGTH    
+86         004C2                 STA        RETADR    
+87         004C5                 LDL        CHARZ    
+88         004C8                 RSUB       
+89         004CB                            
+90         004CB     DATA:       BYTE       0Xf1    
+91         004CC     DATA:       BYTE       0XF1    
+92         004CD     DATA:       BYTE       =0XF1    
+93         004CD     DA_2:       BYTE       0XF11    
+94         004CD     DAT3:       BYTE       0XG1    
+95         004CE     DAT4:       BYTE       X'G1'    
+96         004CE     [ERROR: '!BAD' must start with a letter.; Label '!BAD' contains invalid character '!'. ]    !BAD:       BYTE       d    
+97         004CE     [ERROR: '1BAD' must start with a letter.]    1BAD:       BYTE       =    
+98         004CE     [ERROR: '_GOOD' must start with a letter.]    _GOOD:      BYTE       1    
+99         004CE     t123456789: BYTE       1    
+100        004CE     [ERROR: 'T1234567890' length exceeds 10 characters.]    t1234567890: BYTE       1    
+101        004CE     GOO:        BYTE       1    
+102        004CE     BA3D:       BYTE       #1    
+103        004CE     [ERROR: Label 'BA#D' contains invalid character '#'. ]    BA#D:       BYTE       1    
+104        004CE     Z:          BYTE       20    
+105        004CE     CHARZ:      BYTE       0CA    
+106        004CE     FLOATZ:     BYTE       0C'\"1    dD    
+107        004D1     [ERROR: Invalid operand on line: '#4' for RESB]    FOUR:       RESB       #4    
+108        004D1     HABR:       RESW       637    should make anything past use B reg    
+109        00C48     COUNT:      WORD       #1    
+110        00C4B     LENGTH:     WORD       4096    
+111        00C4E     ONE:        RESB       1    
+112        00C4F     [ERROR: Invalid operand: '#1' for RESW]    RETaDR:     RESW       #1    
+113        00C4F     BREAK:      RESB       1911    should make anything past use format 4    
+114        013C6     DEVICE:     BYTE       0X'\"F8'    
+115        013C9     [ERROR: Invalid operand on line: 'DATA' for RESB]                RESB       DATA    
+116        013C9     [ERROR: Invalid operand on line: 'HERE-ALPHA' for RESB]                RESB       HERE-ALPHA    
+117        013C9     [ERROR: Invalid operand on line: 'ALpHA-7777' for RESB]                RESB       ALpHA-7777    
+118        013C9     [ERROR: Invalid expression for EQU directive: 'ALPHA-BETA']    ZA:         EQU        ALPHA-BETA    
+119        013C9     [ERROR: Invalid expression for EQU directive: 'ALPHA+BETA']    ZB:         EQU        ALPHA+BETA    
+120        013C9     [ERROR: Invalid expression for EQU directive: 'EQUAL+HERE']    ZC:         EQU        EQUAL+HERE    
+121        013C9     [ERROR: Invalid expression for EQU directive: 'eQUAL-HERE']    ZD:         EQU        eQUAL-HERE    
+122        013C9     [ERROR: Invalid expression for EQU directive: 'ALPHA-HERE']    ZE:         EQU        ALPHA-HERE    
+123        013C9     [ERROR: Invalid expression for EQU directive: 'HERE-ALPHA']    ZF:         EQU        HERE-ALPHA    
+124        013C9     [ERROR: Invalid expression for EQU directive: 'ALPHA+HERE']    ZG:         EQU        ALPHA+HERE    
+125        013C9     [ERROR: Invalid expression for EQU directive: 'HERE+ALPHA']    ZH:         EQU        HERE+ALPHA    
+126        013C9     [ERROR: Invalid expression for EQU directive: '16+HERE']    ZI:         EQU        16+HERE    
+127        013C9     [ERROR: Invalid expression for EQU directive: 'HERE+#16']    ZJ:         EQU        HERE+#16    
+128        013C9     [ERROR: Invalid expression for EQU directive: '#HERE+ALPHA']    ZK:         EQU        #HERE+ALPHA    
+129        013C9     [ERROR: Invalid expression for EQU directive: '']    ZL:         EQU        
+130        013C9     [ERROR: Invalid expression for EQU directive: 'heir']    TEST:       EQU        heir    
+131        013C9     [ERROR: Invalid expression for EQU directive: 'HERE!']                EQU        HERE!    
+132        013C9     [ERROR: Invalid expression for EQU directive: '#HERE']                EQU        #HERE    
+133        013C9     [ERROR: Invalid expression for EQU directive: '=0CABC']    ZZ:         EQU        =0CABC    
+134        013C9                 EXTDEF     ZA, ZB,DEVICE, ZD,ZE,ZF,AH,Zz    
+135        013C9                 EXTDEF     ZG    
+136        013C9                 EXTREF     OTRFUN,AAA ,AAB    
+137        013C9                 JSUB       PRINT    
+138        013CC                 JSUB       TEST    
+139        013CF                 JSUB       OTRFUN    
+140        013D2                 +JSUB      OTRFUN    
+141        013D6                 LDA        OTRFUN    
+142        013D9                 +LDA       TEST    
+143        013DD                 END        PROG    
+
+
+
+______________________________________________
+Symbol Table:
+______________________________________________
+Symbol     Value      RFlag  IFlag  MFlag 
+______________________________________________
+ALPH       00484      1      1      0     
+BA3D       004CE      1      1      0     
+BETA       00484      1      1      0     
+BREA       00C4F      1      1      0     
+CHAR       004CE      1      1      0     
+COUN       00C48      1      1      0     
+DAT3       004CD      1      1      0     
+DAT4       004CE      1      1      0     
+DATA       004CB      1      1      1     
+DA_2       004CD      1      1      0     
+DEVI       013C6      1      1      0     
+EQUA       00484      1      1      0     
+FIRS       003E8      1      1      0     
+FLOA       004CE      1      1      0     
+FOUR       004D1      1      1      0     
+GOO        004CE      1      1      0     
+HABR       004D1      1      1      0     
+HERE       00420      1      1      0     
+LENG       00C4B      1      1      0     
+LOOP       003F8      1      1      0     
+ONE        00C4E      1      1      0     
+PRIN       004BF      1      1      0     
+PROG       003E8      1      1      0     
+RETA       00C4F      1      1      0     
+T123       004CE      1      1      0     
+TEST       013C9      1      1      0     
+Z          004CE      1      1      0     
+ZA         013C9      1      1      0     
+ZB         013C9      1      1      0     
+ZC         013C9      1      1      0     
+ZD         013C9      1      1      0     
+ZE         013C9      1      1      0     
+ZF         013C9      1      1      0     
+ZG         013C9      1      1      0     
+ZH         013C9      1      1      0     
+ZI         013C9      1      1      0     
+ZJ         013C9      1      1      0     
+ZK         013C9      1      1      0     
+ZL         013C9      1      1      0     
+ZZ         013C9      1      1      0     
+______________________________________________
+Literal table is empty.
+
+Program Length (INT): 4085
+Program Length (HEX): 00FF5
