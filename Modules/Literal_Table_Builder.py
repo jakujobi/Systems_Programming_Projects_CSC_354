@@ -258,19 +258,19 @@ class LiteralTableList:
 
                     # Check if a literal with the same value already exists
         if self.exists_by_value(literal_data.value, literal_data.name):
-            self.log_handler.log_action(f"Literal '{literal_data.name}' with value '{literal_data.value}' already exists. Skipping insertion.")
+            self.log_handler.log_action(f"Literal '{literal_data.name}' with value '{literal_data.value}' already exists. Skipping insertion.", False)
             return
     
         new_node = LiteralNode(literal_data)
         if self.head is None:
             self.head = new_node
-            self.log_handler.log_action(f"Inserted literal '{literal_data.name}' as head.")
+            self.log_handler.log_action(f"Inserted literal '{literal_data.name}' as head.", False)
         else:
             current = self.head
             while current.next is not None:
                 current = current.next
             current.next = new_node
-            self.log_handler.log_action(f"Inserted literal '{literal_data.name}' into the table.")
+            self.log_handler.log_action(f"Inserted literal '{literal_data.name}' into the table.", False)
 
 
     def exists_by_value(self, value: str, name: str) -> bool:
@@ -386,10 +386,10 @@ class LiteralTableList:
         current = self.head
         while current is not None:
             if current.literal_data.name == literal_name:
-                self.log_handler.log_action(f"Found literal '{literal_name}' in the table.")
+                self.log_handler.log_action(f"Found literal '{literal_name}' in the table.", False)
                 return current.literal_data
             current = current.next
-        self.log_handler.log_action(f"Literal '{literal_name}' not found in the table.")
+        self.log_handler.log_action(f"Literal '{literal_name}' not found in the table.", False)
         return None
 
 
@@ -426,7 +426,7 @@ class LiteralTableList:
 
         while current:
             current.literal_data.address = current_address
-            self.log_handler.log_action(f"Assigned address {current_address} to literal '{current.literal_data.name}'.")
+            self.log_handler.log_action(f"Assigned address {current_address} to literal '{current.literal_data.name}'.", False)
             current_address += 1  # Increment address by 1 regardless of length
             current = current.next
 
@@ -545,7 +545,7 @@ class ExpressionParser:
     """
 
 
-    def __init__(self, expressions_lines, literal_table, log_handler):
+    def __init__(self, expressions_lines, literal_table, log_handler, hex_literal_prefix=None, character_literal_prefix='=0C'):
         """
         /***************************************************************************************
         ***  METHOD : __init__                                                               ***
@@ -571,6 +571,8 @@ class ExpressionParser:
         self.literal_table = literal_table
         self.log_handler = log_handler
         self.invalid_literals_set = set()  # Track invalid literals
+        self.hex_literal_prefix = hex_literal_prefix or '=0X'
+        self.character_literal_prefix = character_literal_prefix or '=0C'
 
 
     def parse_all(self):
@@ -590,7 +592,7 @@ class ExpressionParser:
                 if parsed_expr.get('error'):
                     self.log_handler.log_error(parsed_expr['error'], context_info=parsed_expr['original_expression'])
                 else:
-                    self.log_handler.log_action(f"Parsed expression: {parsed_expr['original_expression']}")
+                    self.log_handler.log_action(f"Parsed expression: {parsed_expr['original_expression']}", False)
                 self.parsed_expressions.append(parsed_expr)
 
  
@@ -729,24 +731,37 @@ class ExpressionParser:
 
         if not literal:
             try:
-                # Check for illegal character literal format =C'123'
-                if literal_name.upper().startswith("=C'"):
-                    raise ValueError(f"Illegal literal format: {literal_name}")
+                #check if the literal does not start with =0C or =0X or =0c or =0x
+                if not literal_name.upper().startswith("=0C") and not literal_name.upper().startswith("=0X"):
+                    _error_message = f"Invalid literal format: {literal_name}"
+                    self.log_handler.log_error(_error_message)
+                    raise ValueError(_error_message)
+                # # Check for illegal character literal format =C'123'
+                # if literal_name.upper().startswith("=C"):
+                #     raise ValueError(f"Illegal literal format: {literal_name}")
 
                 # Handle hexadecimal literals
-                if literal_name.upper().startswith("=0X"):
+                # Check if it starts with hex_literal_prefix
+                if literal_name.upper().startswith(self.hex_literal_prefix):
                     literal_value = literal_name[3:].upper()
                     if not all(c in '0123456789ABCDEFabcdef' for c in literal_value):
+                        _error_message = f"Invalid hexadecimal value: {literal_value}"
+                        self.log_handler.log_error(_error_message)
                         raise ValueError(f"Invalid hexadecimal value: {literal_value}")
                     if len(literal_value) % 2 != 0:
-                        raise ValueError(f"Hexadecimal value length is not valid (must be even): {literal_value}")
+                        _error_message = f"Hexadecimal value length is not valid (must be even): {literal_value}"
+                        self.log_handler.log_error(_error_message)
+                        raise ValueError(_error_message)
                     literal_length = len(literal_value) // 2  # Two characters per byte
 
                 # Handle character literals
-                elif literal_name.upper().startswith("=0C"):
+                # Check if it starts with character_literal_prefix
+                elif literal_name.upper().startswith(self.character_literal_prefix):
                     char_sequence = literal_name[3:]
                     if len(char_sequence) == 0:
-                        raise ValueError(f"Character literal is empty: {literal_name}")
+                        _error_message = f"Character literal is empty: {literal_name}"
+                        self.log_handler.log_error(_error_message)
+                        raise ValueError(_error_message)
                     literal_value = ''.join(f"{ord(c):02X}" for c in char_sequence)
                     literal_length = len(char_sequence)
 
@@ -758,7 +773,7 @@ class ExpressionParser:
                 self.literal_table.insert(new_literal)
 
                 parsed_expr['operand1'] = literal_name
-                self.log_handler.log_action(f"Inserted new literal '{literal_name}'")
+                self.log_handler.log_action(f"Inserted new literal '{literal_name}'", False)
                 return None  # Skip further processing for valid literals
 
             except ValueError as e:
@@ -771,7 +786,7 @@ class ExpressionParser:
                     return parsed_expr  # Return the invalid literal as an error
 
         parsed_expr['operand1'] = literal_name
-        self.log_handler.log_action(f"Used existing literal '{literal_name}'")
+        self.log_handler.log_action(f"Used existing literal '{literal_name}'", False)
         return parsed_expr
 
 
@@ -790,6 +805,7 @@ class ExpressionParser:
 
         Split and assign operands to the parsed expression. Identifies the operator (`+`, `-`) and assigns operands.
         """
+        self.log_handler.log_action(f"Parsing operands from line: {line}", False)
         if '+' in line:
             parsed_expr['operator'] = '+'
             operands = line.split('+')
@@ -914,7 +930,7 @@ class ExpressionEvaluator:
                 if evaluated_expr.get('error'):
                     self.log_handler.log_error(evaluated_expr['error'], context_info=parsed_expr['original_expression'])
                 else:
-                    self.log_handler.log_action(f"Evaluated expression: {parsed_expr['original_expression']}")
+                    self.log_handler.log_action(f"Evaluated expression: {parsed_expr['original_expression']}", False)
                 self.evaluated_expressions.append(evaluated_expr)
 
 
@@ -1341,10 +1357,10 @@ class LiteralTableDriver:
 
         Initialize the LiteralTableDriver with all necessary components.
         """
-        self.log_handler = ErrorLogHandler()  # Combined error and action logging
-        self.literal_table = LiteralTableList(self.log_handler)  # Pass log_handler to LiteralTableList
-        self.symbol_table_driver = SymbolTableDriver()  # Use SymbolTableDriver to manage symbol table
-        self.file_explorer = FileExplorer()  # File handling for locating files
+        self.log_handler = log_handler or ErrorLogHandler()  # Error log handler
+        self.literal_table = literal_table or LiteralTableList(self.log_handler)  # Pass log_handler to LiteralTableList
+        self.symbol_table_driver = symbol_table_driver or SymbolTableDriver()  # Use SymbolTableDriver to manage symbol table
+        self.file_explorer = file_explorer or FileExplorer()  # File handling for locating files
         
 
 
