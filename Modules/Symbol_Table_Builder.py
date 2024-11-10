@@ -190,11 +190,13 @@ class SymbolTable:
         result = [f"\n\n\n{divider}\nSymbol Table:\n{divider}"]
         result.append(f"{'Symbol':<10} {'Value':<10} {'RFlag':<6} {'IFlag':<6} {'MFlag':<6}")
         result.append(f"{divider}")
+    
         
         for sym in symbols:
-            result.append(f"{sym.symbol:<10} {sym.value:<10} {int(sym.rflag):<6} {int(sym.iflag):<6} {int(sym.mflag):<6}")
+            hex_address = format(sym.value, '05X') if sym.value is not None else "None"
+            result.append(f"{sym.symbol:<10} {hex_address:<10} {int(sym.rflag):<6} {int(sym.iflag):<6} {int(sym.mflag):<6}")
         
-        result.append(divider)
+        result.append(f"{divider}\n")
         return "\n".join(result)
 
     def _collect_symbols(self, node, symbols):
