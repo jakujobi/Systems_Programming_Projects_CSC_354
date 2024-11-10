@@ -23,176 +23,30 @@ class AssemblerPass1:
     AssemblerPass1 handles the first pass of the SIC/XE assembler.
     It processes the source code, builds the symbol table, and computes addresses.
     """
-    # region Validation
-    # def validate_source_line(self, line: SourceCodeLine, error_list: list = None) -> bool:
-    #     """
-    #     Validates a single line of source code.
-    #     """
-    #     Errors = []
-    #     self.valid_label(line.label, Errors)
-    #     self.valid_opcode_mnemonic(line.opcode_mnemonic, Errors)
-    #     self.check_if_only_operand_on_line(line, Errors)
-        
-    #     if Errors:
-    #         if error_list:
-    #             error_list.extend(Errors)
-    #         # Add the errors to the SourceCodeLine instance
-    #         line.add_error(Errors)
-    #         return False
-    #     return True
-    
-    def valid_label(self, label: str, error_list: list = None) -> bool:
-        """
-        Validates a label based on the following rules:
-        - Must be at most 10 characters.
-        - Must start with a letter.
-        - Cannot be just an underscore.
-        - Can contain only letters, digits, and underscores.
-        """
-        label = label.strip().rstrip(":").upper()
-
-        Errors = []
-        # Check if the label length exceeds 10 characters
-        if len(label) > 10:
-            Errors.append(f"'{label}' length exceeds 10 characters.")
-            self.logger.log_error(f"Label '{label}' length exceeds 10 characters.")
-
-        # Check if the label starts with a letter
-        if label and not label[0].isalpha():
-            Errors.append(f"'{label}' must start with a letter.")
-            self.logger.log_error(f"Label '{label}' must start with a letter.")
-        
-        # Check if the entire label is "_"
-        if label == "_":
-            Errors.append(f"'{label}' cannot be an underscore ('_') only.")
-            self.logger.log_error(f"Label '{label}' cannot be an underscore ('_') only.")
-            return False
-
-        # Check for invalid characters
-        for char in label:
-            if not (char.isalnum() or char == '_'):
-                Errors.append(f"Symbol '{label}' contains invalid character '{char}'.")
-                self.logger.log_error(f"Symbol '{label}' contains invalid character '{char}'.")
-
-        # Check if there are any errors
-        if Errors:
-            if error_list:
-                error_list.extend(Errors)
-            return False
-        return True
-    
-    def valid_line(self, line: SourceCodeLine) -> bool:
-        """
-        Validates a label based on the following rules:
-        - Must be at most 10 characters.
-        - Must start with a letter.
-        - Cannot be just an underscore.
-        - Can contain only letters, digits, and underscores.
-        """
-        label = line.label.strip().rstrip(":").upper()
-
-        Errors = []
-        # Check if the label length exceeds 10 characters
-        if len(label) > 10:
-            Error = f"'{label}' length exceeds 10 characters."
-            Errors.append(Error)
-            line.add_error(Error)
-            self.logger.log_error(Error)
-
-        # Check if the label starts with a letter
-        if label and not label[0].isalpha():
-            Error = f"'{label}' must start with a letter."
-            Errors.append(Error)
-            line.add_error(Error)
-            self.logger.log_error(Error)
-        
-        # Check if the entire label is "_"
-        if label == "_":
-            Error = f"'{label}' cannot be an underscore ('_') only."
-            Errors.append(Error)
-            line.add_error(Error)
-            self.logger.log_error(Error)
-            return False
-
-        # Check for invalid characters
-        for char in label:
-            if not (char.isalnum() or char == '_'):
-                Error = f"Symbol '{label}' contains invalid character '{char}'. "
-                Errors.append(Error)
-                line.add_error(Error)
-                self.logger.log_error(Error)
-
-        #validate opcode mnemonic
-        # check if opcode mnemonic is empty
-        if line.opcode_mnemonic:
-            if not self.opcode_handler.is_opcode_mnemonic(line.opcode_mnemonic):
-                Error = f"Invalid opcode mnemonic: '{line.opcode_mnemonic}'. "
-                Errors.append(Error)
-                line.add_error(Error)
-                self.logger.log_error(Error)
-        
-        # check if only operand on line
-        if line.operands:
-            if line.label == "" and line.opcode_mnemonic == "" and line.operands != "" and not line.is_empty_line and not line.is_comment:
-                Error = f"Line '{line.line_number}' has only an operand."
-                Errors.append(Error)
-                line.add_error(Error)
-                self.logger.log_error(Error)
-                
-        # check if error list is not empty
-        if Errors:
-            return False
-        return True
-
-    def valid_opcode_mnemonic(self, mnemonic: str, error_list: list = None) -> bool:
-        """
-        Validates an opcode mnemonic based on the SIC/XE instruction set.
-        """
-        Errors = []
-        if not self.opcode_handler.is_opcode_mnemonic(mnemonic):
-            Errors.append(f"Invalid opcode mnemonic: '{mnemonic}'.")
-            self.logger.log_error(f"Invalid opcode mnemonic: '{mnemonic}'.")
-        
-        if Errors:
-            if error_list:
-                error_list.extend(Errors)
-            return False
-        return True
-
-    def check_if_only_operand_on_line(self, line: SourceCodeLine, error_list: list = None) -> bool:
-        """
-        Checks if there is only an operand on the source line.
-            And the line has no opcode or label
-            And the line is not an empty line or line is not a comment.
-        """
-        if line.label == "" and line.opcode_mnemonic == "" and line.operands != "" and not line.is_empty_line and not line.is_comment:
-            error_list.append(f"Line '{line.line_number}' has only an operand.")
-            self.logger.log_error(f"Line '{line.line_number}' has only an operand.")
-            return False
-        return True
-    # endregion
-    
+   
     
     """
     AssemblerPass1 handles the first pass of the SIC/XE assembler.
     It processes the source code, builds the symbol table, and computes addresses.
     """
 
-    def __init__(self, filename: str, logger: ErrorLogHandler = None):
+    def __init__(self, filename: str, logger: ErrorLogHandler = None, character_literal_prefix: str = '0C', hex_literal_prefix: str = '0X', allow_error_lines_in_generated_document: bool = True, stop_on_error: bool = False, generated_file_extension: str = '.int'):
         """
         Initializes the AssemblerPass1 instance.
 
         :param source_file_path: Path to the source code file.
         :param logger: Instance of ErrorLogHandler for logging.
         """
-        self.character_literal_prefix = '0C'
-        self.hex_literal_prefix = '0X'
+        self.character_literal_prefix = '0C' or character_literal_prefix
+        self.hex_literal_prefix = '0X'or hex_literal_prefix
+        
+        self.generated_file_extension = '.int' or generated_file_extension
         
         self.source_file = filename
         self.intermediate_file = None
         
-        self.allow_error_lines_in_generated_document = True
-        self.stop_on_error = False
+        self.allow_error_lines_in_generated_document = True or allow_error_lines_in_generated_document
+        self.stop_on_error = False or stop_on_error
         
         self.source_lines = []
         # self.source_code_line = SourceCodeLine()
@@ -206,9 +60,6 @@ class AssemblerPass1:
         # Symbol Table
         self.symbol_table = SymbolTable()
         self.symbol_table_driver = SymbolTableDriver(logger=self.logger)
-
-        # Literal Table
-        self.literal_table_driver = LiteralTableDriver(log_handler=self.logger)
         self.literal_table = LiteralTableList(log_handler=self.logger)
         
         self.program_name = None
@@ -232,15 +83,21 @@ class AssemblerPass1:
         
         # Display the symbol table
         self.display_symbol_table()
+        
         # add symbol table to the output
         self.add_symbol_table_to_output_file()
         
+        self.display_literal_table()
+        
+        # add literal table to the output
+        self.add_literal_table_to_output_file()
         
         # Print the length of the program using the location counter
         self.program_length = self.calculate_program_length()
         program_length_hex = format(self.program_length, '05X')
         self.logger.log_action(f"Program length (HEX): {program_length_hex}")
         self.logger.log_action(f"Program length (INT): {self.program_length}")
+        self.add_program_length_to_output_file()
         
         # Close the intermediate file after processing
         if self.intermediate_file:
@@ -268,8 +125,11 @@ class AssemblerPass1:
         """
         Creates the intermediate file for writing.
         """
-        # Create the intermediate file
-        intermediate_file_path = self.FileExplorer.create_new_file_in_main(self.source_file, "int")
+        # Split the source file name to remove the extension
+        base_name, _ = os.path.splitext(self.source_file)
+        
+        # Create the intermediate file path with the new extension
+        intermediate_file_path = self.FileExplorer.create_new_file_in_main(base_name, "int")
         if intermediate_file_path is None:
             self.logger.log_error(f"Failed to create intermediate file for '{self.source_file}'.")
             return
@@ -359,6 +219,9 @@ class AssemblerPass1:
         if source_line.opcode_mnemonic:
             self.process_opcode_field(source_line)
         
+        # Process operands (for literals)
+        if source_line.operands:
+            self.process_operands(source_line)
 
         # if the line is not an error, then add its instruction length to the location counter
         if not source_line.has_errors():
@@ -373,7 +236,7 @@ class AssemblerPass1:
         """
         label = source_line.label
         address = self.location_counter.get_current_address_int()
-        rflag = True  # Assuming all symbols are relocatable; adjust as needed
+        rflag = True  # Assuming all symbols are relocatable
 
         # Validate the symbol using Validator
         validator = Validator()
@@ -454,27 +317,86 @@ class AssemblerPass1:
         _action = f"Processed operands in line {source_line.line_number}."
         self.logger.log_action(_action, False)
 
-    def add_symbol_to_symbol_table(self, source_line: SourceCodeLine):
+    def process_literal(self, literal_str: str):
         """
-        Adds the symbol to the symbol table.
+        Processes a single literal and inserts it into the literal table.
+    
+        :param literal_str: The literal operand (e.g., =X'05', =C'EOF').
         """
-        # Add the symbol to the symbol table
-        pass
+        literal_name = literal_str
+        literal = self.literal_table.search(literal_name)
+    
+        if not literal:
+            try:
+                # Check if the literal does not start with =0C or =0X or =0c or =0x
+                if not literal_name.upper().startswith("=0C") and not literal_name.upper().startswith("=0X"):
+                    _error_message = f"Invalid literal format: {literal_name}"
+                    self.logger.log_error(_error_message)
+                    raise ValueError(_error_message)
+    
+                # Handle hexadecimal literals
+                if literal_name.upper().startswith(self.hex_literal_prefix):
+                    literal_value = literal_name[3:].upper()
+                    if not all(c in '0123456789ABCDEFabcdef' for c in literal_value):
+                        _error_message = f"Invalid hexadecimal value: {literal_value}"
+                        self.logger.log_error(_error_message)
+                        raise ValueError(f"Invalid hexadecimal value: {literal_value}")
+                    if len(literal_value) % 2 != 0:
+                        _error_message = f"Hexadecimal value length is not valid (must be even): {literal_value}"
+                        self.logger.log_error(_error_message)
+                        raise ValueError(_error_message)
+                    literal_length = len(literal_value) // 2  # Two characters per byte
+    
+                # Handle character literals
+                elif literal_name.upper().startswith(self.character_literal_prefix):
+                    char_sequence = literal_name[3:]
+                    if len(char_sequence) == 0:
+                        _error_message = f"Character literal is empty: {literal_name}"
+                        self.logger.log_error(_error_message)
+                        raise ValueError(_error_message)
+                    literal_value = ''.join(f"{ord(c):02X}" for c in char_sequence)
+                    literal_length = len(char_sequence)
+    
+                else:
+                    raise ValueError(f"Invalid literal format: {literal_name}")
+    
+                # Insert literal into the literal table
+                new_literal = LiteralData(name=literal_name, value=literal_value, length=literal_length)
+                self.literal_table.insert(new_literal)
+    
+                self.logger.log_action(f"Inserted new literal '{literal_name}'", False)
+                return None  # Skip further processing for valid literals
+    
+            except ValueError as e:
+                self.logger.log_error(str(e), context_info=literal_name)
+                # if literal_name in self.invalid_literals_set:
+                #     return None  # Skip duplicate invalid literals
+                # else:
+                #     self.invalid_literals_set.add(literal_name)
+                #     self.logger.log_error(str(e), context_info=literal_name)
+                #     return  # Return the invalid literal as an error
+    
+        self.logger.log_action(f"Used existing literal '{literal_name}'", False)
 
+            
+    def assign_addresses_to_literals(self):
+        """
+        Assigns addresses to all literals in the literal table.
+        """
+        current_address = self.location_counter.get_current_address_int()
+        self.literal_table.update_addresses(start_address=current_address)
+        # Update the location counter based on total literal size
+        total_literal_size = self.literal_table.get_total_size()
+        self.location_counter.increment_by_decimal(total_literal_size)
+        self.logger.log_action(f"Assigned addresses to literals starting from {hex(current_address)}.")
 
-    def update_symbol_table(self, source_line: SourceCodeLine):
+    def display_literal_table(self):
         """
-        Updates the symbol table with the source line information.
+        Displays the contents of the literal table.
         """
-        # Update symbol table
-        pass
-
-    def update_literal_table(self, source_line: SourceCodeLine):
-        """
-        Updates the literal table with the source line information.
-        """
-        # Update literal table
-        pass
+        _action = "Displaying Literal Table:"
+        self.logger.log_action(_action, False)
+        self.literal_table.display_literals()
 
     def display_symbol_table(self):
         """
@@ -504,18 +426,6 @@ class AssemblerPass1:
         else:
             self.logger.log_error("Intermediate file is not open for writing.")
 
-
-    def calculate_program_length(self):
-        """
-        Calculates the program length.
-        """
-        try:
-            return self.location_counter.get_current_address_int() - self.program_start_address
-        except ValueError:
-            Error = f"Error calculating program length."
-            self.logger.log_error(Error)
-            raise ValueError(Error)
-
     def add_symbol_table_to_output_file(self):
         """
         Adds the symbol table to the output.
@@ -531,12 +441,49 @@ class AssemblerPass1:
         else:
             self.logger.log_error("Symbol table is empty.")
 
-    def add_literal_table(self):
+    def add_literal_table_to_output_file(self):
         """
         Adds the literal table to the output.
         """
-        # Display and write the literal table
+        # Wrrite literal table to the output
+        _action = "Adding literal table to the output."
+        self.logger.log_action(_action, True)
+        if self.literal_table:
+            try:
+                _literal_table = str(self.literal_table)
+                self.intermediate_file.write(_literal_table)
+                self.logger.log_action("Literal table added to the output.")
+            except Exception as e:
+                self.logger.log_error(f"An error occurred while writing the literal table to the output: {e}")
+        else:
+            self.logger.log_error("Literal table is empty.")
         pass
+
+    def calculate_program_length(self):
+        """
+        Calculates the program length.
+        """
+        try:
+            return self.location_counter.get_current_address_int() - self.program_start_address
+        except ValueError:
+            Error = f"Error calculating program length."
+            self.logger.log_error(Error)
+            raise ValueError(Error)
+    
+    def add_program_length_to_output_file(self):
+        """
+        Adds the program length to the output.
+        """
+        # add program length to the output
+        _action = "Adding program length to the output."
+        self.logger.log_action(_action, True)
+        try:
+            program_length = self.calculate_program_length()
+            program_length_hex = format(self.program_length, '05X')
+            self.intermediate_file.write(f"\n\nProgram Length (INT): {program_length}\n")
+            self.intermediate_file.write(f"Program Length (HEX): {program_length_hex}\n")
+        except ValueError as e:
+            self.logger.log_error(f"An error occurred while writing the program length to the output: {e}")
     
     # *Directives* _________________________________________________________________________________________
     # region Directives
@@ -566,35 +513,36 @@ class AssemblerPass1:
         Handles the START directive.
         """
         # Set starting address
-        # If it has an operand, verify it is an integer in decimal, then convert to hex then set the starting address
-        # If it doesn't have an operand, set the starting address to 0
-        # If it has an invalid operand, add an error
         if source_line.operands:
+            operand = source_line.operands.strip()
             try:
-                # Convert the operand to an integer
-                operand = int(source_line.operands[0])
-                # Convert the integer to hex
-                hex_operand = hex(operand)
-                # Remove the '0x' prefix
-                hex_operand = hex_operand[2:]
+                if operand.startswith('#'):
+                    # Convert the operand to an integer (hexadecimal)
+                    operand_value = int(operand[1:], 16)
+                else:
+                    # Convert the operand to an integer (decimal)
+                    operand_value = int(operand, 10)
                 # Set the starting address
-                self.program_start_address = int(hex_operand, 16)
+                self.program_start_address = operand_value
+                self.location_counter.set_start_address(self.program_start_address)
+                self.logger.log_action(f"Set starting address to {self.program_start_address:X}")
             except ValueError:
-                Error = f"Invalid operand for START directive: '{source_line.operands[0]}'."
+                Error = f"Invalid operand for START directive: '{operand}'"
                 self.logger.log_error(Error)
                 source_line.add_error(Error)
         else:
             self.program_start_address = 0
+            self.location_counter.set_start_address(self.program_start_address)
+            self.logger.log_action(f"Set starting address to {self.program_start_address:X}")
+    
         # Set the program name
-        # If it has a label, set the program name to the label
-        # If it doesn't have a label, set the program name to 'program'
-        # If it has an invalid label, add an error
         if source_line.label:
             self.program_name = source_line.label
+            # Process the label as a symbol
+            self.process_label_field(source_line)
         else:
             self.program_name = "program"
-        # Set the location counter to the starting address
-        self.location_counter.set_start_address(self.program_start_address) 
+        self.logger.log_action(f"Set program name to {self.program_name}")
 
 
     def directive_END(self, source_line: SourceCodeLine):
@@ -689,29 +637,229 @@ class AssemblerPass1:
         """
         Handles the EQU directive.
         """
-        pass
+        label = source_line.label
+        expression = source_line.operands.strip()
+    
+        try:
+            # Evaluate the expression
+            value = self.evaluate_expression(expression)
+            # Create a SymbolData instance
+            symbol_data = SymbolData(symbol=label, value=value, rflag=True)
+            # Insert the symbol into the symbol table
+            self.symbol_table.insert(symbol_data)
+            self.logger.log_action(f"Set symbol '{label}' to value {value:X} with EQU directive.")
+        except ValueError as e:
+            Error = f"Invalid expression for EQU directive: '{expression}'"
+            self.logger.log_error(Error)
+            source_line.add_error(Error)
     
     def directive_ORG(self, source_line: SourceCodeLine):
         """
         Handles the ORG directive.
         """
-        expression = source_line.operands
+        expression = source_line.operands.strip()
+    
+        try:
+            # Evaluate the expression
+            value = self.evaluate_expression(expression)
+            # Set the location counter to the evaluated value
+            self.location_counter.set_start_address(value)
+            self.logger.log_action(f"Set location counter to {value:X} with ORG directive.")
+        except ValueError as e:
+            Error = f"Invalid expression for ORG directive: '{expression}'"
+            self.logger.log_error(Error)
+            source_line.add_error(Error)
 
     def directive_EXTREF(self, source_line: SourceCodeLine):
         """
         Handles the EXTREF directive.
         """
-        # does not affect location counter
-        #set instruction length to 0
+        operands = source_line.operands.strip().split(',')
+        for operand in operands:
+            operand = operand.strip()
+            if operand:
+                self.symbol_table_driver.add_external_reference(operand)
+                self.logger.log_action(f"Declared external reference '{operand}' with EXTREF directive.")
+        # Set instruction length to 0
         source_line.instruction_length = 0
-        pass
     
     def directive_EXTDEF(self, source_line: SourceCodeLine):
         """
         Handles the EXTDEF directive.
         """
+        operands = source_line.operands.strip().split(',')
+        for operand in operands:
+            operand = operand.strip()
+            if operand:
+                self.symbol_table_driver.add_external_definition(operand)
+                self.logger.log_action(f"Declared external definition '{operand}' with EXTDEF directive.")
+        # Set instruction length to 0
+        source_line.instruction_length = 0
         
-        pass
+    def evaluate_expression(self, expression: str) -> int:
+        """
+        Evaluates an expression and returns its value.
+    
+        :param expression: The expression to evaluate.
+        :return: The evaluated value as an integer.
+        """
+        try:
+            # Evaluate the expression (this is a simple implementation; you may need a more complex parser)
+            value = eval(expression, {"__builtins__": None}, {})
+            if not isinstance(value, int):
+                raise ValueError("Expression did not evaluate to an integer.")
+            return value
+        except Exception as e:
+            raise ValueError(f"Invalid expression: {expression}. Error: {e}")
+    # endregion
+
+    # region Validation
+    # def validate_source_line(self, line: SourceCodeLine, error_list: list = None) -> bool:
+    #     """
+    #     Validates a single line of source code.
+    #     """
+    #     Errors = []
+    #     self.valid_label(line.label, Errors)
+    #     self.valid_opcode_mnemonic(line.opcode_mnemonic, Errors)
+    #     self.check_if_only_operand_on_line(line, Errors)
+        
+    #     if Errors:
+    #         if error_list:
+    #             error_list.extend(Errors)
+    #         # Add the errors to the SourceCodeLine instance
+    #         line.add_error(Errors)
+    #         return False
+    #     return True
+    
+    def valid_label(self, label: str, error_list: list = None) -> bool:
+        """
+        Validates a label based on the following rules:
+        - Must be at most 10 characters.
+        - Must start with a letter.
+        - Cannot be just an underscore.
+        - Can contain only letters, digits, and underscores.
+        """
+        label = label.strip().rstrip(":").upper()
+
+        Errors = []
+        # Check if the label length exceeds 10 characters
+        if len(label) > 10:
+            Errors.append(f"'{label}' length exceeds 10 characters.")
+            self.logger.log_error(f"Label '{label}' length exceeds 10 characters.")
+
+        # Check if the label starts with a letter
+        if label and not label[0].isalpha():
+            Errors.append(f"'{label}' must start with a letter.")
+            self.logger.log_error(f"Label '{label}' must start with a letter.")
+        
+        # Check if the entire label is "_"
+        if label == "_":
+            Errors.append(f"'{label}' cannot be an underscore ('_') only.")
+            self.logger.log_error(f"Label '{label}' cannot be an underscore ('_') only.")
+            return False
+
+        # Check for invalid characters
+        for char in label:
+            if not (char.isalnum() or char == '_'):
+                Errors.append(f"Symbol '{label}' contains invalid character '{char}'.")
+                self.logger.log_error(f"Symbol '{label}' contains invalid character '{char}'.")
+
+        # Check if there are any errors
+        if Errors:
+            if error_list:
+                error_list.extend(Errors)
+            return False
+        return True
+    
+    def valid_line(self, line: SourceCodeLine) -> bool:
+        """
+        Validates a label based on the following rules:
+        - Must be at most 10 characters.
+        - Must start with a letter.
+        - Cannot be just an underscore.
+        - Can contain only letters, digits, and underscores.
+        """
+        label = line.label.strip().rstrip(":").upper()
+
+        Errors = []
+        # Check if the label length exceeds 10 characters
+        if len(label) > 10:
+            Error = f"'{label}' length exceeds 10 characters."
+            Errors.append(Error)
+            line.add_error(Error)
+            self.logger.log_error(Error)
+
+        # Check if the label starts with a letter
+        if label and not label[0].isalpha():
+            Error = f"'{label}' must start with a letter."
+            Errors.append(Error)
+            line.add_error(Error)
+            self.logger.log_error(Error)
+        
+        # Check if the entire label is "_"
+        if label == "_":
+            Error = f"'{label}' cannot be an underscore ('_') only."
+            Errors.append(Error)
+            line.add_error(Error)
+            self.logger.log_error(Error)
+            return False
+
+        # Check for invalid characters
+        for char in label:
+            if not (char.isalnum() or char == '_'):
+                Error = f"Label '{label}' contains invalid character '{char}'. "
+                Errors.append(Error)
+                line.add_error(Error)
+                self.logger.log_error(Error)
+
+        #validate opcode mnemonic
+        # check if opcode mnemonic is empty
+        if line.opcode_mnemonic:
+            if not self.opcode_handler.is_opcode_mnemonic(line.opcode_mnemonic):
+                Error = f"Invalid opcode mnemonic: '{line.opcode_mnemonic}'. "
+                Errors.append(Error)
+                line.add_error(Error)
+                self.logger.log_error(Error)
+        
+        # check if only operand on line
+        if line.operands:
+            if line.label == "" and line.opcode_mnemonic == "" and line.operands != "" and not line.is_empty_line and not line.is_comment:
+                Error = f"Line '{line.line_number}' has only an operand."
+                Errors.append(Error)
+                line.add_error(Error)
+                self.logger.log_error(Error)
+                
+        # check if error list is not empty
+        if Errors:
+            return False
+        return True
+
+    def valid_opcode_mnemonic(self, mnemonic: str, error_list: list = None) -> bool:
+        """
+        Validates an opcode mnemonic based on the SIC/XE instruction set.
+        """
+        Errors = []
+        if not self.opcode_handler.is_opcode_mnemonic(mnemonic):
+            Errors.append(f"Invalid opcode mnemonic: '{mnemonic}'.")
+            self.logger.log_error(f"Invalid opcode mnemonic: '{mnemonic}'.")
+        
+        if Errors:
+            if error_list:
+                error_list.extend(Errors)
+            return False
+        return True
+
+    def check_if_only_operand_on_line(self, line: SourceCodeLine, error_list: list = None) -> bool:
+        """
+        Checks if there is only an operand on the source line.
+            And the line has no opcode or label
+            And the line is not an empty line or line is not a comment.
+        """
+        if line.label == "" and line.opcode_mnemonic == "" and line.operands != "" and not line.is_empty_line and not line.is_comment:
+            error_list.append(f"Line '{line.line_number}' has only an operand.")
+            self.logger.log_error(f"Line '{line.line_number}' has only an operand.")
+            return False
+        return True
     # endregion
 
 
