@@ -228,6 +228,32 @@ class LiteralTableList:
         """
         self.head: LiteralNode = None
         self.log_handler = log_handler
+        
+    def __str__(self) -> str:
+        """
+        /***************************************************************************************
+        ***  METHOD : __str__                                                                ***
+        ***  DESCRIPTION :                                                                   ***
+        ***      Returns a string representation of the literal table.                       ***
+        ***                                                                                  ***
+        ***  RETURN : str                                                                    ***
+        ***      A string representation of the literal table.                               ***
+        ***************************************************************************************/
+        """
+        if self.head is None:
+            return "Literal table is empty."
+        divider = "-" * 40
+        result = [f"\n\n{divider}\nLiteral Table\n{divider}"]
+        result.append(f"{'Literal':<10} {'Value':<10} {'Length':<6} {'Address':<8}")
+        
+        current = self.head
+        while current is not None:
+            literal = current.literal_data
+            result.append(f"{literal.name:<10} {literal.value:<10} {literal.length:<6} {literal.address:<8}")
+            current = current.next
+        result.append(f"{divider}\n")
+        
+        return "\n".join(result)
 
 
     def insert(self, literal_data: LiteralData):
@@ -511,6 +537,16 @@ class LiteralTableList:
         total_width = Lit + Val + Len + Addr + 3
         print("┗" + ("━" * Lit) + "┷" + ("━" * Val) + "┷" + ("━" * Len) + "┷" + ("━" * Addr) + "┛")
 
+    def get_total_size(self) -> int:
+        """
+        Calculates the total size of all literals in bytes.
+        """
+        total_size = 0
+        current = self.head
+        while current:
+            total_size += current.literal_data.length
+            current = current.next
+        return total_size
 
     def press_continue(self):
         """
@@ -909,8 +945,8 @@ class ExpressionEvaluator:
         self.parsed_expressions = parsed_expressions
         self.symbol_table = symbol_table
         self.literal_table = literal_table
-        self.evaluated_expressions = []
-        self.log_handler = log_handler
+        self.evaluated_expressions = [] 
+        self.log_handler = log_handler or ErrorLogHandler()
 
 
     def evaluate_all(self):
