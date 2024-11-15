@@ -647,7 +647,7 @@ class AssemblerPass1:
             source_line.add_error(Error)
             self.logger.log_error(Error)
             # raise ValueError(Error)
-    
+            
     def directive_EQU(self, source_line: SourceCodeLine):
         """
         Handles the EQU directive.
@@ -657,7 +657,7 @@ class AssemblerPass1:
     
         try:
             # Evaluate the expression
-            value = self.evaluate_expression(expression)
+            value = self.evaluate_EQU_expression(expression)
             # Create a SymbolData instance
             symbol_data = SymbolData(symbol=label, value=value, rflag=True)
             # Insert the symbol into the symbol table
@@ -667,6 +667,31 @@ class AssemblerPass1:
             Error = f"Invalid expression for EQU directive: '{expression}'"
             self.logger.log_error(Error)
             source_line.add_error(Error)
+
+    def evaluate_EQU_expression(self, expression: str) -> int:
+        """
+        Evaluates an expression and returns its value.
+
+        :param expression: The expression to evaluate.
+        :return: The evaluated value as an integer.
+        """
+        try:
+            # Replace '*' with the current address
+            expression = expression.replace('*', str(self.location_counter.get_current_address_int()))
+
+            # Handle immediate values (e.g., #10)
+            if expression.startswith('#'):
+                value = int(expression[1:], 10)
+            else:
+                # Evaluate the expression (this is a simple implementation; you may need a more complex parser)
+                value = eval(expression, {"__builtins__": None}, {})
+
+            if not isinstance(value, int):
+                raise ValueError("Expression did not evaluate to an integer.")
+            return value
+        except Exception as e:
+            raise ValueError(f"Invalid expression: {expression}. Error: {e}")
+
     
     def directive_ORG(self, source_line: SourceCodeLine):
         """
