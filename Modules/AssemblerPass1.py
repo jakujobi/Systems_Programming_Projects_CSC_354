@@ -484,7 +484,22 @@ class AssemblerPass1:
             self.intermediate_file.write(f"Program Length (HEX): {program_length_hex}\n")
         except ValueError as e:
             self.logger.log_error(f"An error occurred while writing the program length to the output: {e}")
-    
+
+    def get_num_without_hashtag(self, num: str) -> int:
+        """
+        Gets the number without the '#' character.
+        Handles cases like '#24', '24', and '# 24'.
+        """
+        num = num.strip()
+        if num.startswith('#'):
+            num = num[1:].strip()
+        try:
+            return int(num)
+        except ValueError:
+            self.logger.log_error(f"Invalid number format: '{num}'")
+            return 0
+
+
     # *Directives* _________________________________________________________________________________________
     # region Directives
     def check_for_directives(self, source_line: SourceCodeLine, handle_directives: bool = True):
@@ -610,7 +625,7 @@ class AssemblerPass1:
         Handles the RESB directive.
         """
         try:
-            n = int(source_line.operands)
+            n = self.get_num_without_hashtag(source_line.operands)
             # self.location_counter.increment_by_decimal(n)
             source_line.instruction_length = n
         except ValueError:
@@ -624,7 +639,7 @@ class AssemblerPass1:
         Handles the RESW directive.
         """
         try:
-            n = int(source_line.operands)
+            n = self.get_num_without_hashtag(source_line.operands)
             # self.location_counter.increment_by_decimal(3 * n)
             source_line.instruction_length = 3 * n
         except ValueError:
@@ -713,24 +728,9 @@ class AssemblerPass1:
             raise ValueError(f"Invalid expression: {expression}. Error: {e}")
     # endregion
 
+
+
     # region Validation
-    # def validate_source_line(self, line: SourceCodeLine, error_list: list = None) -> bool:
-    #     """
-    #     Validates a single line of source code.
-    #     """
-    #     Errors = []
-    #     self.valid_label(line.label, Errors)
-    #     self.valid_opcode_mnemonic(line.opcode_mnemonic, Errors)
-    #     self.check_if_only_operand_on_line(line, Errors)
-        
-    #     if Errors:
-    #         if error_list:
-    #             error_list.extend(Errors)
-    #         # Add the errors to the SourceCodeLine instance
-    #         line.add_error(Errors)
-    #         return False
-    #     return True
-    
     def valid_label(self, label: str, error_list: list = None) -> bool:
         """
         Validates a label based on the following rules:
