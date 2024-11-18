@@ -321,60 +321,57 @@ class AssemblerPass1:
         """
         Processes a single literal and inserts it into the literal table.
     
-        :param literal_str: The literal operand (e.g., =X'05', =C'EOF').
+        :param literal_str: The literal operand (e.g., =0X05, =CEOF).
         """
         literal_name = literal_str
         literal = self.literal_table.search(literal_name)
     
         if not literal:
             try:
-                # Check if the literal does not start with =0C or =0X or =0c or =0x
-                if not literal_name.upper().startswith("=0C") and not literal_name.upper().startswith("=0X"):
+                # Check if the literal starts with =0C or =0X
+                if literal_name.upper().startswith("=0C") or literal_name.upper().startswith("=0X"):
+                    prefix = literal_name[1:3].upper()
+                    literal_value = literal_name[3:]
+    
+                    if prefix == "0C":
+                        # Handle character literals
+                        if not all(c.isprintable() for c in literal_value):
+                            _error_message = f"Invalid character literal value: {literal_value}"
+                            self.logger.log_error(_error_message)
+                            raise ValueError(_error_message)
+                        literal_value = ''.join(f"{ord(c):02X}" for c in literal_value)
+                        literal_length = len(literal_value) // 2  # Two characters per byte
+    
+                    elif prefix == "0X":
+                        # Handle hexadecimal literals
+                        if not all(c in '0123456789ABCDEFabcdef' for c in literal_value):
+                            _error_message = f"Invalid hexadecimal value: {literal_value}"
+                            self.logger.log_error(_error_message)
+                            raise ValueError(_error_message)
+                        if len(literal_value) % 2 != 0:
+                            _error_message = f"Hexadecimal value length is not valid (must be even): {literal_value}"
+                            self.logger.log_error(_error_message)
+                            raise ValueError(_error_message)
+                        literal_length = len(literal_value) // 2  # Two characters per byte
+    
+                    else:
+                        raise ValueError(f"Invalid literal format: {literal_name}")
+    
+                    # Insert literal into the literal table
+                    new_literal = LiteralData(name=literal_name, value=literal_value, length=literal_length)
+                    self.literal_table.insert(new_literal)
+    
+                    self.logger.log_action(f"Inserted new literal '{literal_name}'", False)
+                    return None  # Skip further processing for valid literals
+    
+                else:
                     _error_message = f"Invalid literal format: {literal_name}"
                     self.logger.log_error(_error_message)
                     raise ValueError(_error_message)
     
-                # Handle hexadecimal literals
-                if literal_name.upper().startswith(self.hex_literal_prefix):
-                    literal_value = literal_name[3:].upper()
-                    if not all(c in '0123456789ABCDEFabcdef' for c in literal_value):
-                        _error_message = f"Invalid hexadecimal value: {literal_value}"
-                        self.logger.log_error(_error_message)
-                        raise ValueError(f"Invalid hexadecimal value: {literal_value}")
-                    if len(literal_value) % 2 != 0:
-                        _error_message = f"Hexadecimal value length is not valid (must be even): {literal_value}"
-                        self.logger.log_error(_error_message)
-                        raise ValueError(_error_message)
-                    literal_length = len(literal_value) // 2  # Two characters per byte
-    
-                # Handle character literals
-                elif literal_name.upper().startswith(self.character_literal_prefix):
-                    char_sequence = literal_name[3:]
-                    if len(char_sequence) == 0:
-                        _error_message = f"Character literal is empty: {literal_name}"
-                        self.logger.log_error(_error_message)
-                        raise ValueError(_error_message)
-                    literal_value = ''.join(f"{ord(c):02X}" for c in char_sequence)
-                    literal_length = len(char_sequence)
-    
-                else:
-                    raise ValueError(f"Invalid literal format: {literal_name}")
-    
-                # Insert literal into the literal table
-                new_literal = LiteralData(name=literal_name, value=literal_value, length=literal_length)
-                self.literal_table.insert(new_literal)
-    
-                self.logger.log_action(f"Inserted new literal '{literal_name}'", False)
-                return None  # Skip further processing for valid literals
-    
             except ValueError as e:
                 self.logger.log_error(str(e), context_info=literal_name)
-                # if literal_name in self.invalid_literals_set:
-                #     return None  # Skip duplicate invalid literals
-                # else:
-                #     self.invalid_literals_set.add(literal_name)
-                #     self.logger.log_error(str(e), context_info=literal_name)
-                #     return  # Return the invalid literal as an error
+                return  # Return the invalid literal as an error
     
         self.logger.log_action(f"Used existing literal '{literal_name}'", False)
 
@@ -676,22 +673,77 @@ class AssemblerPass1:
         :return: The evaluated value as an integer.
         """
         try:
-            # Replace '*' with the current address
-            expression = expression.replace('*', str(self.location_counter.get_current_address_int()))
-
-            # Handle immediate values (e.g., #10)
-            if expression.startswith('#'):
+            if expression.split()[0] == '*':
+                value = self.location_counter.get_current_address_int()
+                # # Replace '*' with the current address
+                # expression = expression.replace('*', str(self.location_counter.get_current_address_int()))
+            elif expression.startswith('#'):
                 value = int(expression[1:], 10)
-            else:
-                # Evaluate the expression (this is a simple implementation; you may need a more complex parser)
-                value = eval(expression, {"__builtins__": None}, {})
+            # else if the expression is not empty
+            elif expression != '':
+                # use parse line in Expression parser to parse the operands
+                Expression_Evaluator = ExpressionEvaluator(self.symbol_table, self.literal_table, self.logger)
+                ExpressionParser = ExpressionParser(self.symbol_table, self.literal_table, self.logger)
+                parsed_expression = ExpressionParser.parse_line(expression)
+                # Evaluate the parsed expression
+                value = Expression_Evaluator.evaluate_expression(parsed_expression)
 
             if not isinstance(value, int):
                 raise ValueError("Expression did not evaluate to an integer.")
             return value
         except Exception as e:
             raise ValueError(f"Invalid expression: {expression}. Error: {e}")
-
+        
+    def evaluate_expression(self, expression: str) -> int:
+        """
+        Evaluates an expression and returns its value.
+    
+        :param expression: The expression to evaluate.
+        :return: The evaluated value as an integer.
+        """
+        try:
+            # Replace '*' with the current address
+            expression = expression.replace('*', str(self.location_counter.get_current_address_int()))
+    
+            # Handle immediate values (e.g., #10)
+            if expression.startswith('#'):
+                value = int(expression[1:], 10)
+            else:
+                # Split the expression into operands and operator
+                if '+' in expression:
+                    operands = expression.split('+')
+                    operator = '+'
+                elif '-' in expression:
+                    operands = expression.split('-')
+                    operator = '-'
+                else:
+                    operands = [expression]
+                    operator = None
+    
+                # Evaluate each operand
+                values = []
+                for operand in operands:
+                    operand = operand.strip()
+                    if operand.isdigit():
+                        values.append(int(operand))
+                    elif operand in self.symbol_table:
+                        values.append(self.symbol_table[operand].value)
+                    else:
+                        raise ValueError(f"Undefined symbol: {operand}")
+    
+                # Perform the arithmetic operation
+                if operator == '+':
+                    value = values[0] + values[1]
+                elif operator == '-':
+                    value = values[0] - values[1]
+                else:
+                    value = values[0]
+    
+            if not isinstance(value, int):
+                raise ValueError("Expression did not evaluate to an integer.")
+            return value
+        except Exception as e:
+            raise ValueError(f"Invalid expression: {expression}. Error: {e}")
     
     def directive_ORG(self, source_line: SourceCodeLine):
         """
@@ -736,21 +788,6 @@ class AssemblerPass1:
         # Set instruction length to 0
         source_line.instruction_length = 0
         
-    def evaluate_expression(self, expression: str) -> int:
-        """
-        Evaluates an expression and returns its value.
-    
-        :param expression: The expression to evaluate.
-        :return: The evaluated value as an integer.
-        """
-        try:
-            # Evaluate the expression (this is a simple implementation; you may need a more complex parser)
-            value = eval(expression, {"__builtins__": None}, {})
-            if not isinstance(value, int):
-                raise ValueError("Expression did not evaluate to an integer.")
-            return value
-        except Exception as e:
-            raise ValueError(f"Invalid expression: {expression}. Error: {e}")
     # endregion
 
 
