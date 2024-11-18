@@ -602,7 +602,7 @@ class ExpressionParser:
             literal_table (LiteralTableList): Reference to the literal table.
             log_handler (ErrorLogHandler): Reference to the error log handler.
         """
-        self.expressions_lines = expressions_lines
+        self.expressions_lines = expressions_lines or []
         self.parsed_expressions = []
         self.literal_table = literal_table
         self.log_handler = log_handler
