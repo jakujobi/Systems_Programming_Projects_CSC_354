@@ -240,18 +240,32 @@ class LiteralTableList:
         ***      A string representation of the literal table.                               ***
         ***************************************************************************************/
         """
+        # if self.head is None:
+        #     return "Literal table is empty."
+        # divider = "-" * 40
+        # result = [f"\n\n{divider}\nLiteral Table\n{divider}"]
+        # result.append(f"{'Literal':<10} {'Value':<10} {'Length':<6} {'Address':<8}")
+        
+        # current = self.head
+        # while current is not None:
+        #     literal = current.literal_data
+        #     result.append(f"{literal.name:<10} {literal.value:<10} {literal.length:<6} {literal.address:<8}")
+        #     current = current.next
+        # result.append(f"{divider}\n")
+        
+        # return "\n".join(result)
         if self.head is None:
             return "Literal table is empty."
-        divider = "-" * 40
-        result = [f"\n\n{divider}\nLiteral Table\n{divider}"]
+        
+        result = ["Literal Table:"]
         result.append(f"{'Literal':<10} {'Value':<10} {'Length':<6} {'Address':<8}")
         
         current = self.head
         while current is not None:
-            literal = current.literal_data
-            result.append(f"{literal.name:<10} {literal.value:<10} {literal.length:<6} {literal.address:<8}")
+            literal_data = current.literal_data
+            address = f"{literal_data.address:04X}" if literal_data.address is not None else "None"
+            result.append(f"{literal_data.name:<10} {literal_data.value:<10} {literal_data.length:<6} {address:<8}")
             current = current.next
-        result.append(f"{divider}\n")
         
         return "\n".join(result)
 
