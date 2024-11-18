@@ -1,0 +1,28 @@
+1          00000     FA18:       START      #0    
+2          00000     BEGIN:      LDA        =0C+    
+3          00003                 LDA        =0X05AF    
+4          00006                 LDA        =0CFEDCBA    
+5          00009                 LDA        =0XFEDCBA    
+6          0000C                 LDA        =0X05AF    
+7          0000F                 LDA        =0C+    
+8          00012                 END        BEGIN    
+
+
+
+______________________________________________
+Symbol Table:
+______________________________________________
+Symbol     Value      RFlag  IFlag  MFlag 
+______________________________________________
+BEGI       00000      1      1      0     
+FA18       00000      1      1      0     
+______________________________________________
+Literal Table:
+Literal    Value      Length Address 
+=0C+       2B         1      None    
+=0X05AF    05AF       2      None    
+=0CFEDCBA  464544434241 6      None    
+=0XFEDCBA  FEDCBA     3      None    
+
+Program Length (INT): 18
+Program Length (HEX): 00012

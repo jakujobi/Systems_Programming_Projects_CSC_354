@@ -1,0 +1,13 @@
+1          00000                            . full line comment – ignore    
+2          00000     CSC_354:    START      #0    
+3          00000     ONE:        BYTE       0X0F    
+4          00001     TWO:        BYTE       0C>    
+5          00001     THREE:      BYTE       0X26AE    
+6          00003     FOUR:       BYTE       0C/-\    
+7          00005     FIVE:       RESW       #3    partial line comment - ignore    
+8          0000E     SIX:        WORD       #97    
+9          00011     BUFFER:     RESB       #512    
+10         00211     SEVEN:      EQU        #1024    
+11         00211     BUFEND:     EQU        *    
+12         00211     [ERROR: Invalid expression for EQU directive: 'BUFEND-BUFFER']    MAX:        EQU        BUFEND-BUFFER    
+13         00211                 END        ONE    
