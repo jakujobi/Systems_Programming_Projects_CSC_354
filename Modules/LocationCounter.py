@@ -89,55 +89,6 @@ class LocationCounter:
             Error = f"Invalid increment value '{increment_value}'"
             self.logger.log_error(Error)
             raise ValueError(Error)
-        
-
-    # def handle_equ_directive(self, operands):
-    #     """
-    #     Handles the EQU directive by evaluating the expression and updating the symbol table.
-
-    #     :param operands: The expression associated with the EQU directive.
-    #     """
-    #     # Extract label and expression
-    #     # In this context, operands should be the expression
-    #     expression = operands.strip()
-    #     # Evaluate the expression (this is a simplified version)
-    #     value = self.evaluate_expression(expression)
-    #     # Insert or update the symbol in the symbol table
-    #     # Since we don't have the label here, you might need to adjust how this method is called
-    #     # For this example, we'll assume the label is available
-    #     # You may need to pass the label as an additional parameter
-    #     label = self.current_label  # Assume current_label is set appropriately
-    #     self.symbol_table.insert_symbol(label, value, rflag=False)
-    #     self.logger.log_action(f"Set symbol '{label}' to value {value} via EQU directive")
-
-    # def handle_org_directive(self, operands):
-    #     """
-    #     Handles the ORG directive to set the current location counter.
-
-    #     :param operands: The expression or value to set the LOCCTR.
-    #     """
-    #     expression = operands.strip()
-    #     value = self.evaluate_expression(expression)
-    #     self.current_address = value
-    #     self.logger.log_action(f"LOCCTR set to {self.current_address:X} via ORG directive")
-
-    # def evaluate_expression(self, expression):
-    #     """
-    #     Evaluates an expression to compute its value.
-
-    #     :param expression: The expression to evaluate.
-    #     :return: The computed value as an integer.
-    #     """
-    #     try:
-    #         # Replace '*' with the current address
-    #         expression = expression.replace('*', str(self.current_address))
-    #         # Evaluate the expression
-    #         # WARNING: Using eval can be dangerous; ensure that the expression is sanitized
-    #         # For a real assembler, implement a proper expression evaluator
-    #         value = eval(expression)
-    #         return int(value)
-    #     except Exception as e:
-    #         raise ValueError(f"Invalid expression '{expression}': {e}")
 
     def calculate_program_length(self):
         """
