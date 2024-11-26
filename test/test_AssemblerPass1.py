@@ -1,6 +1,10 @@
 import unittest
 import sys
 from pathlib import Path
+
+repo_home_path = Path(__file__).resolve().parent.parent
+sys.path.append(str(repo_home_path))
+
 from unittest.mock import patch, MagicMock
 from Modules.AssemblerPass1 import AssemblerPass1
 from Modules.ErrorLogHandler import ErrorLogHandler
