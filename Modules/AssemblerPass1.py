@@ -693,57 +693,6 @@ class AssemblerPass1:
             return value
         except Exception as e:
             raise ValueError(f"Invalid expression: {expression}. Error: {e}")
-        
-    def evaluate_expression(self, expression: str) -> int:
-        """
-        Evaluates an expression and returns its value.
-    
-        :param expression: The expression to evaluate.
-        :return: The evaluated value as an integer.
-        """
-        try:
-            # Replace '*' with the current address
-            expression = expression.replace('*', str(self.location_counter.get_current_address_int()))
-    
-            # Handle immediate values (e.g., #10)
-            if expression.startswith('#'):
-                value = int(expression[1:], 10)
-            else:
-                # Split the expression into operands and operator
-                if '+' in expression:
-                    operands = expression.split('+')
-                    operator = '+'
-                elif '-' in expression:
-                    operands = expression.split('-')
-                    operator = '-'
-                else:
-                    operands = [expression]
-                    operator = None
-    
-                # Evaluate each operand
-                values = []
-                for operand in operands:
-                    operand = operand.strip()
-                    if operand.isdigit():
-                        values.append(int(operand))
-                    elif operand in self.symbol_table:
-                        values.append(self.symbol_table[operand].value)
-                    else:
-                        raise ValueError(f"Undefined symbol: {operand}")
-    
-                # Perform the arithmetic operation
-                if operator == '+':
-                    value = values[0] + values[1]
-                elif operator == '-':
-                    value = values[0] - values[1]
-                else:
-                    value = values[0]
-    
-            if not isinstance(value, int):
-                raise ValueError("Expression did not evaluate to an integer.")
-            return value
-        except Exception as e:
-            raise ValueError(f"Invalid expression: {expression}. Error: {e}")
     
     def directive_ORG(self, source_line: SourceCodeLine):
         """
@@ -753,7 +702,12 @@ class AssemblerPass1:
     
         try:
             # Evaluate the expression
-            value = self.evaluate_expression(expression)
+        
+            Expression_Evaluator = ExpressionEvaluator(self.symbol_table, self.literal_table, self.logger)
+            ExpressionParser = ExpressionParser(self.symbol_table, self.literal_table, self.logger)
+            parsed_expression = ExpressionParser.parse_line(expression)
+            # Evaluate the parsed expression
+            value = Expression_Evaluator.evaluate_expression(parsed_expression)
             # Set the location counter to the evaluated value
             self.location_counter.set_start_address(value)
             self.logger.log_action(f"Set location counter to {value:X} with ORG directive.")
