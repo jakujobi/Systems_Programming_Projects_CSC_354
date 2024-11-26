@@ -7,12 +7,11 @@ from io import StringIO
 repo_home_path = Path(__file__).resolve().parent.parent
 sys.path.append(str(repo_home_path))
 
-from Modules.Symbol_Table_Builder import SymbolTableBuilder
-from Modules.SymbolData import SymbolData
+from Modules.Symbol_Table_Builder import *
 
-class TestSymbolTableBuilder(unittest.TestCase):
+class TestSymbolTableDriver(unittest.TestCase):
     def setUp(self):
-        self.symbol_table_builder = SymbolTableBuilder()
+        self.symbol_table_builder = SymbolTableDriver()
         self.test_symbols = [
             SymbolData("TEST1", "1000", True, False, True),
             SymbolData("TEST2", "2000", False, True, False),
@@ -41,7 +40,7 @@ class TestSymbolTableBuilder(unittest.TestCase):
         self.assertIn("0", output)
 
     @patch('sys.stdout', new_callable=StringIO)
-    @patch.object(SymbolTableBuilder, 'pressContinue')
+    @patch.object(SymbolTableDriver, 'pressContinue')
     def test_display_symbols_paginated_pagination(self, mock_press_continue, mock_stdout):
         symbols = [SymbolData(f"SYM{i}", str(i*1000), True, False, True) for i in range(25)]
         self.symbol_table_builder.display_symbols_paginated(symbols)
