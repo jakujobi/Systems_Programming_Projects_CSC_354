@@ -4,8 +4,8 @@
 4          00003                 LDL        #10    
 5          00006                 STB        TWO,X    
 6          00009                 SVC        #5    
-7          0000C     TWO:        NORM       
-8          0000F                 END        ONE    
+7          0000B     TWO:        NORM       
+8          0000C                 END        ONE    
 
 
 
@@ -16,9 +16,9 @@ Symbol     Value      RFlag  IFlag  MFlag
 ______________________________________________
 ONE        00000      1      1      0     
 PROG       00000      1      1      0     
-TWO        0000C      1      1      0     
+TWO        0000B      1      1      0     
 ______________________________________________
 Literal table is empty.
 
-Program Length (INT): 15
-Program Length (HEX): 0000F
+Program Length (INT): 12
+Program Length (HEX): 0000C
