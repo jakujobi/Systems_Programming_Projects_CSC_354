@@ -30,7 +30,7 @@ class AssemblerPass1:
     It processes the source code, builds the symbol table, and computes addresses.
     """
 
-    def __init__(self, filename: str, logger: ErrorLogHandler = None, character_literal_prefix: str = '0C', hex_literal_prefix: str = '0X', allow_error_lines_in_generated_document: bool = True, stop_on_error: bool = False, generated_file_extension: str = '.int'):
+    def __init__(self, filename: str, logger: ErrorLogHandler = None, character_literal_prefix: str = '0C', hex_literal_prefix: str = '0X', allow_error_lines_in_generated_document: bool = True, stop_on_error: bool = False, generated_file_extension: str = '.int', Program_length_prefix_for_Hex = "Program Length (HEX):", Program_length_prefix_for_Decimal = "Program Length (DEC):"):
         """
         Initializes the AssemblerPass1 instance.
 
@@ -65,6 +65,16 @@ class AssemblerPass1:
         self.program_name = None
         self.program_start_address = 0
         self.program_length = 0
+        
+        self.Program_length_prefix_for_Hex = "Program Length (HEX):" or Program_length_prefix_for_Hex
+        self.Program_length_prefix_for_Decimal = "Program Length (DEC):" or Program_length_prefix_for_Decimal
+        
+        self.Start_div_symbol_table = "===SYM_START==="
+        self.End_div_symbol_table = "===SYM_END==="
+        self.Start_div_literal_table = "===LIT_START==="
+        self.End_div_literal_table = "===LIT_END==="
+        self.Start_div_program_length = "===PROG_LEN_START==="
+        self.End_div_program_length = "===PROG_LEN_END==="
     
         self.run()
 
@@ -95,8 +105,8 @@ class AssemblerPass1:
         # Print the length of the program using the location counter
         self.program_length = self.calculate_program_length()
         program_length_hex = format(self.program_length, '05X')
-        self.logger.log_action(f"Program length (HEX): {program_length_hex}")
-        self.logger.log_action(f"Program length (INT): {self.program_length}")
+        self.logger.log_action(f"{self.Program_length_prefix_for_Hex} {program_length_hex}")
+        self.logger.log_action(f"{self.Program_length_prefix_for_Decimal} {self.program_length}")
         self.add_program_length_to_output_file()
         
         # Close the intermediate file after processing
@@ -432,7 +442,9 @@ class AssemblerPass1:
         if self.symbol_table:
             try:
                 _symbol_table = str(self.symbol_table)
+                self.intermediate_file.write("\n\n" + self.Start_div_symbol_table + "\n")
                 self.intermediate_file.write(_symbol_table)
+                self.intermediate_file.write("\n" + self.End_div_symbol_table + "\n")
             except Exception as e:
                 self.logger.log_error(f"An error occurred while writing the symbol table to the output: {e}")
         else:
@@ -448,7 +460,9 @@ class AssemblerPass1:
         if self.literal_table:
             try:
                 _literal_table = str(self.literal_table)
+                self.intermediate_file.write("\n\n" + self.Start_div_literal_table + "\n")
                 self.intermediate_file.write(_literal_table)
+                self.intermediate_file.write("\n" +self.End_div_literal_table + "\n")
                 self.logger.log_action("Literal table added to the output.")
             except Exception as e:
                 self.logger.log_error(f"An error occurred while writing the literal table to the output: {e}")
@@ -477,8 +491,10 @@ class AssemblerPass1:
         try:
             program_length = self.calculate_program_length()
             program_length_hex = format(self.program_length, '05X')
-            self.intermediate_file.write(f"\n\nProgram Length (INT): {program_length}\n")
+            self.intermediate_file.write("\n\n" + self.Start_div_program_length + "\n")
+            self.intermediate_file.write(f"Program Length (INT): {program_length}\n")
             self.intermediate_file.write(f"Program Length (HEX): {program_length_hex}\n")
+            self.intermediate_file.write("\n" + self.End_div_program_length + "\n")
         except ValueError as e:
             self.logger.log_error(f"An error occurred while writing the program length to the output: {e}")
 
