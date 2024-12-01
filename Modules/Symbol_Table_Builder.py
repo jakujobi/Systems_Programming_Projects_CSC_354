@@ -6,6 +6,8 @@
 # Date: 9/8/2024
 # Description: 
 
+#Symbol_Table_Builder.py
+
 """
 /**************************************************************************************
 *** NAME : John Akujobi                                                             ***
@@ -280,14 +282,45 @@ class SymbolTable:
                 print("Symbol Inserted")
             else:
                 self._insert(current_node.right, symbol_data)
+    
+    def insert_or_update(self, symbol_data):
+        """
+        Inserts a new symbol or updates an existing symbol's value.
+        """
+        existing_symbol = self.search(symbol_data.symbol)
+        if existing_symbol:
+            existing_symbol.value = symbol_data.value
+            existing_symbol.rflag = symbol_data.rflag
+            existing_symbol.iflag = symbol_data.iflag
+            existing_symbol.mflag = symbol_data.mflag
+        else:
+            self.insert(symbol_data)
 
+
+    # def get(self, operand):
+    #     # Symbol lookup from the symbol table
+    #     symbol = self.search(operand)  # Search the table for the symbol
+    #     if symbol:
+    #         return symbol.value, symbol.rflag, None
+    #     else:
+    #         return None, None, f"Undefined symbol: {operand}"
+        
     def get(self, operand):
-        # Symbol lookup from the symbol table
-        symbol = self.search(operand)  # Search the table for the symbol
+        is_immediate = operand.startswith('#')
+        is_indirect = operand.startswith('@')
+        is_indexed = operand.endswith(',X')
+
+        base_operand = operand.strip('#@,X')  # Remove addressing symbols
+        symbol = self.search(base_operand)
+
         if symbol:
-            return symbol.value, symbol.rflag, None
+            value = symbol.value
+            if is_indexed:
+                value += 0x8000  # Example: Set indexed addressing flag in object code
+            return value, symbol.rflag, None
         else:
             return None, None, f"Undefined symbol: {operand}"
+
 
     def search(self, symbol):
         """
