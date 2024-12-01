@@ -153,6 +153,7 @@
 153        013FD                 END        PROG    
 
 
+===SYM_START===
 
 ______________________________________________
 Symbol Table:
@@ -202,12 +203,22 @@ ZK         013DD      1      1      0
 ZL         013DD      1      1      0     
 ZZ         013DD      1      1      0     
 ______________________________________________
+
+===SYM_END===
+
+
+===LIT_START===
 Literal Table:
 Literal    Value      Length Address 
 =0x45      45         1      None    
 =0cdw      6477       2      None    
 =0XF1      F1         1      None    
 =0CABC     414243     3      None    
+===LIT_END===
 
+
+===PROG_LEN_START===
 Program Length (INT): 4117
 Program Length (HEX): 01015
+
+===PROG_LEN_END===
