@@ -75,9 +75,10 @@ class SourceCodeLine:
         opcode_mnemonic = f"{self.opcode_mnemonic:<{column_size_opcode_mnemonic}}" if self.opcode_mnemonic else (' ' * column_size_opcode_mnemonic)
         
         operands = f"{self.operands}{spacing}" if self.operands else ''
-        comment = f"{self.comment}{spacing}" if self.comment else ''
+        #comment = f"{self.comment}{spacing}" if self.comment else ''
         errors = f"[ERROR: {'; '.join(self.errors)}]{spacing}" if self.errors else ''
-        return f"{line_number} {address}{errors}{label} {opcode_mnemonic} {operands}{comment}"
+        return f"{line_number} {address}{errors}{label} {opcode_mnemonic} {operands}"
+        # return f"{line_number} {address}{errors}{label} {opcode_mnemonic} {operands}{comment}"
 
     def is_comment(self) -> bool:
         """
