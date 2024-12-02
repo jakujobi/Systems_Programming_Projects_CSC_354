@@ -7,14 +7,10 @@ sys.path.append(repo_home_path)
 
 from Modules.ErrorLogHandler import ErrorLogHandler
 
-
-
 class Validator:
-    def __init__(self,
-                 logger = None):
+    def __init__(self, logger=None):
         self.logger = logger or ErrorLogHandler()
         
-    
     def valid_label(self, label: str, error_list: list = None) -> bool:
         """
         Validates a label based on specified rules.
@@ -25,12 +21,6 @@ class Validator:
 
         Returns:
         - True if the label is valid, False otherwise.
-
-        Validation Rules:
-        - Must be at most 10 characters.
-        - Must start with a letter.
-        - Cannot be just an underscore.
-        - Can contain only letters, digits, and underscores.
         """
         label = label.strip().rstrip(":").upper()
         Errors = []
@@ -72,7 +62,7 @@ class Validator:
             return flag in [0, 1]
         # if flag is a string, check if it is a boolean
         elif isinstance(flag, str):
-            return flag.strip().upper in ["True", "False"]
+            return flag.strip().upper() in ["TRUE", "FALSE", "0", "1"]
         # if flag is neither an int nor a string, return False
         else:
             _error = f"Invalid symbol flag: {flag}"
@@ -82,22 +72,19 @@ class Validator:
     def convert_flag_to_bool(self, flag):
         if self.valid_symbol_flag(flag):
             if isinstance(flag, int):
-                if flag == 1:
-                    return True
-                elif flag == 0:
-                    return False
+                return bool(flag)
             if isinstance(flag, str):
-                if flag.strip().upper() == "True":
-                    return True
-                elif flag.strip().upper() == "False":
+                if flag.strip().upper() == "FALSE" or flag == "0":
                     return False
+                if flag.strip().upper() == "TRUE" or flag == "1":
+                    return True
         else:
             _error = f"Invalid symbol flag: {flag}"
             self.logger.log_error(_error)
             return None
         
     def valid_hex_address_value(self, value):
-        if re.fullmatch(r'^[0-9A-Fa-f]{4}$', value.upper()):
+        if re.fullmatch(r'^[0-9A-Fa-f]{4,5}$', value.upper()):
             return True
         else:
             _error = f"Invalid hex address value: {value}"
@@ -105,11 +92,11 @@ class Validator:
             return False
         
     def convert_string_hex_str_to_int(self, hex_str):
-        self.valid_hex_address_value(hex_str)
-        return int(hex_str, 16)
-            
-
-    
+        if self.valid_hex_address_value(hex_str):
+            return int(hex_str, 16)
+        else:
+            return None
+                
     def convert_symbol(self, symbol):
         """
         /********************************************************************
@@ -127,45 +114,6 @@ class Validator:
         """
         return symbol.strip().rstrip(":").upper()[:4]
 
-    def validate_syms_line(self, line):
-        """
-        /********************************************************************
-        ***  FUNCTION : validate_syms_line                                  ***
-        ***  CLASS  : Validator                                             ***
-        *********************************************************************
-        ***  DESCRIPTION : Validates a line from the SYMS.DAT file, which   ***
-        ***  must contain exactly three parts: symbol, value, and rflag.    ***
-        ***  Returns a SymbolData object if valid, or an error message if   ***
-        ***  invalid.                                                       ***
-        ***                                                                 ***
-        ***  INPUTS :                                                       ***
-        ***    - line (str): The line from SYMS.DAT to be validated.        ***
-        ***  RETURNS :                                                      ***
-        ***    - SymbolData or str: The validated SymbolData object or an   ***
-        ***      error message if invalid.                                  ***
-        ********************************************************************/
-        """
-        parts = line.split(maxsplit=2)
-        if len(parts) != 3:
-            return f"Error: SYMS.DAT line '{line}' must contain symbol, value, and rflag."
-        
-        symbol, value, rflag = parts
-        
-        symbol_validation = self.validate_symbol(symbol)
-        value_validation = self.validate_value(value)
-        rflag_validation = self.validate_rflag(rflag)
-        
-        if symbol_validation == "Success" and value_validation == "Success" and rflag_validation == "Success":
-            converted_symbol = self.convert_symbol(symbol)
-            rflag_bool = rflag.lower() == "true"
-            return SymbolData(converted_symbol, int(value), rflag_bool)
-        
-        if symbol_validation != "Success":
-            return f"{symbol_validation} in line: '{line}'"
-        if value_validation != "Success":
-            return f"{value_validation} in line: '{line}'"
-        if rflag_validation != "Success":
-            return f"{rflag_validation} in line: '{line}'"
 
     def validate_symbol_search_line(self, line):
         """
@@ -191,10 +139,10 @@ class Validator:
         
         symbol = parts[0].strip()
 
-        symbol_validation = self.validate_symbol(symbol)
+        symbol_validation = self.valid_label(symbol)
         
-        if symbol_validation == "Success":
+        if symbol_validation:
             converted_symbol = self.convert_symbol(symbol)
             return converted_symbol
         else:
-            return f"{symbol_validation} in line: '{line}'"
+            return f"Error: Invalid symbol '{symbol}' in line: '{line}'"
