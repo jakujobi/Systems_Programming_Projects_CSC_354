@@ -69,7 +69,7 @@ class AssemblerPass1:
         # Symbol Table
         self.symbol_table = SymbolTable()
         self.symbol_table_driver = SymbolTableDriver(logger=self.logger)
-        self.literal_table = LiteralTableList(log_handler=self.logger)
+        self.literal_table = LiteralTableList(logger=self.logger)
         
         self.program_name = None
         self.program_start_address = 0
