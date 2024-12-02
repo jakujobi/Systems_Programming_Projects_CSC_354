@@ -1,4 +1,18 @@
+# Intermediate_File_Reader.py
 
+
+import sys
+import re
+import os
+
+repo_home_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.append(repo_home_path)
+
+from Modules.FileExplorer import FileExplorer
+from Modules.ErrorLogHandler import ErrorLogHandler
+from Modules.Symbol_Table_Builder import *
+from Modules.Literal_Table_Builder import *
+from Modules.SourceCodeLine import *
 
 
 class IntermediateFileParser:
@@ -10,6 +24,22 @@ class IntermediateFileParser:
     ***  intermediate file and extracting the necessary information.   ***
     ********************************************************************/
     """
+    
+    def __init__(self, symbol_table_passed=None, literal_table_passed=None, logger=None, int_file_content=None):
+        self.symbol_table = symbol_table_passed or SymbolTable()
+        self.literal_table = literal_table_passed or LiteralTableList()
+        self.logger = logger or ErrorLogHandler()
+        
+        self.program_length = {'decimal': None, 'hexadecimal': None}
+        
+        self.int_file_lines = int_file_content or []
+        
+    def parse_intermediate_file_content(self):
+        self.int_file_lines = iter(self.int_file_lines)
+        for line in self.int_file_lines:
+            line = line.strip()
+        pass
+    
     
     
 # def test_parsing_intermediate_code():
