@@ -61,112 +61,443 @@ In the records list, sort them by type
 
 # Detailed Class Designs and Responsibilities
 ## 1. IntermediateFileReader
-### Responsibilities:
-- **Parse Intermediate File**: Read and parse the intermediate file into structured data.
-- **Provide Access**: Allow iteration over parsed lines for processing.
-### Attributes:
+Certainly! Let's focus on designing the `IntermediateFileReader` class to effectively parse the intermediate file you've provided. We'll expand on its design, define the necessary methods, and ensure it can handle all the different types of lines present in your sample input.
+
+---
+### Objective
+- **Design an `IntermediateFileReader` class** that can parse the intermediate file generated from Pass 1.
+- **Handle various line types**: code lines, error lines, symbol table entries, literal table entries, program length lines, and other special lines.
+- **Provide methods** to parse and store the data in a structured manner for use in Pass 2.
+---
+### Understanding the Input
+The intermediate file contains a mix of:
+1. **Code Lines**: Contain line numbers, addresses, labels, opcodes, operands, and comments.
+2. **Error Lines**: Similar to code lines but include error messages.
+3. **Divider Lines**: Lines with underscores `___` used as separators.
+4. **Title Lines**: Lines starting with `===`, indicating sections like symbol table, literal table, and program length.
+5. **Symbol Table Entries**: Between `===SYM_START===` and `===SYM_END===`.
+6. **Literal Table Entries**: Between `===LIT_START===` and `===LIT_END===`.
+7. **Program Length Entries**: Between `===PROG_LEN_START===` and `===PROG_LEN_END===`.
+8. **Empty Lines**: Lines that are blank or contain only whitespace.
+
+---
+### Class Responsibilities
+- **Read and parse the intermediate file** line by line.
+- **Identify and handle different line types**, parsing each appropriately.
+- **Store parsed data** in structured data structures for use in Pass 2.
+- **Provide methods** to access the parsed data.
+### Attributes
 - `file_name`: The name of the intermediate file.
-- `parsed_lines`: A list of `SourceCodeLine` objects representing each line.
-### Methods:
-- `__init__(self, file_name)`: Initializes the reader and parses the file.
-- `parse_line(self, line)`: Parses a single line into components.
-- `__iter__(self)`: Returns an iterator over `parsed_lines`.
+- `code_lines`: A list of `SourceCodeLine` objects representing code lines.
+- `symbol_table`: A dictionary or object representing the symbol table.
+- `literal_table`: A dictionary or object representing the literal table.
+- `program_length`: The length of the program (both decimal and hexadecimal).
+- `errors`: A list of errors encountered during parsing.
+### Methods
+1. `__init__(self, file_name)`: Initializes the reader and starts parsing the file.
+2. `parse_file(self)`: Reads the file and processes each line.
+3. `parse_line(self, line)`: Determines the type of the line and calls the appropriate parsing method.
+4. `parse_code_line(self, line)`: Parses regular code lines.
+5. `parse_error_line(self, line)`: Parses error lines.
+6. `parse_symbol_table(self, lines)`: Parses symbol table entries.
+7. `parse_literal_table(self, lines)`: Parses literal table entries.
+8. `parse_program_length(self, lines)`: Parses program length entries.
+9. `is_divider_line(self, line)`: Checks if a line is a divider line (e.g., `______`).
+10. `is_title_line(self, line)`: Checks if a line is a title line (e.g., starts with `===`).
+11. `get_code_lines(self)`: Returns the list of parsed code lines.
+12. `get_symbol_table(self)`: Returns the symbol table.
+13. `get_literal_table(self)`: Returns the literal table.
+14. `get_program_length(self)`: Returns the program length.
 
-**Implementation Details**:
-- **Parsing Logic**: Use consistent parsing rules matching how the intermediate file was written in Pass 1.
-- **SourceCodeLine**: A data structure holding line number, address, label, opcode, operands, and any comments or errors.
 ---
-### Types of lines
-#### Empty Line
-- Check if it is empty
-- Discard or ignore
-#### Source Code Line
+## Implementation Details
+#### 1. `__init__(self, file_name)`
+- **Purpose**: Initialize the `IntermediateFileReader` with the given file name and start parsing.
+- **Actions**:
+    - Set `self.file_name`.
+    - Initialize `self.code_lines`, `self.symbol_table`, `self.literal_table`, `self.program_length`, and `self.errors`.
+    - Call `self.parse_file()`.
+#### 2. `parse_file(self)`
+- **Purpose**: Read the file and process each line.
+- **Actions**:
+    - Open the file and read lines into a list.
+    - Initialize an index `i` to keep track of the current line number.
+    - Loop through the lines, processing each one:
+        - Strip whitespace from the line.
+        - Skip empty lines or divider lines.
+        - If the line is a title line, handle the corresponding section.
+        - Else, call `self.parse_line(line)`.
+#### 3. `parse_line(self, line)`
+- **Purpose**: Determine the type of the line and parse it accordingly.
+- **Actions**:
+    - If the line starts with a number (line number), it's a code line or error line.
+        - If `[ERROR` is present in the line, call `self.parse_error_line(line)`.
+        - Else, call `self.parse_code_line(line)`.
+    - Else, log an error indicating an unrecognized line format.
+### 4. `parse_code_line(self, line)`
+- **Purpose**: Parse a regular code line and store it as a `SourceCodeLine` object.
+- **Actions**:
+    - Split the line into parts using whitespace as the delimiter.
+    - Extract the line number and address.
+    - Determine if a label is present.
+        - If the third part ends with `:`, it's a label.
+    - Extract the opcode and operands.
+    - Handle comments at the end of the line.
+    - Create a `SourceCodeLine` object with the extracted data and add it to `self.code_lines`.
+### 5. `parse_error_line(self, line)`
+- **Purpose**: Parse an error line and store the error information.
+- **Actions**:
+    - Similar to `parse_code_line`, but extract the error message.
+    - Store the error in `self.errors`.
+    - Optionally, create a `SourceCodeLine` object with an error flag.
+### 6. `parse_symbol_table(self, lines)`
+- **Purpose**: Parse symbol table entries between `===SYM_START===` and `===SYM_END===`.
+- **Actions**:
+    - Loop through the lines until `===SYM_END===` is encountered.
+    - Skip any divider lines.
+    - Extract symbol, value, RFlag, IFlag, and MFlag from each line.
+    - Store the symbols in `self.symbol_table`.
+### 7. `parse_literal_table(self, lines)`
+- **Purpose**: Parse literal table entries between `===LIT_START===` and `===LIT_END===`.
+- **Actions**:
+    - Similar to `parse_symbol_table`, but extract literals, values, lengths, and addresses.
+    - Store the literals in `self.literal_table`.
+### 8. `parse_program_length(self, lines)`
+- **Purpose**: Parse program length entries between `===PROG_LEN_START===` and `===PROG_LEN_END===`.
+- **Actions**:
+    - Extract the program length in decimal and hexadecimal.
+    - Store the lengths in `self.program_length`.
+### 9. `is_divider_line(self, line)`
+- **Purpose**: Check if a line is a divider line (contains three or more underscores).
+- **Return**: `True` if it's a divider line, `False` otherwise.
+### 10. `is_title_line(self, line)`
+- **Purpose**: Check if a line is a title line (starts with `===`).
+- **Return**: `True` if it's a title line, `False` otherwise.
+### **11. Accessor Methods**
+- **Purpose**: Provide access to the parsed data:
+    - `get_code_lines()`
+    - `get_symbol_table()`
+    - `get_literal_table()`
+    - `get_program_length()`
 
-#### Error Source Code Line
+---
+### Handling Different Line Types
+#### Empty Lines
+- **Detection**: Line is empty after stripping whitespace.
+- **Action**: Ignore and continue to the next line.
+#### Divider Lines
+- **Detection**: Line contains three or more underscores (`___`).
+- **Action**: Ignore and continue.
 #### Title Lines
-- Check if it starts with a `===`
-#### Divider Line
-- Check if it has more than three `_`s like `___`
-- Discard or ignore
-#### Symbol Table Section
-- Starts by having a `===SYM_START===`
-	- Sends us to process the Symbol Table
-- Ends with a `===SYM_END===`
-	- Stops parsing symbol table
-
-#### Symbol Table Line
-
-#### Literal Table Section
-- Starts with a `===LIT_START===`
-	- Starts parsing literal table
-- Ends with a `===LIT_END===`
-	- Stops parsing literal table
-#### Program Length Line
-- Starts with a `===PROG_LEN_START===`
-- Ends with a `===PROG_LEN_END===`
+- **Detection**: Line starts with `===`.
+- **Action**: Determine the type of section and call the corresponding parsing method:
+    - `===SYM_START===`: Call `parse_symbol_table()`.
+    - `===LIT_START===`: Call `parse_literal_table()`.
+    - `===PROG_LEN_START===`: Call `parse_program_length()`.
+#### Code Lines
+- **Detection**: Line starts with a number (line number).
+- **Action**: Call `parse_code_line()`.
+#### Error Lines
+- **Detection**: Line contains `[ERROR` in the third part after splitting.
+- **Action**: Call `parse_error_line()`.
+#### Symbol Table Entries
+- **Detection**: Between `===SYM_START===` and `===SYM_END===`.
+- **Action**: Call `parse_symbol_table()`.
+#### Literal Table Entries
+- **Detection**: Between `===LIT_START===` and `===LIT_END===`.
+- **Action**: Call `parse_literal_table()`.
+#### Program Length Lines
+- **Detection**: Between `===PROG_LEN_START===` and `===PROG_LEN_END===`.
+- **Action**: Call `parse_program_length()`.
 ---
-### Pass2Parser
-- Strip the line into parts
-- Check if empty or if Divider Line
-	- Then ignore or discard
-- Check if it is a Divider line
-	- Ignore and discard
-- Check if it is a code line
-	- Send to `parse_p2_code_lines`
-- Check if it starts with a `===`
-	- Check if it starts with `===SYM_START===`
-		- Send to `parse_p2_symbol_lines`
-	- Check if it starts with a `===LIT_START===`
-		- Send to `parse_p2_literal_lines`
-	- Check if it starts with a `===PROG_LEN_START===`
-		- Send to `parse_p2_program_length_lines`
-- Else
-	- Give error
-### `parse_p2_code_line`
-- split
-- if 3rd part is `p2_is_Error_Line`
-	- ignore and discard
-- 1st part is line number
-- 2nd part is Line address
-- if 3rd part ends with `:`
-	- then it is a label
-	- if 4th part
-		- it is an opcode
-		- if 5th part
-			- it is an operand
-- else 3rd part is a opcode
-	- if 4th part
-		- it is an operand
+### Implementing Parsing Methods
 
-### `parse_p2_code_lines`
+#### Parsing Code Lines
+```python
+def parse_code_line(self, line):
+    parts = line.strip().split()
+    if len(parts) < 2:
+        self.errors.append(f"Invalid code line format: '{line}'")
+        return
 
+    line_number = parts[0]
+    address = parts[1]
+    index = 2
 
-### `p2_is_Error_Line`
-if is starts or has `[ERROR` on the 3rd part
-- return true
+    # Initialize variables
+    label = ''
+    opcode = ''
+    operands = ''
+    comment = ''
+    error = ''
 
-### `parse_p2_symbol_lines`
-While the line =! `===SYM_END===`
-- split line
-- 1st part as Symbol
-- 2nd part as Value
-- 3rd part as RFlag
-- 4th part as I Flag
-- 4th part as MFlag
-### `parse_p2_literal_lines`
-While the line =! `===LIT_END===`
-- split the line
-- Assign first part as the literal
-- 2nd part as Value
-- 3rd part as Length
-- 4th part as Address
-### `parse_p2_program_length_lines`
-While the line =! `===PROG_LEN_END===`
-- Split the line
-- If the first part == `Program Length (DEC): `
-	- Take the second part as the program length in decimal
-- If the first part == `Program Length (HEX):`
-	- Take the second part as the program length in hex
+    # Check if the third part is a label
+    if len(parts) > index and parts[index].endswith(':'):
+        label = parts[index][:-1]  # Remove the colon
+        index += 1
+
+    # Check for opcode
+    if len(parts) > index:
+        opcode = parts[index]
+        index += 1
+
+    # Check for operands
+    if len(parts) > index:
+        # Collect the rest as operands or comments
+        operands_or_comment = ' '.join(parts[index:])
+        # Split operands and comments if '#' is used for comments
+        if '#' in operands_or_comment:
+            operands, comment = operands_or_comment.split('#', 1)
+            operands = operands.strip()
+            comment = comment.strip()
+        else:
+            operands = operands_or_comment.strip()
+
+    # Create SourceCodeLine object
+    source_line = SourceCodeLine(
+        line_number=line_number,
+        address=address,
+        label=label,
+        opcode=opcode,
+        operands=operands,
+        comment=comment,
+        error=error
+    )
+    self.code_lines.append(source_line)
+```
+
+#### Parsing Error Lines
+```python
+def parse_error_line(self, line):
+    # Error lines may have an error message in square brackets
+    parts = line.strip().split()
+    if len(parts) < 3:
+        self.errors.append(f"Invalid error line format: '{line}'")
+        return
+
+    line_number = parts[0]
+    address = parts[1]
+    error_message = ''
+    index = 2
+
+    # Collect the error message
+    while index < len(parts) and not parts[index].endswith(']'):
+        error_message += parts[index] + ' '
+        index += 1
+    if index < len(parts):
+        error_message += parts[index]
+        index += 1
+    error_message = error_message.strip('[] ')
+
+    # Proceed to parse the rest of the line as a code line
+    if index < len(parts) and parts[index].endswith(':'):
+        label = parts[index][:-1]
+        index += 1
+    else:
+        label = ''
+
+    opcode = ''
+    operands = ''
+    comment = ''
+
+    if index < len(parts):
+        opcode = parts[index]
+        index += 1
+    if index < len(parts):
+        operands = ' '.join(parts[index:])
+
+    # Create SourceCodeLine object with error
+    source_line = SourceCodeLine(
+        line_number=line_number,
+        address=address,
+        label=label,
+        opcode=opcode,
+        operands=operands,
+        comment=comment,
+        error=error_message
+    )
+    self.code_lines.append(source_line)
+    self.errors.append(f"Line {line_number}: {error_message}")
+```
+
+### Parsing Symbol Table
+```python
+def parse_symbol_table(self, lines_iterator):
+    for line in lines_iterator:
+        line = line.strip()
+        if line == '===SYM_END===':
+            break
+        if self.is_divider_line(line) or not line:
+            continue
+        parts = line.split()
+        if len(parts) >= 5:
+            symbol = parts[0]
+            value = parts[1]
+            rflag = parts[2]
+            iflag = parts[3]
+            mflag = parts[4]
+            self.symbol_table[symbol] = {
+                'value': value,
+                'rflag': rflag,
+                'iflag': iflag,
+                'mflag': mflag
+            }
+        else:
+            self.errors.append(f"Invalid symbol table line: '{line}'")
+```
+### Parsing Literal Table
+```python
+def parse_literal_table(self, lines_iterator):
+    for line in lines_iterator:
+        line = line.strip()
+        if line == '===LIT_END===':
+            break
+        if self.is_divider_line(line) or not line:
+            continue
+        parts = line.split()
+        if len(parts) >= 4:
+            literal = parts[0]
+            value = parts[1]
+            length = parts[2]
+            address = parts[3]
+            self.literal_table[literal] = {
+                'value': value,
+                'length': length,
+                'address': address
+            }
+        else:
+            self.errors.append(f"Invalid literal table line: '{line}'")
+```
+
+### Parsing Program Length
+```python
+def parse_program_length(self, lines_iterator):
+    for line in lines_iterator:
+        line = line.strip()
+        if line == '===PROG_LEN_END===':
+            break
+        if not line:
+            continue
+        if line.startswith('Program Length (DEC):'):
+            parts = line.split(':')
+            if len(parts) == 2:
+                self.program_length['decimal'] = parts[1].strip()
+        elif line.startswith('Program Length (HEX):'):
+            parts = line.split(':')
+            if len(parts) == 2:
+                self.program_length['hexadecimal'] = parts[1].strip()
+        else:
+            self.errors.append(f"Invalid program length line: '{line}'")
+```
+
+---
+
+## Complete `IntermediateFileReader` Class
+Here's how the complete class might look:
+```python
+class IntermediateFileReader:
+    def __init__(self, file_name):
+        self.file_name = file_name
+        self.code_lines = []
+        self.symbol_table = {}
+        self.literal_table = {}
+        self.program_length = {'decimal': None, 'hexadecimal': None}
+        self.errors = []
+        self.parse_file()
+
+    def parse_file(self):
+        with open(self.file_name, 'r') as f:
+            lines = f.readlines()
+        lines_iterator = iter(lines)
+        for line in lines_iterator:
+            line = line.strip()
+            if not line or self.is_divider_line(line):
+                continue
+            if self.is_title_line(line):
+                if line == '===SYM_START===':
+                    self.parse_symbol_table(lines_iterator)
+                elif line == '===LIT_START===':
+                    self.parse_literal_table(lines_iterator)
+                elif line == '===PROG_LEN_START===':
+                    self.parse_program_length(lines_iterator)
+                else:
+                    # Unknown section; skip or log error
+                    self.errors.append(f"Unknown section title: '{line}'")
+            else:
+                self.parse_line(line)
+    def parse_line(self, line):
+        parts = line.strip().split()
+        if not parts:
+            return
+        if parts[0].isdigit():
+            # Line starts with a line number
+            if '[ERROR' in line:
+                self.parse_error_line(line)
+            else:
+                self.parse_code_line(line)
+        else:
+            # Unrecognized line format
+            self.errors.append(f"Unrecognized line format: '{line}'")
+    # ... [Other methods as previously defined] ...
+
+    # Define is_divider_line, is_title_line, and accessor methods
+
+    def is_divider_line(self, line):
+        return line.startswith('___')
+
+    def is_title_line(self, line):
+        return line.startswith('===')
+
+    def get_code_lines(self):
+        return self.code_lines
+
+    def get_symbol_table(self):
+        return self.symbol_table
+
+    def get_literal_table(self):
+        return self.literal_table
+
+    def get_program_length(self):
+        return self.program_length
+
+    def get_errors(self):
+        return self.errors
+```
+
+---
+### Defining the `SourceCodeLine` Class
+You'll need a class to represent each source code line. Here's a simple version:
+```python
+class SourceCodeLine:
+    def __init__(self, line_number, address, label='', opcode='', operands='', comment='', error=''):
+        self.line_number = line_number
+        self.address = address
+        self.label = label
+        self.opcode = opcode
+        self.operands = operands
+        self.comment = comment
+        self.error = error
+
+    def is_comment(self):
+        return self.opcode.startswith('.')
+
+    def has_errors(self):
+        return bool(self.error)
+```
+
+---
+### Next Steps
+1. **Implement the Class**: Write the code for the `IntermediateFileReader` and related classes.
+2. **Test Parsing**: Use the provided sample input to test your parser.
+3. **Handle Edge Cases**: Ensure that all possible line formats are correctly parsed.
+4. **Integrate with Pass 2**: Use the parsed data to proceed with object code generation.
+---
+### Conclusion
+By focusing on the `IntermediateFileReader`, we've designed a class that:
+- Can parse the intermediate file, handling all the different types of lines.
+- Stores the parsed data in structured formats suitable for Pass 2 processing.
+- Provides methods to access the code lines, symbol table, literal table, and program length.
+
 ---
 ## 2. ObjectCodeGenerator
 **Responsibilities**:
