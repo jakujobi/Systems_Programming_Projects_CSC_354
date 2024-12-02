@@ -61,6 +61,8 @@ class IntermediateFileParser:
         self.program_length_prefix_for_decimal = Program_length_prefix_for_Decimal  or "Program Length (DEC):"
         
         self.use_new_line_numbers = use_new_line_numbers
+        self.new_line_number = 1  # Initialize new line number counter
+
         
         self.errors = []
         
@@ -200,7 +202,7 @@ class IntermediateFileParser:
             self.logger.log_error(_error)
             return
 
-        line_number = parts[0]
+        original_line_number = parts[0]
         address = parts[1]
         index = 2
 
@@ -209,7 +211,6 @@ class IntermediateFileParser:
         opcode_mnemonic = ''
         operands = ''
         comment = ''
-        # error = ''
 
         # Check if the third part is a label
         if len(parts) > index and parts[index].endswith(':'):
@@ -227,6 +228,13 @@ class IntermediateFileParser:
             operands_or_comment = ' '.join(parts[index:])
             operands = operands_or_comment.strip()
 
+        # Assign new line number if enabled
+        if self.use_new_line_numbers:
+            line_number = self.new_line_number
+            self.new_line_number += 1
+        else:
+            line_number = original_line_number
+
         # Create SourceCodeLine object
         source_line = SourceCodeLine(
             line_number=line_number,
@@ -239,6 +247,7 @@ class IntermediateFileParser:
             errors=None
         )
         self.parsed_code_lines.append(source_line)
+
         
     def parse_symbol_table(self, lines_iterator):
         """
