@@ -28,11 +28,15 @@ class AssemblerPass2:
         
         self.int_file_name = int_filename
         self.int_file_content = []
+        self.int_source_code_lines = []
+        
+        self.logger = logger or ErrorLogHandler()
+
 
         # Symbol Table
         self.symbol_table = SymbolTable()
-        self.symbol_table_driver = SymbolTableDriver(logger=self.logger)
-        self.literal_table = LiteralTableList(log_handler=self.logger)
+        #self.symbol_table_driver = SymbolTableDriver(logger=self.logger)
+        self.literal_table = LiteralTableList(logger=self.logger)
         
         self.program_name = None
         self.program_start_address = 0
@@ -52,11 +56,13 @@ class AssemblerPass2:
         self.hex_literal_prefix = hex_literal_prefix or '0X'
         
         self.file_explorer = file_explorer or FileExplorer()
-        self.logger = logger or ErrorLogHandler()
         
         
     def run(self):
-        pass
+        self.load_immediate_file()
+        self.parse_intermediate_lines()
+        self.print_all_things()
+
     def load_immediate_file(self):
         """
         Loads the source code from the file into int_file_content list.
@@ -68,6 +74,24 @@ class AssemblerPass2:
             return
         # Log the number of lines read
         self.logger.log_action(f"Read {len(self.int_file_content)} lines from '{self.int_file_name}'.")
-        pass
+
     def parse_intermediate_lines(self):
-        pass
+        int_file_parser = IntermediateFileParser(symbol_table_passed=self.symbol_table,
+                                                 literal_table_passed=self.literal_table,
+                                                 logger=self.logger,
+                                                 int_file_content=self.int_file_content)
+        int_file_parser.parse_intermediate_file_content()
+        self.int_source_code_lines = int_file_parser.parsed_code_lines
+    
+    def print_all_things(self):
+        """
+        Prints out the symbol table, literal table and the parsed content of the intermediate file.
+
+        :return: None
+        """
+        # print the int file content
+        for line in self.int_source_code_lines:
+            print(line)
+        
+        print(self.symbol_table)
+        print(self.literal_table)
