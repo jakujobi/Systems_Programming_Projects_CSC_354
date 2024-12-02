@@ -75,8 +75,8 @@ class AssemblerPass1:
         self.program_start_address = 0
         self.program_length = 0
         
-        self.Program_length_prefix_for_Hex = "Program Length (HEX):" or Program_length_prefix_for_Hex
-        self.Program_length_prefix_for_Decimal = "Program Length (DEC):" or Program_length_prefix_for_Decimal
+        self.Program_length_prefix_for_Hex = Program_length_prefix_for_Hex or "Program Length (HEX):"
+        self.Program_length_prefix_for_Decimal = Program_length_prefix_for_Decimal  or "Program Length (DEC):"
         
         self.Start_div_symbol_table = "===SYM_START==="
         self.End_div_symbol_table = "===SYM_END==="
