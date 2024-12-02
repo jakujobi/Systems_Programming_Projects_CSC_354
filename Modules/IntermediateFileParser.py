@@ -17,9 +17,10 @@ sys.path.append(repo_home_path)
 
 from Modules.FileExplorer import FileExplorer
 from Modules.ErrorLogHandler import ErrorLogHandler
-from Modules.Symbol_Table_Builder import *
-from Modules.Literal_Table_Builder import *
-from Modules.SourceCodeLine import *
+from Modules.Symbol_Table_Builder import SymbolTable, SymbolData
+from Modules.Literal_Table_Builder import LiteralTableList, LiteralData
+from Modules.SourceCodeLine import SourceCodeLine
+from Modules.Validator import Validator
 
 
 class IntermediateFileParser:
@@ -36,34 +37,43 @@ class IntermediateFileParser:
                  symbol_table_passed: SymbolTable = None,
                  literal_table_passed: LiteralTableList = None,
                  logger: ErrorLogHandler = None,
-                 int_file_content=[],
-                 read_error_line_input: bool = None,
+                 int_file_content=None,
+                 read_error_line_input: bool = False,
                  Program_length_prefix_for_Hex: str = None,
-                 Program_length_prefix_for_Decimal: str = None
+                 Program_length_prefix_for_Decimal: str = None,
+                 use_new_line_numbers: bool = True
                  ):
-        self.symbol_table = symbol_table_passed or SymbolTable()
-        self.literal_table = literal_table_passed or LiteralTableList()
         self.logger = logger or ErrorLogHandler()
+        self.symbol_table = symbol_table_passed or SymbolTable(logger=self.logger)
+        self.literal_table = literal_table_passed or LiteralTableList(logger=self.logger)
+        
+        self.validator = Validator(logger=self.logger)
+
         
         self.program_length = {'decimal': None, 'hexadecimal': None}
         
         self.int_file_lines = int_file_content or []
         self.parsed_code_lines = []
         
-        self_read_error_line_input = read_error_line_input or False
+        self.read_error_line_input = read_error_line_input
 
-        self.Program_length_prefix_for_Hex = Program_length_prefix_for_Hex or "Program Length (HEX):"
-        self.Program_length_prefix_for_Decimal = Program_length_prefix_for_Decimal  or "Program Length (DEC):"
+        self.program_length_prefix_for_hex = Program_length_prefix_for_Hex or "Program Length (HEX):"
+        self.program_length_prefix_for_decimal = Program_length_prefix_for_Decimal  or "Program Length (DEC):"
+        
+        self.use_new_line_numbers = use_new_line_numbers
+        
+        self.errors = []
         
         self.fluff_lines = [
             '___',
             'Literal Table:',
             'Literal    Value      Length Address',
+            'Symbol Table:',
             'Symbol     Value      RFlag  IFlag  MFlag',
-            self.symbol_table.str_header,
-            self.literal_table.str_header,
-
+            getattr(self.symbol_table, 'str_header', ''),
+            getattr(self.literal_table, 'str_header', ''),
         ]
+
         
     def parse_intermediate_file_content(self):
         """
@@ -73,11 +83,17 @@ class IntermediateFileParser:
 
         :return: None
         """
+        self.logger.log_action("Parsing intermediate file content.", False)
         lines_iterator = iter(self.int_file_lines)
         for line in lines_iterator:
             line = line.strip()
+            # ignore empty lines
             if not line or self.is_divider_line(line):
                 continue
+            # ignore fluff lines
+            if line in self.fluff_lines:
+                continue
+            # Check if the line is a title line
             if self.is_title_line(line):
                 if line == '===SYM_START===':
                     self.parse_symbol_table(lines_iterator)
@@ -87,7 +103,8 @@ class IntermediateFileParser:
                     self.parse_program_length(lines_iterator)
                 else:
                     # Unknown section; skip or log error
-                    self.errors.append(f"Unknown section title: '{line}'")
+                    _error = (f"Unknown section title: '{line}'")
+                    self.logger.log_error(_error)
             else:
                 self.parse_single_line(line)
                 
@@ -101,11 +118,19 @@ class IntermediateFileParser:
         :param line: The single line of the intermediate file content to be processed
         :return: None
         """
-        if not self.read_error_line_input and self.is_error_code_line(line):
-            return
+        self.logger.log_action(f"Processing single line: '{line}'", False)
+        if self.is_error_code_line(line):
+            self.logger.log_action(f"Error code line at line: '{line}'", False)
+            if self.read_error_line_input:
+                self.logger.log_action("Nothing implemented to deal with error line")
+                return
+            else:
+                self.logger.log_action(f"Skipping error code line: '{line}'", False)
+                return
         
         parts = line.strip().split()
         if not parts:
+            self.logger.log_action(f"Empty line: '{line}'")
             return
         
         if not parts[0].isdigit():
@@ -117,19 +142,49 @@ class IntermediateFileParser:
             
         
     def is_error_code_line(self, line):
+        """
+        Checks if a line is an error code line.
+
+        :param line: The line of the intermediate file content to be checked
+        :return: True if the line is an error code line, False otherwise
+        """
         parts = line.upper().strip().split()
         return len(parts) > 2 and '[ERROR' in parts[2]
     
     def is_divider_line(self, line):
+        """
+        Checks if a line is a divider line, which is a line that contains three underscores '___' and is used to separate sections of the intermediate file.
+
+        :param line: The line of the intermediate file content to be checked
+        :return: True if the line is a divider line, False otherwise
+        """
         return line.startswith('___')
 
     def is_title_line(self, line):
+        """
+        Checks if a line is a title line, which is a line that starts with '===' and is used to indicate the start of a section of the intermediate file.
+
+        :param line: The line of the intermediate file content to be checked
+        :return: True if the line is a title line, False otherwise
+        """
         return line.startswith('===')
 
     def get_code_lines(self):
+        """
+        Returns the list of parsed code lines. Each code line is a SourceCodeLine
+        object that contains information about the line, such as the line number, 
+        address, label, opcode, operands, comment, and errors.
+
+        :return: A list of SourceCodeLine objects
+        """
         return self.parsed_code_lines
 
     def get_symbol_table(self):
+        """
+        Returns the symbol table.
+        
+        :return: The symbol table
+        """
         return self.symbol_table
 
     def get_literal_table(self):
@@ -141,7 +196,8 @@ class IntermediateFileParser:
     def parse_code_line(self, line):
         parts = line.strip().split()
         if len(parts) < 2:
-            self.errors.append(f"Invalid code line format: '{line}'")
+            _error = (f"Invalid code line format: '{line}'")
+            self.logger.log_error(_error)
             return
 
         line_number = parts[0]
@@ -169,100 +225,109 @@ class IntermediateFileParser:
         if len(parts) > index:
             # Collect the rest as operands or comments
             operands_or_comment = ' '.join(parts[index:])
-            # Split operands and comments if '#' is used for comments
-            if '#' in operands_or_comment:
-                operands, comment = operands_or_comment.split('#', 1)
-                operands = operands.strip()
-                comment = comment.strip()
-            else:
-                operands = operands_or_comment.strip()
+            operands = operands_or_comment.strip()
 
         # Create SourceCodeLine object
         source_line = SourceCodeLine(
             line_number=line_number,
+            line_text=line,
             address=address,
             label=label,
             opcode_mnemonic=opcode_mnemonic,
             operands=operands,
             comment=comment,
+            errors=None
         )
         self.parsed_code_lines.append(source_line)
         
-    def parse_error_line(self, line):
-        # Error lines may have an error message in square brackets
-        parts = line.strip().split()
-        if len(parts) < 3:
-            self.errors.append(f"Invalid error line format: '{line}'")
-            return
-
-        line_number = parts[0]
-        address = parts[1]
-        error_message = ''
-        index = 2
-
-        # Collect the error message
-        while index < len(parts) and not parts[index].endswith(']'):
-            error_message += parts[index] + ' '
-            index += 1
-        if index < len(parts):
-            error_message += parts[index]
-            index += 1
-        error_message = error_message.strip('[] ')
-
-        # Proceed to parse the rest of the line as a code line
-        if index < len(parts) and parts[index].endswith(':'):
-            label = parts[index][:-1]
-            index += 1
-        else:
-            label = ''
-
-        opcode = ''
-        operands = ''
-        comment = ''
-
-        if index < len(parts):
-            opcode = parts[index]
-            index += 1
-        if index < len(parts):
-            operands = ' '.join(parts[index:])
-
-        # Create SourceCodeLine object with error
-        source_line = SourceCodeLine(
-            line_number=line_number,
-            address=address,
-            label=label,
-            opcode_mnemonic=opcode,
-            operands=operands,
-            comment=comment,
-            error=error_message
-        )
-        self.parsed_code_lines.append(source_line)
-        self.errors.append(f"Line {line_number}: {error_message}")
-
     def parse_symbol_table(self, lines_iterator):
+        """
+        Parses the symbol table section of the intermediate file.
+
+        :param lines_iterator: An iterator over the lines of the intermediate file.
+        :return: None
+        """
         for line in lines_iterator:
             line = line.strip()
             if line == '===SYM_END===':
                 break
+            if line in self.fluff_lines:
+                continue
             if self.is_divider_line(line) or not line:
                 continue
-            parts = line.split()
-            if len(parts) >= 5:
-                symbol = parts[0]
-                value = parts[1]
-                rflag = parts[2]
-                iflag = parts[3]
-                mflag = parts[4]
-                self.symbol_table[symbol] = {
-                    'value': value,
-                    'rflag': rflag,
-                    'iflag': iflag,
-                    'mflag': mflag
-                }
+            parts = line.strip().split()
+            if len(parts) == 5:
+                symbol = parts[0].rstrip(":").strip().upper()
+                value = parts[1].strip()
+                rflag = parts[2].strip()
+                iflag = parts[3].strip()
+                mflag = parts[4].strip()
+
+                # Validate each part using Validator
+                if (self.validator.valid_label(symbol) and
+                        self.validator.valid_hex_address_value(value) and
+                        self.validator.valid_symbol_flag(rflag) and
+                        self.validator.valid_symbol_flag(iflag) and
+                        self.validator.valid_symbol_flag(mflag)):
+                    
+                    # Convert value from hex string to integer
+                    try:
+                        value_int = self.validator.convert_string_hex_str_to_int(value)
+                    except ValueError as e:
+                        _error = f"Invalid hex value for symbol '{symbol}': '{value}'. Error: {str(e)}"
+                        self.logger.log_error(_error)
+                        self.errors.append(_error)
+                        continue
+
+                    # Convert flags to boolean
+                    try:
+                        rflag_bool = self.validator.convert_flag_to_bool(rflag)
+                        iflag_bool = self.validator.convert_flag_to_bool(iflag)
+                        mflag_bool = self.validator.convert_flag_to_bool(mflag)
+                    except ValueError as e:
+                        _error = f"Invalid flag value in symbol table line: '{line}'. Error: {str(e)}"
+                        self.logger.log_error(_error)
+                        self.errors.append(_error)
+                        continue
+
+                    # Create SymbolData object
+                    temp_SymbolData = SymbolData(
+                        symbol=symbol[:4],  # Assuming max 4 characters
+                        value=value_int,
+                        rflag=rflag_bool,
+                        iflag=iflag_bool,
+                        mflag=mflag_bool
+                    )
+                    self.symbol_table.insert(temp_SymbolData)
+                else:
+                    if not self.validator.valid_label(parts[0]):
+                        self.logger.log_error(f"Invalid label: '{parts[0]}'")
+                    if not self.validator.valid_hex_address_value(parts[1]):
+                        self.logger.log_error(f"Invalid address value: '{parts[1]}'")
+                    if not self.validator.valid_symbol_flag(parts[2]):
+                        self.logger.log_error(f"Invalid RFlag: '{parts[2]}'")
+                    if not self.validator.valid_symbol_flag(parts[3]):
+                        self.logger.log_error(f"Invalid IFlag: '{parts[3]}'")
+                    if not self.validator.valid_symbol_flag(parts[4]):
+                        self.logger.log_error(f"Invalid MFlag: '{parts[4]}'")
+
+                    _error = f"Invalid symbol table line: '{line}'"
+                    self.logger.log_error(_error)
+                    self.errors.append(_error)
             else:
-                self.errors.append(f"Invalid symbol table line: '{line}'")
+                _error = f"Incorrect number of fields in symbol table line: '{line}'"
+                self.logger.log_error(_error)
+                self.errors.append(_error)
                 
     def parse_literal_table(self, lines_iterator):
+        """
+        Parses the literal table from the lines iterator, adding the
+        literal information to the literal table dictionary.
+
+        :param lines_iterator: An iterator over the lines of the file.
+        :return: None
+        """
+
         for line in lines_iterator:
             line = line.strip()
             if line == '===LIT_END===':
@@ -275,35 +340,46 @@ class IntermediateFileParser:
                 value = parts[1]
                 length = parts[2]
                 address = parts[3]
-                self.literal_table[literal] = {
-                    'value': value,
-                    'length': length,
-                    'address': address
-                }
+                temp_LiteralData = LiteralData(
+                    name=literal,
+                    value=value,
+                    length=length,
+                    address=address
+                )
+                self.literal_table.insert(temp_LiteralData)
             else:
-                self.errors.append(f"Invalid literal table line: '{line}'")
+                _error = (f"Invalid literal table line: '{line}'")
+                self.logger.log_error(_error)
                 
     def parse_program_length(self, lines_iterator):
+        """
+        Parses the program length from the lines iterator, adding the
+        program length information to the program_length dictionary.
+
+        :param lines_iterator: An iterator over the lines of the file.
+        :return: None
+        """
         for line in lines_iterator:
             line = line.strip()
             if line == '===PROG_LEN_END===':
                 break
             if not line:
                 continue
-            if line.startswith('Program Length (DEC):'):
-                parts = line.split(':')
+            if line.startswith(self.program_length_prefix_for_decimal):
+                parts = line.split(':', 1)
                 if len(parts) == 2:
                     self.program_length['decimal'] = parts[1].strip()
-            elif line.startswith('Program Length (HEX):'):
-                parts = line.split(':')
+            elif line.startswith(self.program_length_prefix_for_hex):
+                parts = line.split(':', 1)
                 if len(parts) == 2:
                     self.program_length['hexadecimal'] = parts[1].strip()
             else:
-                self.errors.append(f"Invalid program length line: '{line}'")
+                _error = (f"Invalid program length line: '{line}'")
+                self.logger.log_error(_error)
     
 def test_parsing_intermediate_code():
     """
-    Tests the ParsingHandler class with lines from an intermediate file.
+    Tests the IntermediateFileParser class with lines from an intermediate file.
     """
     test_lines = [
         "1          00000     PROG:       START      1000",
@@ -524,19 +600,45 @@ def test_parsing_intermediate_code():
         " ",
         "",
         "===PROG_LEN_START===",
-        "Program Length (INT): 4117",
+        "Program Length (DEC): 4117",
         "Program Length (HEX): 01015",
         "===PROG_LEN_END==="
     ]
 
-    parser = IntermediateFileParser()
-    parsed_data = parser.parse_intermediate_file_content(test_lines)
+    # Initialize the parser with test lines and enable error line parsing
+    parser = IntermediateFileParser(int_file_content=test_lines, read_error_line_input=True)
+    parser.parse_intermediate_file_content()
 
-    #Print the parsed data
-    
-    for key, value in parsed_data.items():
-        print(f"{key}: {value}")
+    # Retrieve parsed data
+    parsed_code_lines = parser.get_code_lines()
+    symbol_table = parser.get_symbol_table()
+    literal_table = parser.get_literal_table()
+    program_length = parser.get_program_length()
+    errors = parser.errors
+
+    # Display parsed code lines
+    print("Parsed Code Lines:")
+    for line in parsed_code_lines:
+        print(line)
+
+    # Display symbol table
+    print("\nSymbol Table:")
+    print(symbol_table)
+
+    # Display literal table
+    print("\nLiteral Table:")
+    print(literal_table)
+
+    # Display program length
+    print("\nProgram Length:")
+    print(program_length)
+
+    # Display errors
+    print("\nErrors:")
+    for error in errors:
+        print(error)
+
 
 # Example usage
 if __name__ == "__main__":
-    test_parsing_intermediate_code()    
+    test_parsing_intermediate_code()
