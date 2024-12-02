@@ -30,7 +30,16 @@ class AssemblerPass1:
     It processes the source code, builds the symbol table, and computes addresses.
     """
 
-    def __init__(self, filename: str, logger: ErrorLogHandler = None, character_literal_prefix: str = '0C', hex_literal_prefix: str = '0X', allow_error_lines_in_generated_document: bool = True, stop_on_error: bool = False, generated_file_extension: str = '.int', Program_length_prefix_for_Hex = "Program Length (HEX):", Program_length_prefix_for_Decimal = "Program Length (DEC):"):
+    def __init__(self,
+                 filename: str,
+                 logger: ErrorLogHandler = None,
+                 character_literal_prefix: str = '0C',
+                 hex_literal_prefix: str = '0X',
+                 allow_error_lines_in_generated_document: bool = True,
+                 stop_on_error: bool = False,
+                 generated_file_extension: str = '.int',
+                 Program_length_prefix_for_Hex = "Program Length (HEX):",
+                 Program_length_prefix_for_Decimal = "Program Length (DEC):"):
         """
         Initializes the AssemblerPass1 instance.
 
