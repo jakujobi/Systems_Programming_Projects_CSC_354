@@ -150,8 +150,10 @@ class IntermediateFileParser:
         :param line: The line of the intermediate file content to be checked
         :return: True if the line is an error code line, False otherwise
         """
-        parts = line.upper().strip().split()
-        return len(parts) > 2 and '[ERROR' in parts[2]
+        # parts = line.upper().strip().split()
+        # return len(parts) > 2 and '[ERROR' in parts[2]
+        return '[ERROR' in line.upper()
+        
     
     def is_divider_line(self, line):
         """
