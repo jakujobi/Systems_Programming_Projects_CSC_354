@@ -60,12 +60,10 @@ In the records list, sort them by type
 ---
 
 # Detailed Class Designs and Responsibilities
-## 1. IntermediateFileReader
-Certainly! Let's focus on designing the `IntermediateFileReader` class to effectively parse the intermediate file you've provided. We'll expand on its design, define the necessary methods, and ensure it can handle all the different types of lines present in your sample input.
-
+## 1. IntermediateFileParser
 ---
 ### Objective
-- **Design an `IntermediateFileReader` class** that can parse the intermediate file generated from Pass 1.
+- **Design an `IntermediateFileParser` class** that can parse the intermediate file generated from Pass 1.
 - **Handle various line types**: code lines, error lines, symbol table entries, literal table entries, program length lines, and other special lines.
 - **Provide methods** to parse and store the data in a structured manner for use in Pass 2.
 ---
@@ -108,9 +106,8 @@ The intermediate file contains a mix of:
 12. `get_symbol_table(self)`: Returns the symbol table.
 13. `get_literal_table(self)`: Returns the literal table.
 14. `get_program_length(self)`: Returns the program length.
-
 ---
-## Implementation Details
+### Implementation Details
 #### 1. `__init__(self, file_name)`
 - **Purpose**: Initialize the `IntermediateFileReader` with the given file name and start parsing.
 - **Actions**:
@@ -211,7 +208,6 @@ The intermediate file contains a mix of:
 - **Action**: Call `parse_program_length()`.
 ---
 ### Implementing Parsing Methods
-
 #### Parsing Code Lines
 ```python
 def parse_code_line(self, line):
@@ -320,7 +316,7 @@ def parse_error_line(self, line):
     self.errors.append(f"Line {line_number}: {error_message}")
 ```
 
-### Parsing Symbol Table
+#### Parsing Symbol Table
 ```python
 def parse_symbol_table(self, lines_iterator):
     for line in lines_iterator:
@@ -345,7 +341,7 @@ def parse_symbol_table(self, lines_iterator):
         else:
             self.errors.append(f"Invalid symbol table line: '{line}'")
 ```
-### Parsing Literal Table
+#### Parsing Literal Table
 ```python
 def parse_literal_table(self, lines_iterator):
     for line in lines_iterator:
@@ -369,7 +365,7 @@ def parse_literal_table(self, lines_iterator):
             self.errors.append(f"Invalid literal table line: '{line}'")
 ```
 
-### Parsing Program Length
+#### Parsing Program Length
 ```python
 def parse_program_length(self, lines_iterator):
     for line in lines_iterator:
@@ -389,11 +385,8 @@ def parse_program_length(self, lines_iterator):
         else:
             self.errors.append(f"Invalid program length line: '{line}'")
 ```
-
 ---
-
-## Complete `IntermediateFileReader` Class
-Here's how the complete class might look:
+### Complete `IntermediateFileReader` Class
 ```python
 class IntermediateFileReader:
     def __init__(self, file_name):
@@ -464,39 +457,6 @@ class IntermediateFileReader:
         return self.errors
 ```
 
----
-### Defining the `SourceCodeLine` Class
-You'll need a class to represent each source code line. Here's a simple version:
-```python
-class SourceCodeLine:
-    def __init__(self, line_number, address, label='', opcode='', operands='', comment='', error=''):
-        self.line_number = line_number
-        self.address = address
-        self.label = label
-        self.opcode = opcode
-        self.operands = operands
-        self.comment = comment
-        self.error = error
-
-    def is_comment(self):
-        return self.opcode.startswith('.')
-
-    def has_errors(self):
-        return bool(self.error)
-```
-
----
-### Next Steps
-1. **Implement the Class**: Write the code for the `IntermediateFileReader` and related classes.
-2. **Test Parsing**: Use the provided sample input to test your parser.
-3. **Handle Edge Cases**: Ensure that all possible line formats are correctly parsed.
-4. **Integrate with Pass 2**: Use the parsed data to proceed with object code generation.
----
-### Conclusion
-By focusing on the `IntermediateFileReader`, we've designed a class that:
-- Can parse the intermediate file, handling all the different types of lines.
-- Stores the parsed data in structured formats suitable for Pass 2 processing.
-- Provides methods to access the code lines, symbol table, literal table, and program length.
 
 ---
 ## 2. ObjectCodeGenerator
@@ -529,6 +489,314 @@ By focusing on the `IntermediateFileReader`, we've designed a class that:
     - **Undefined Symbol**: If a symbol is not in the symbol table.
     - **Illegal Addressing**: If an addressing mode is not allowed for an instruction.
     - **Address Out of Range**: If the target address cannot be encoded in the instruction format.
+### 1. Overview
+
+The `ObjectCodeGenerator` is a core component of the assembler's Pass 2. Its primary function is to translate each assembly instruction into machine code (object code) while resolving symbols and literals using the symbol and literal tables. It handles various instruction formats and addressing modes, and performs error checking to ensure the correctness of the generated code.
+### 2. Responsibilities
+- **Generate Object Code**: Translate each instruction into its corresponding machine code.
+- **Resolve Symbols and Literals**: Use the symbol and literal tables to resolve addresses and values.
+- **Handle Instruction Formats and Addressing Modes**: Support formats 1 to 4 and various addressing modes (immediate, indirect, simple, indexed, extended).
+- **Error Checking**: Detect and report undefined symbols, illegal addressing modes, and address out-of-range errors.
+- **Collaborate with Managers**: Work with `TextRecordManager` and `ModificationRecordManager` to manage object code records and modification records.
+### 3. Attributes
+- `symbol_table`: Reference to the symbol table (`SymbolTable` instance).
+- `literal_table`: Reference to the literal table (`LiteralTableList` instance).
+- `opcode_handler`: Provides opcode information (could be an `OpcodeTable` instance).
+- `error_handler`: Logs errors encountered during code generation (`ErrorLogHandler` instance).
+- `text_record_manager`: Manages text records (`TextRecordManager` instance).
+- `modification_record_manager`: Manages modification records (`ModificationRecordManager` instance).
+- `program_length`: The length of the program (integer).
+- `current_address`: The current address during object code generation.
+- `base_register_value`: The value of the base register, if base-relative addressing is used.
+- `nixbpe_flags`: Flags for instruction encoding (n, i, x, b, p, e).
+### 4. Methods
+#### Initialization
+- `__init__(self, symbol_table, literal_table, opcode_handler, error_handler, program_length)`
+    - Initializes the `ObjectCodeGenerator` with references to necessary tables and handlers.
+    - Initializes `text_record_manager` and `modification_record_manager`.
+#### Main Methods
+- `generate_object_code(self, source_lines)`
+    - Iterates over each `SourceCodeLine` in `source_lines`.
+    - For each line, determines the type (instruction, directive, comment) and processes accordingly.
+    - Updates `current_address` based on instruction length.
+    - Handles errors and logs them using `error_handler`.
+- `process_instruction(self, source_line)`
+    - Main method to generate object code for an instruction line.
+    - Fetches opcode information using `opcode_handler`.
+    - Determines instruction format and calls the appropriate handler.
+- `process_directive(self, source_line)`
+    - Handles assembly directives such as `BYTE`, `WORD`, `RESB`, `RESW`, `BASE`, `NOBASE`.
+    - Generates object code for `BYTE` and `WORD`.
+    - Updates `current_address` for `RESB` and `RESW`.
+    - Handles base register setup for `BASE` and `NOBASE`.
+#### Instruction Format Handlers
+- `handle_format1(self, source_line, opcode_info)`
+    - Generates object code for format 1 instructions (1 byte).
+    - Object code is simply the opcode.
+- `handle_format2(self, source_line, opcode_info)`
+    - Generates object code for format 2 instructions (2 bytes).
+    - Parses register operands and encodes them.
+- `handle_format3(self, source_line, opcode_info)`
+    - Generates object code for format 3 instructions (3 bytes).
+    - Handles addressing modes and calculates displacement.
+    - Sets `nixbpe_flags` accordingly.
+- `handle_format4(self, source_line, opcode_info)`
+    - Generates object code for format 4 instructions (4 bytes).
+    - Handles extended addressing (e flag set).
+    - Adds entries to `modification_record_manager` if necessary.
+#### Supporting Methods
+- `resolve_operand(self, operand, current_address)`
+    - Resolves an operand, returning its value and relocation info.
+    - Checks symbol and literal tables.
+    - Handles immediate and indirect addressing.
+- `calculate_displacement(self, target_address, current_address)`
+    - Calculates displacement for format 3 instructions.
+    - Determines if PC-relative or base-relative addressing can be used.
+    - Returns displacement and sets appropriate flags.
+- `check_address_range(self, target_address, format_type, current_address)`
+    - Checks if the target address is within the allowable range for the instruction format.
+    - Logs an error if the address is out of range.
+- `detect_illegal_addressing(self, source_line, opcode_info)`
+    - Detects illegal addressing modes for the given instruction.
+    - Logs errors for unsupported addressing modes.
+- `update_current_address(self, instruction_length)`
+    - Updates `current_address` by adding the instruction length.
+- `log_error(self, message, line_number)`
+    - Logs an error message using `error_handler`.
+### 5. Implementation Details
+#### Instruction Formats
+- **Format 1**:
+    - Length: 1 byte.
+    - Object code: Opcode only.
+- **Format 2**:
+    - Length: 2 bytes.
+    - Object code: Opcode + Register codes.
+    - Registers are encoded using predefined codes (e.g., A=0, X=1, L=2, etc.).
+- **Format 3**:
+    - Length: 3 bytes.
+    - Object code: Opcode + nixbpe flags + 12-bit displacement.
+    - Supports PC-relative and base-relative addressing.
+    - Displacement range: -2048 to +2047 (12-bit signed).
+- **Format 4**:
+    - Length: 4 bytes.
+    - Object code: Opcode + nixbpe flags + 20-bit address.
+    - Supports extended addressing mode.
+    - Requires modification records for relocation.
+#### Addressing Modes
+- **Immediate Addressing** (`#`):
+    - Operand is a constant or an expression.
+    - `n` (indirect bit) = 0, `i` (immediate bit) = 1.
+- **Indirect Addressing** (`@`):
+    - Operand is a memory address.
+    - `n` = 1, `i` = 0.
+- **Simple (Direct) Addressing** (no prefix):
+    - Operand is a symbol or address.
+    - `n` = 1, `i` = 1.
+- **Indexed Addressing** (`,X`):
+    - Uses index register X.
+    - `x` (index bit) = 1.
+- **Extended Format** (`+`):
+    - Indicates format 4 instruction.
+    - `e` (extended bit) = 1.
+#### Error Checking
+- **Undefined Symbol**:
+    - If a symbol is not found in the symbol table.
+    - Logs an error and marks the line as invalid.
+- **Illegal Addressing**:
+    - If an addressing mode is not allowed for an instruction (e.g., immediate addressing with a format 1 instruction).
+    - Logs an error.
+- **Address Out of Range**:
+    - If the target address cannot be encoded within the displacement field.
+    - Suggests using format 4 or base-relative addressing if possible.
+### 6. Interaction with Other Classes
+#### TextRecordManager
+- **Purpose**:
+    - Collects and manages object codes to form text records.
+    - Ensures each text record does not exceed 30 bytes of object code.
+- **Interaction**:
+    - After generating object code for a line, `ObjectCodeGenerator` calls `text_record_manager.add_object_code(address, object_code)`.
+    - `text_record_manager` handles the grouping of object codes into text records.
+#### ModificationRecordManager
+- **Purpose**:
+    - Tracks addresses that require modification during linking/loading (relocation).
+    - Generates modification records for format 4 instructions and relocatable expressions.
+- **Interaction**:
+    - When a format 4 instruction or relocatable operand is encountered, `ObjectCodeGenerator` calls `modification_record_manager.add_modification(address, length)`.
+    - The `length` specifies the number of half-bytes to modify (e.g., 5 for format 4 addresses).
+
+#### ObjectProgramWriter
+- **Purpose**:
+    - Assembles the final object program by combining the header record, text records, modification records, and end record.
+    - Writes the object program to an output file.
+- **Interaction**:
+    - Once code generation is complete, `ObjectCodeGenerator` provides the header record, text records (from `text_record_manager`), modification records (from `modification_record_manager`), and end record to `ObjectProgramWriter`.
+    - `ObjectProgramWriter` assembles these components and writes them to the file.
+### 7. Detailed Method Descriptions
+#### generate_object_code(self, source_lines)
+- **Process**:
+    - Initialize `current_address` to the program's starting address.
+    - Loop through each `source_line` in `source_lines`.
+        - If `source_line` is a comment or empty line, skip processing.
+        - If `source_line` has errors, log the error and skip processing.
+        - If `source_line` is an instruction:
+            - Call `process_instruction(source_line)`.
+        - If `source_line` is a directive:
+            - Call `process_directive(source_line)`.
+        - Update `current_address` using `update_current_address(instruction_length)`.
+#### process_instruction(self, source_line)
+- **Process**:
+    - Retrieve opcode mnemonic from `source_line`.
+    - Use `opcode_handler` to get `opcode_info` (opcode value, instruction format, allowed addressing modes).
+    - Call `detect_illegal_addressing(source_line, opcode_info)`.
+        - If illegal addressing is detected, log an error and return.
+    - Based on instruction format, call the corresponding handler:
+        - Format 1: `handle_format1(source_line, opcode_info)`
+        - Format 2: `handle_format2(source_line, opcode_info)`
+        - Format 3: `handle_format3(source_line, opcode_info)`
+        - Format 4: `handle_format4(source_line, opcode_info)`
+    - After generating the object code, add it to the text record:
+        - `text_record_manager.add_object_code(current_address, object_code)`
+#### handle_format3(self, source_line, opcode_info)
+- **Process**:
+    - Initialize `nixbpe_flags` to `[0, 0, 0, 0, 0, 0]` (n, i, x, b, p, e).
+    - Set `e` flag to 0 (since it's format 3).
+    - Process operand and addressing modes using `process_addressing_modes(operand, nixbpe_flags)`.
+    - Resolve operand address using `resolve_operand(operand, current_address)`.
+        - If operand is undefined, log an error.
+    - Calculate displacement using `calculate_displacement(target_address, current_address)`.
+        - If displacement cannot be calculated, suggest using format 4.
+    - Construct object code:
+        - Opcode (6 bits) + nixbpe flags (6 bits) + displacement (12 bits).
+#### resolve_operand(self, operand, current_address)
+- **Process**:
+    - Check for literals (if operand starts with `=`).
+        - Retrieve address from `literal_table`.
+    - Check for symbols in `symbol_table`.
+        - Retrieve address.
+    - If operand is a constant (immediate value), convert to integer.
+    - Handle expressions (e.g., `symbol + offset`).
+    - Return the resolved address/value and relocation info.
+#### calculate_displacement(self, target_address, current_address)
+- **Process**:
+    - Calculate displacement: `displacement = target_address - (current_address + 3)`
+        - `+3` is the length of the instruction.
+    - Check if displacement is within -2048 to +2047.
+        - If yes, set `p` flag to 1.
+    - If not, check if base-relative addressing can be used:
+        - Displacement: `displacement = target_address - base_register_value`
+        - If displacement is within 0 to 4095, set `b` flag to 1.
+    - If neither, return `None` (displacement cannot be calculated).
+### 8. Error Handling
+- **Undefined Symbols**:
+    - When an operand cannot be resolved, log an error: `"Undefined symbol '{operand}' at line {line_number}."`
+    - Mark the `source_line` as having errors.
+- **Illegal Addressing Modes**:
+    - If the addressing mode is not allowed for the instruction, log an error: `"Illegal addressing mode for instruction '{opcode}' at line {line_number}."`
+- **Address Out of Range**:
+    
+    - If displacement cannot be encoded in the instruction format, log an error: `"Displacement out of range for operand '{operand}' at line {line_number}."`
+- **Invalid Operands**:
+    
+    - If operands are missing or incorrect, log an error: `"Invalid operands for instruction '{opcode}' at line {line_number}."`
+### 9. Finalization and Output
+- **After Processing All Lines**:
+    - Generate the header record:
+        - Program name, starting address, program length.
+    - Generate the end record:
+        - Address of the first executable instruction.
+    - Provide all records to `ObjectProgramWriter`:
+        - `header_record`
+        - `text_records` from `text_record_manager`
+        - `modification_records` from `modification_record_manager`
+        - `end_record`
+    - `ObjectProgramWriter` assembles the final object program and writes it to the output file.
+
+### **10. Pseudocode Example**
+
+```plaintext
+ObjectCodeGenerator:
+
+initialize(symbol_table, literal_table, opcode_handler, error_handler, program_length)
+initialize text_record_manager
+initialize modification_record_manager
+current_address = starting address
+
+function generate_object_code(source_lines):
+    for source_line in source_lines:
+        if source_line is comment or empty:
+            continue
+        if source_line has errors:
+            log_error("Errors in source line, skipping.", source_line.line_number)
+            continue
+        if source_line is instruction:
+            process_instruction(source_line)
+        else if source_line is directive:
+            process_directive(source_line)
+        update_current_address(source_line.instruction_length)
+
+function process_instruction(source_line):
+    opcode_info = opcode_handler.get_info(source_line.opcode_mnemonic)
+    if opcode_info is None:
+        log_error("Invalid opcode.", source_line.line_number)
+        return
+    detect_illegal_addressing(source_line, opcode_info)
+    if source_line has errors:
+        return
+    switch opcode_info.format:
+        case 1:
+            handle_format1(source_line, opcode_info)
+        case 2:
+            handle_format2(source_line, opcode_info)
+        case 3:
+            handle_format3(source_line, opcode_info)
+        case 4:
+            handle_format4(source_line, opcode_info)
+    add object code to text_record_manager
+
+function handle_format3(source_line, opcode_info):
+    set e flag to 0
+    process addressing modes and set n, i, x flags
+    resolve operand to get target_address
+    calculate displacement
+    if displacement is None:
+        log_error("Displacement out of range.", source_line.line_number)
+        return
+    construct object code
+    source_line.object_code = object code
+
+function resolve_operand(operand, current_address):
+    if operand is literal:
+        get address from literal_table
+    else if operand is symbol:
+        get address from symbol_table
+    else if operand is constant:
+        convert operand to integer
+    else:
+        log_error("Undefined symbol.", source_line.line_number)
+    return address
+
+function calculate_displacement(target_address, current_address):
+    displacement = target_address - (current_address + 3)
+    if displacement in range -2048 to +2047:
+        set p flag to 1
+        return displacement
+    else if base_register_value is set:
+        displacement = target_address - base_register_value
+        if displacement in range 0 to 4095:
+            set b flag to 1
+            return displacement
+    return None
+```
+
+---
+
+## **Conclusion**
+
+By integrating the `ObjectCodeGenerator` with `TextRecordManager`, `ModificationRecordManager`, and `ObjectProgramWriter`, we've updated the plan to reflect a modular and organized approach to object code generation. The design focuses on pseudocode and planning, detailing responsibilities, attributes, methods, and interactions between classes.
+
+This comprehensive plan should serve as a solid foundation for implementing the `ObjectCodeGenerator` and related components in your assembler. It ensures that each part of the system is well-defined and that their interactions are clearly outlined.
+
+If you have any further questions or need clarification on specific aspects of the design, please feel free to ask!
 ---
 ## 3. TextRecordManager
 **Responsibilities**:
