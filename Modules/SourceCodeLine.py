@@ -23,7 +23,8 @@ class SourceCodeLine:
                  address = 0x00000,
                  object_code = None,
                  instr_format = None,
-                 instruction_length = 0
+                 instruction_length = 0,
+                 original_line_number: int = None
                  ):
         """
         Initializes a SourceCodeLine object.
@@ -52,6 +53,8 @@ class SourceCodeLine:
         # Additional attributes
         self.errors = errors or []
         self.instruction_length = instruction_length or 0
+        
+        self.original_line_number = original_line_number
 
     def __str__(self) -> str:
         """
