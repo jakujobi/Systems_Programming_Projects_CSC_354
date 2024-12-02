@@ -268,19 +268,19 @@ class SymbolTable:
         # Set MFlag to true if there's a duplicate
         if symbol_data.symbol == current_node.symbol_data.symbol:
             current_node.symbol_data.mflag = True
-            print("Duplicate symbol found. MFlag set to True.")
+            self.logger.log_action(f"Duplicate symbol '{symbol_data.symbol}' found. MFlag set to True.", False)
         # Insert into left subtree
         elif symbol_data.symbol < current_node.symbol_data.symbol:
             if current_node.left is None:
                 current_node.left = SymbolNode(symbol_data)
-                print("Symbol Inserted")
+                self.logger.log_action(f"Symbol '{symbol_data.symbol}' inserted.", False)
             else:
                 self._insert(current_node.left, symbol_data)
         # Insert into right subtree
         else:
             if current_node.right is None:
                 current_node.right = SymbolNode(symbol_data)
-                print("Symbol Inserted")
+                self.logger.log_action(f"Symbol '{symbol_data.symbol}' inserted.", False)
             else:
                 self._insert(current_node.right, symbol_data)
     
@@ -341,7 +341,7 @@ class SymbolTable:
         """
         result = self._search(self.root, symbol.upper()[:4])
         if result is None:
-            print(f"Symbol '{symbol.upper()[:4]}' not found.")
+            self.logger.log_action(f"Symbol '{symbol.upper()[:4]}' not found.", False)
             return None
         return result
         # return {'value': result.value, 'rflag': result.rflag}
@@ -367,7 +367,7 @@ class SymbolTable:
         if current_node is None:
             return None  # Symbol not found
         if symbol == current_node.symbol_data.symbol:
-            print(f"[TABLE] Symbol '{symbol}' found in symbol table")
+            self.logger.log_action(f"Symbol '{symbol}' found in symbol table.", False)
             return current_node.symbol_data
         elif symbol < current_node.symbol_data.symbol:
             return self._search(current_node.left, symbol)
@@ -453,14 +453,15 @@ class SymbolTable:
         ********************************************************************/
         """
         if self.root is None:
-            print("Symbol table is empty.")
+            self.logger.log_error("Symbol table is empty.")
             return
         
         self.root, removed = self._remove(self.root, symbol.upper()[:4])
         if removed:
-            print(f"Symbol '{symbol.upper()[:4]}' removed.")
+            self.logger.log_action(f"Symbol '{symbol.upper()[:4]}' removed.", False)
         else:
             print(f"Symbol '{symbol.upper()[:4]}' not found.")
+            self.logger.log_error(f"Symbol '{symbol.upper()[:4]}' not found.")
 
 
     def _remove(self, node, symbol):
@@ -512,10 +513,10 @@ class SymbolTable:
         ********************************************************************/
         """
         if self.root is None:
-            print("Symbol table is already empty.")
+            self.logger.log_error("Symbol table is already empty.")
         else:
             self._destroy()
-            print("Symbol Table Destroyed")
+            self.logger.log_action("Symbol Table Destroyed.", False)
             
     def _destroy(self):
         """
@@ -580,19 +581,23 @@ class Validator:
 
         # Check if the symbol length exceeds 10 characters
         if len(symbol) > 10:
+            self.logger.log_error(f"Symbol '{symbol}' length exceeds 10 characters.")
             return f"Error: Symbol '{symbol}' length exceeds 10 characters."
         
         # Check if the symbol starts with a letter
         if not symbol[0].isalpha():
+            self.logger.log_error(f"Symbol '{symbol}' must start with a letter.")
             return f"Error: Symbol '{symbol}' must start with a letter."
 
         # Check if the entire symbol is "_"
         if symbol == "_":
+            self.logger.log_error("Symbol cannot be an underscore ('_') only.")
             return "Error: Symbol cannot be an underscore ('_') only."
 
         # Check for invalid characters
         for char in symbol:
             if not (char.isalnum() or char == "_"):
+                self.logger.log_error(f"Symbol '{symbol}' contains invalid character '{char}'.")
                 return f"Error: Symbol '{symbol}' contains invalid character '{char}'."
         
         return "Success"
