@@ -564,6 +564,8 @@ class Validator:
     ********************************************************************/
     """
     
+    
+    
     def validate_symbol(self, symbol):
         """
         /********************************************************************
@@ -581,23 +583,23 @@ class Validator:
 
         # Check if the symbol length exceeds 10 characters
         if len(symbol) > 10:
-            self.logger.log_error(f"Symbol '{symbol}' length exceeds 10 characters.")
+            # self.logger.log_error(f"Symbol '{symbol}' length exceeds 10 characters.")
             return f"Error: Symbol '{symbol}' length exceeds 10 characters."
         
         # Check if the symbol starts with a letter
         if not symbol[0].isalpha():
-            self.logger.log_error(f"Symbol '{symbol}' must start with a letter.")
+            # self.logger.log_error(f"Symbol '{symbol}' must start with a letter.")
             return f"Error: Symbol '{symbol}' must start with a letter."
 
         # Check if the entire symbol is "_"
         if symbol == "_":
-            self.logger.log_error("Symbol cannot be an underscore ('_') only.")
+            # self.logger.log_error("Symbol cannot be an underscore ('_') only.")
             return "Error: Symbol cannot be an underscore ('_') only."
 
         # Check for invalid characters
         for char in symbol:
             if not (char.isalnum() or char == "_"):
-                self.logger.log_error(f"Symbol '{symbol}' contains invalid character '{char}'.")
+                # self.logger.log_error(f"Symbol '{symbol}' contains invalid character '{char}'.")
                 return f"Error: Symbol '{symbol}' contains invalid character '{char}'."
         
         return "Success"
