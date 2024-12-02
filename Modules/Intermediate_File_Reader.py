@@ -33,12 +33,32 @@ class IntermediateFileParser:
         self.program_length = {'decimal': None, 'hexadecimal': None}
         
         self.int_file_lines = int_file_content or []
+        self.parsed_code_lines = []
         
     def parse_intermediate_file_content(self):
         self.int_file_lines = iter(self.int_file_lines)
         for line in self.int_file_lines:
             line = line.strip()
+            
         pass
+    
+    def is_divider_line(self, line):
+        return line.startswith('___')
+
+    def is_title_line(self, line):
+        return line.startswith('===')
+
+    def get_code_lines(self):
+        return self.parsed_code_lines
+
+    def get_symbol_table(self):
+        return self.symbol_table
+
+    def get_literal_table(self):
+        return self.literal_table
+
+    def get_program_length(self):
+        return self.program_length
     
     
     
