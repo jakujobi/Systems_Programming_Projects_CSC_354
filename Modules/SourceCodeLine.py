@@ -12,7 +12,19 @@ class SourceCodeLine:
     comment_symbol = '.'  # Default comment symbol
     label_suffix_symbol = ':'
 
-    def __init__(self, line_number: int, line_text: str, label = '', opcode_mnemonic = '', operands = '', comment = ''):
+    def __init__(self,
+                 line_number: int,
+                 line_text: str, label = '',
+                 opcode_mnemonic = '',
+                 operands = '',
+                 comment = '',
+                 errors = [],
+                 opcode_hex = None,
+                 address = 0x00000,
+                 object_code = None,
+                 instr_format = None,
+                 instruction_length = 0
+                 ):
         """
         Initializes a SourceCodeLine object.
 
@@ -24,22 +36,22 @@ class SourceCodeLine:
         except ValueError:
             raise ValueError(f"Invalid line number: {line_number}. It should be an integer.")
 
-        self.line_text = line_text  # Original line text
+        self.line_text = line_text or ''  # Original line text
 
         # Core attributes: Gotten from the input after being parsed
-        self.label = ''
-        self.opcode_mnemonic = ''
-        self.operands = ''  # Changed from list to string
-        self.comment = ''
+        self.label = label or ''
+        self.opcode_mnemonic = opcode_mnemonic or ''
+        self.operands = operands or ''  # Changed from list to string
+        self.comment = comment or ''
 
-        self.opcode_hex = None  # Opcode in hexadecimal
-        self.address = 0x00000  # Address of the instruction
-        self.object_code = None
-        self.instr_format = None
+        self.opcode_hex = opcode_hex or None  # Opcode in hexadecimal
+        self.address = address or 0x00000  # Address of the instruction
+        self.object_code = object_code or None
+        self.instr_format = instr_format or None
 
         # Additional attributes
-        self.errors = []
-        self.instruction_length = 0
+        self.errors = errors or []
+        self.instruction_length = instruction_length or 0
 
     def __str__(self) -> str:
         """
