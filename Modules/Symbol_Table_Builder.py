@@ -172,6 +172,7 @@ class SymbolTable:
         """
         self.root = None
         self.logger = logger or ErrorLogHandler()
+        self.str_header = (f"{'Symbol':<10} {'Value':<10} {'RFlag':<6} {'IFlag':<6} {'MFlag':<6}")
     
     def __str__(self):
         """
@@ -190,7 +191,7 @@ class SymbolTable:
         symbols = []
         self._collect_symbols(self.root, symbols)
         result = [f"\n{divider}\nSymbol Table:\n{divider}"]
-        result.append(f"{'Symbol':<10} {'Value':<10} {'RFlag':<6} {'IFlag':<6} {'MFlag':<6}")
+        result.append(self.str_header)
         result.append(f"{divider}")
     
         
