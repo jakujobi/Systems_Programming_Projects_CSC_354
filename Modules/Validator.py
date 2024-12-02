@@ -17,15 +17,24 @@ class Validator:
     
     def valid_label(self, label: str, error_list: list = None) -> bool:
         """
-        Validates a label based on the following rules:
+        Validates a label based on specified rules.
+
+        Parameters:
+        - label: The label to be validated.
+        - error_list: A list to append error messages to if provided.
+
+        Returns:
+        - True if the label is valid, False otherwise.
+
+        Validation Rules:
         - Must be at most 10 characters.
         - Must start with a letter.
         - Cannot be just an underscore.
         - Can contain only letters, digits, and underscores.
         """
         label = label.strip().rstrip(":").upper()
-
         Errors = []
+
         # Check if the label length exceeds 10 characters
         if len(label) > 10:
             Errors.append(f"'{label}' length exceeds 10 characters.")
@@ -53,4 +62,5 @@ class Validator:
             if error_list:
                 error_list.extend(Errors)
             return False
+
         return True
