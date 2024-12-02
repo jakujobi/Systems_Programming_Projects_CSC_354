@@ -113,7 +113,7 @@ class ErrorLogHandler:
 
 
 
-    def log_action(self, message: str, print_actions: bool = True):
+    def log_action(self, message: str, print_actions: bool = False):
         """
         /***************************************************************************************
         ***  METHOD : log_action                                                             ***
