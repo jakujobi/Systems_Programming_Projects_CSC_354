@@ -201,7 +201,7 @@ class LiteralTableList:
     """
 
 
-    def __init__(self, log_handler):
+    def __init__(self, logger):
         """
         /***************************************************************************************
         ***  METHOD : __init__                                                               ***
@@ -210,16 +210,16 @@ class LiteralTableList:
         ***      handler to log actions and errors.                                          ***
         ***                                                                                  ***
         ***  INPUT PARAMETERS :                                                              ***
-        ***      log_handler : ErrorLogHandler  : Object used to handle logging of actions   ***
+        ***      logger : ErrorLogHandler  : Object used to handle logging of actions   ***
         ***                      and errors in the table.                                   ***
         ***************************************************************************************/
 
         Initialize the literal table with an empty linked list and a log handler.
 
-        :param log_handler: An instance of ErrorLogHandler for logging actions and errors.
+        :param logger: An instance of ErrorLogHandler for logging actions and errors.
         """
         self.head: LiteralNode = None
-        self.log_handler = log_handler
+        self.logger = logger
         self.str_header = (f"{'Literal':<10} {'Value':<10} {'Length':<6} {'Address':<8}")
         
     def __str__(self) -> str:
@@ -282,28 +282,28 @@ class LiteralTableList:
         :param literal_data: An instance of LiteralData to be inserted.
         """
         if not isinstance(literal_data, LiteralData):
-            self.log_handler.log_error("Cannot insert: Invalid LiteralData object.")
+            self.logger.log_error("Cannot insert: Invalid LiteralData object.")
             return
 
         if self._find_literal(literal_data.name):
-            self.log_handler.log_error(f"Duplicate literal insertion error: The literal '{literal_data.name}' already exists.")
+            self.logger.log_error(f"Duplicate literal insertion error: The literal '{literal_data.name}' already exists.")
             return
 
                     # Check if a literal with the same value already exists
         if self.exists_by_value(literal_data.value, literal_data.name):
-            self.log_handler.log_action(f"Literal '{literal_data.name}' with value '{literal_data.value}' already exists. Skipping insertion.", False)
+            self.logger.log_action(f"Literal '{literal_data.name}' with value '{literal_data.value}' already exists. Skipping insertion.", False)
             return
     
         new_node = LiteralNode(literal_data)
         if self.head is None:
             self.head = new_node
-            self.log_handler.log_action(f"Inserted literal '{literal_data.name}' as head.", False)
+            self.logger.log_action(f"Inserted literal '{literal_data.name}' as head.", False)
         else:
             current = self.head
             while current.next is not None:
                 current = current.next
             current.next = new_node
-            self.log_handler.log_action(f"Inserted literal '{literal_data.name}' into the table.", False)
+            self.logger.log_action(f"Inserted literal '{literal_data.name}' into the table.", False)
 
 
     def exists_by_value(self, value: str, name: str) -> bool:
@@ -419,10 +419,10 @@ class LiteralTableList:
         current = self.head
         while current is not None:
             if current.literal_data.name == literal_name:
-                self.log_handler.log_action(f"Found literal '{literal_name}' in the table.", False)
+                self.logger.log_action(f"Found literal '{literal_name}' in the table.", False)
                 return current.literal_data
             current = current.next
-        self.log_handler.log_action(f"Literal '{literal_name}' not found in the table.", False)
+        self.logger.log_action(f"Literal '{literal_name}' not found in the table.", False)
         return None
 
 
@@ -447,11 +447,11 @@ class LiteralTableList:
         :param start_address: The starting address for the first literal (default is 0).
         """
         if start_address < 0:
-            self.log_handler.log_error("Invalid starting address. Addresses cannot be negative.")
+            self.logger.log_error("Invalid starting address. Addresses cannot be negative.")
             return
 
         if self.head is None:
-            self.log_handler.log_error("Update failed: The literal table is empty.")
+            self.logger.log_error("Update failed: The literal table is empty.")
             return
 
         current = self.head
@@ -459,7 +459,7 @@ class LiteralTableList:
 
         while current:
             current.literal_data.address = current_address
-            self.log_handler.log_action(f"Assigned address {current_address} to literal '{current.literal_data.name}'.", False)
+            self.logger.log_action(f"Assigned address {current_address} to literal '{current.literal_data.name}'.", False)
             current_address += 1  # Increment address by 1 regardless of length
             current = current.next
 
@@ -584,11 +584,11 @@ class ExpressionParser:
         expressions_lines (list): List of raw expression lines.
         parsed_expressions (list): List of dictionaries representing parsed expressions.
         literal_table (LiteralTableList): Reference to the literal table.
-        log_handler (ErrorLogHandler): Reference to the error log handler.
+        logger (ErrorLogHandler): Reference to the error log handler.
     """
 
 
-    def __init__(self, expressions_lines, literal_table, log_handler, hex_literal_prefix=None, character_literal_prefix='=0C'):
+    def __init__(self, expressions_lines, literal_table, logger, hex_literal_prefix=None, character_literal_prefix='=0C'):
         """
         /***************************************************************************************
         ***  METHOD : __init__                                                               ***
@@ -599,7 +599,7 @@ class ExpressionParser:
         ***  INPUT PARAMETERS :                                                              ***
         ***      expressions_lines : list  : List of raw expression lines.                   ***
         ***      literal_table     : LiteralTableList  : Reference to the literal table.     ***
-        ***      log_handler       : ErrorLogHandler  : Logs actions and errors.             ***
+        ***      logger       : ErrorLogHandler  : Logs actions and errors.             ***
         ***************************************************************************************/
 
         Initializes the parser with a list of expression lines, a literal table, and an error log handler.
@@ -607,12 +607,12 @@ class ExpressionParser:
         Args:
             expressions_lines (list): List of raw expression lines from the file.
             literal_table (LiteralTableList): Reference to the literal table.
-            log_handler (ErrorLogHandler): Reference to the error log handler.
+            logger (ErrorLogHandler): Reference to the error log handler.
         """
         self.expressions_lines = expressions_lines or []
         self.parsed_expressions = []
         self.literal_table = literal_table
-        self.log_handler = log_handler
+        self.logger = logger
         self.invalid_literals_set = set()  # Track invalid literals
         self.hex_literal_prefix = hex_literal_prefix or '=0X'
         self.character_literal_prefix = character_literal_prefix or '=0C'
@@ -633,9 +633,9 @@ class ExpressionParser:
             parsed_expr = self.parse_line(line)
             if parsed_expr:
                 if parsed_expr.get('error'):
-                    self.log_handler.log_error(parsed_expr['error'], context_info=parsed_expr['original_expression'])
+                    self.logger.log_error(parsed_expr['error'], context_info=parsed_expr['original_expression'])
                 else:
-                    self.log_handler.log_action(f"Parsed expression: {parsed_expr['original_expression']}", False)
+                    self.logger.log_action(f"Parsed expression: {parsed_expr['original_expression']}", False)
                 self.parsed_expressions.append(parsed_expr)
 
  
@@ -777,7 +777,7 @@ class ExpressionParser:
                 #check if the literal does not start with =0C or =0X or =0c or =0x
                 if not literal_name.upper().startswith("=0C") and not literal_name.upper().startswith("=0X"):
                     _error_message = f"Invalid literal format: {literal_name}"
-                    self.log_handler.log_error(_error_message)
+                    self.logger.log_error(_error_message)
                     raise ValueError(_error_message)
                 # # Check for illegal character literal format =C'123'
                 # if literal_name.upper().startswith("=C"):
@@ -789,11 +789,11 @@ class ExpressionParser:
                     literal_value = literal_name[3:].upper()
                     if not all(c in '0123456789ABCDEFabcdef' for c in literal_value):
                         _error_message = f"Invalid hexadecimal value: {literal_value}"
-                        self.log_handler.log_error(_error_message)
+                        self.logger.log_error(_error_message)
                         raise ValueError(f"Invalid hexadecimal value: {literal_value}")
                     if len(literal_value) % 2 != 0:
                         _error_message = f"Hexadecimal value length is not valid (must be even): {literal_value}"
-                        self.log_handler.log_error(_error_message)
+                        self.logger.log_error(_error_message)
                         raise ValueError(_error_message)
                     literal_length = len(literal_value) // 2  # Two characters per byte
 
@@ -803,7 +803,7 @@ class ExpressionParser:
                     char_sequence = literal_name[3:]
                     if len(char_sequence) == 0:
                         _error_message = f"Character literal is empty: {literal_name}"
-                        self.log_handler.log_error(_error_message)
+                        self.logger.log_error(_error_message)
                         raise ValueError(_error_message)
                     literal_value = ''.join(f"{ord(c):02X}" for c in char_sequence)
                     literal_length = len(char_sequence)
@@ -816,7 +816,7 @@ class ExpressionParser:
                 self.literal_table.insert(new_literal)
 
                 parsed_expr['operand1'] = literal_name
-                self.log_handler.log_action(f"Inserted new literal '{literal_name}'", False)
+                self.logger.log_action(f"Inserted new literal '{literal_name}'", False)
                 return None  # Skip further processing for valid literals
 
             except ValueError as e:
@@ -825,11 +825,11 @@ class ExpressionParser:
                     return None  # Skip duplicate invalid literals
                 else:
                     self.invalid_literals_set.add(literal_name)
-                    self.log_handler.log_error(parsed_expr['error'], context_info=literal_name)
+                    self.logger.log_error(parsed_expr['error'], context_info=literal_name)
                     return parsed_expr  # Return the invalid literal as an error
 
         parsed_expr['operand1'] = literal_name
-        self.log_handler.log_action(f"Used existing literal '{literal_name}'", False)
+        self.logger.log_action(f"Used existing literal '{literal_name}'", False)
         return parsed_expr
 
 
@@ -848,7 +848,7 @@ class ExpressionParser:
 
         Split and assign operands to the parsed expression. Identifies the operator (`+`, `-`) and assigns operands.
         """
-        self.log_handler.log_action(f"Parsing operands from line: {line}", False)
+        self.logger.log_action(f"Parsing operands from line: {line}", False)
         if '+' in line:
             parsed_expr['operator'] = '+'
             operands = line.split('+')
@@ -922,11 +922,11 @@ class ExpressionEvaluator:
         symbol_table (SymbolTable): Reference to the symbol table.
         literal_table (LiteralTableList): An object handling literal management.
         evaluated_expressions (list): List of evaluated expressions with their results.
-        log_handler (ErrorLogHandler): Reference to the error log handler.
+        logger (ErrorLogHandler): Reference to the error log handler.
     """
 
 
-    def __init__(self, parsed_expressions, symbol_table, literal_table, log_handler):
+    def __init__(self, parsed_expressions, symbol_table, literal_table, logger):
         """
         /***************************************************************************************
         ***  METHOD : __init__                                                               ***
@@ -938,7 +938,7 @@ class ExpressionEvaluator:
         ***      parsed_expressions : list  : List of parsed expressions.                    ***
         ***      symbol_table       : SymbolTable  : Reference to the symbol table.          ***
         ***      literal_table      : LiteralTableList  : Reference to the literal table.    ***
-        ***      log_handler        : ErrorLogHandler  : Logs actions and errors.            ***
+        ***      logger        : ErrorLogHandler  : Logs actions and errors.            ***
         ***************************************************************************************/
 
         Initializes the evaluator with parsed expressions, symbol table, literal table, and log handler.
@@ -947,13 +947,13 @@ class ExpressionEvaluator:
             parsed_expressions (list): List of parsed expressions.
             symbol_table (SymbolTable): Reference to the symbol table.
             literal_table (LiteralTableList): Literal table for managing literals.
-            log_handler (ErrorLogHandler): Reference to the error log handler.
+            logger (ErrorLogHandler): Reference to the error log handler.
         """
         self.parsed_expressions = parsed_expressions
         self.symbol_table = symbol_table
         self.literal_table = literal_table
         self.evaluated_expressions = [] 
-        self.log_handler = log_handler or ErrorLogHandler()
+        self.logger = logger or ErrorLogHandler()
 
 
     def evaluate_all(self):
@@ -971,9 +971,9 @@ class ExpressionEvaluator:
             if parsed_expr:
                 evaluated_expr = self.evaluate_expression(parsed_expr)
                 if evaluated_expr.get('error'):
-                    self.log_handler.log_error(evaluated_expr['error'], context_info=parsed_expr['original_expression'])
+                    self.logger.log_error(evaluated_expr['error'], context_info=parsed_expr['original_expression'])
                 else:
-                    self.log_handler.log_action(f"Evaluated expression: {parsed_expr['original_expression']}", False)
+                    self.logger.log_action(f"Evaluated expression: {parsed_expr['original_expression']}", False)
                 self.evaluated_expressions.append(evaluated_expr)
 
 
@@ -1189,11 +1189,11 @@ class ExpressionResults:
     
     Attributes:
         evaluated_expressions (list): List of evaluated expressions.
-        log_handler (ErrorLogHandler): Reference to the error log handler.
+        logger (ErrorLogHandler): Reference to the error log handler.
     """
 
 
-    def __init__(self, evaluated_expressions, log_handler):
+    def __init__(self, evaluated_expressions, logger):
         """
         /***************************************************************************************
         ***  METHOD : __init__                                                                ***
@@ -1202,17 +1202,17 @@ class ExpressionResults:
         ***                                                                                   ***
         ***  INPUT PARAMETERS :                                                               ***
         ***      evaluated_expressions : list  : List of evaluated expressions.               ***
-        ***      log_handler           : ErrorLogHandler  : Logs actions and errors.          ***
+        ***      logger           : ErrorLogHandler  : Logs actions and errors.          ***
         ***************************************************************************************/
 
         Initializes the result handler with evaluated expressions and log handler.
         
         Args:
             evaluated_expressions (list): List of evaluated expressions.
-            log_handler (ErrorLogHandler): Reference to the error log handler.
+            logger (ErrorLogHandler): Reference to the error log handler.
         """
         self.evaluated_expressions = evaluated_expressions
-        self.log_handler = log_handler
+        self.logger = logger
 
 
     def display_results(self, include_literals=True):
@@ -1390,7 +1390,7 @@ class LiteralTableDriver:
     """
 
 
-    def __init__(self, log_handler=None, symbol_table_driver=None, literal_table=None, file_explorer=None):
+    def __init__(self, logger=None, symbol_table_driver=None, literal_table=None, file_explorer=None):
         """
         /***************************************************************************************
         ***  METHOD : __init__                                                                ***
@@ -1400,8 +1400,8 @@ class LiteralTableDriver:
 
         Initialize the LiteralTableDriver with all necessary components.
         """
-        self.log_handler = log_handler or ErrorLogHandler()  # Error log handler
-        self.literal_table = literal_table or LiteralTableList(self.log_handler)  # Pass log_handler to LiteralTableList
+        self.logger = logger or ErrorLogHandler()  # Error log handler
+        self.literal_table = literal_table or LiteralTableList(self.logger)  # Pass logger to LiteralTableList
         self.symbol_table_driver = symbol_table_driver or SymbolTableDriver()  # Use SymbolTableDriver to manage symbol table
         self.file_explorer = file_explorer or FileExplorer()  # File handling for locating files
         
@@ -1432,7 +1432,7 @@ class LiteralTableDriver:
                 self.evaluate_expressions(parsed_expressions)
                 self.display_results()
         except Exception as e:
-            self.log_handler.log_error(f"Unexpected error occurred: {e}")
+            self.logger.log_error(f"Unexpected error occurred: {e}")
 
 
     def build_symbol_table(self):
@@ -1446,12 +1446,12 @@ class LiteralTableDriver:
         Build the symbol table using SymbolTableDriver.
         """
         try:
-            self.log_handler.log_action("Building symbol table from SYMS.DAT")
+            self.logger.log_action("Building symbol table from SYMS.DAT")
             self.symbol_table_driver.build_symbol_table()
             self.symbol_table = self.symbol_table_driver.symbol_table
-            self.log_handler.log_action("Symbol table building complete")
+            self.logger.log_action("Symbol table building complete")
         except Exception as e:
-            self.log_handler.log_error(f"Error while building symbol table: {e}")
+            self.logger.log_error(f"Error while building symbol table: {e}")
 
 
     def get_expression_file(self) -> str:
@@ -1496,13 +1496,13 @@ class LiteralTableDriver:
             expressions = self.file_explorer.process_file(file_name)
             if not expressions:
                 raise ValueError(f"The file '{file_name}' is empty. Please provide a valid file with expressions.")
-            self.log_handler.log_action(f"Expressions loaded successfully from {file_name}.")
+            self.logger.log_action(f"Expressions loaded successfully from {file_name}.")
             return expressions
         except FileNotFoundError:
-            self.log_handler.log_error(f"File '{file_name}' not found.")
+            self.logger.log_error(f"File '{file_name}' not found.")
             return []
         except Exception as e:
-            self.log_handler.log_error(f"Error while loading expressions from {file_name}: {e}")
+            self.logger.log_error(f"Error while loading expressions from {file_name}: {e}")
             return []
 
 
@@ -1525,10 +1525,10 @@ class LiteralTableDriver:
         :param expressions: List of raw expression strings.
         :return: A list of parsed expression dictionaries.
         """
-        parser = ExpressionParser(expressions, self.literal_table, self.log_handler)
+        parser = ExpressionParser(expressions, self.literal_table, self.logger)
         parser.parse_all()
         parsed_expressions = parser.get_parsed_expressions()
-        self.log_handler.log_action(f"Parsed {len(parsed_expressions)} expressions.")
+        self.logger.log_action(f"Parsed {len(parsed_expressions)} expressions.")
         return parsed_expressions
 
 
@@ -1552,14 +1552,14 @@ class LiteralTableDriver:
             parsed_expressions,
             self.symbol_table_driver.symbol_table,
             self.literal_table,
-            self.log_handler
+            self.logger
         )
         evaluator.evaluate_all()
         self.evaluated_expressions = evaluator.get_evaluated_expressions()
 
         # Update literal addresses
         self.literal_table.update_addresses(start_address=0)
-        self.log_handler.log_action("Expressions evaluated and literal table updated.")
+        self.logger.log_action("Expressions evaluated and literal table updated.")
 
 
     def paginate_output(self, display_function, header: str):
@@ -1598,15 +1598,15 @@ class LiteralTableDriver:
         Display all the results including literals, logs, and errors with paginated output.
         """
         # Display evaluated expressions
-        results_display = ExpressionResults(self.evaluated_expressions, self.log_handler)
+        results_display = ExpressionResults(self.evaluated_expressions, self.logger)
         self.paginate_output(lambda: results_display.display_results(include_literals=False), "Displaying Evaluated Expressions:")
 
         # Display the literal table
         self.paginate_output(self.literal_table.display_literals, "Displaying Literal Table:")
 
         # Display logs and errors
-        self.paginate_output(self.log_handler.display_log, "Displaying Log Entries:")
-        self.paginate_output(self.log_handler.display_errors, "Displaying Errors:")
+        self.paginate_output(self.logger.display_log, "Displaying Log Entries:")
+        self.paginate_output(self.logger.display_errors, "Displaying Errors:")
 
 
 
