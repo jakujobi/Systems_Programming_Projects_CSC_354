@@ -58,11 +58,24 @@ class Validator:
     
     def valid_symbol_flag(self, flag):
         # if flag is an int, check if it is a 1 or 0
+        """
+        Checks if a given flag is valid.
+
+        A valid flag is either an integer (1 or 0), a boolean string ("TRUE" or "FALSE"), a boolean, or None.
+
+        Args:
+            flag: The value to be validated.
+
+        Returns:
+            True if the flag is valid, False otherwise.
+        """
         if isinstance(flag, int):
             return flag in [0, 1]
         # if flag is a string, check if it is a boolean
         elif isinstance(flag, str):
             return flag.strip().upper() in ["TRUE", "FALSE", "0", "1"]
+        elif isinstance(flag, bool):
+            return True
         # if flag is neither an int nor a string, return False
         else:
             _error = f"Invalid symbol flag: {flag}"
@@ -70,6 +83,16 @@ class Validator:
             return False
         
     def convert_flag_to_bool(self, flag):
+        """
+        Converts a symbol flag to a boolean value.
+
+        Args:
+            flag: The value to be converted.
+
+        Returns:
+            A boolean value if the flag is valid, None otherwise.
+        """
+
         if self.valid_symbol_flag(flag):
             if isinstance(flag, int):
                 return bool(flag)
@@ -84,6 +107,17 @@ class Validator:
             return None
         
     def valid_hex_address_value(self, value):
+        """
+        Validates a hexadecimal address value.
+
+        Args:
+            value (str): The hexadecimal address value to validate.
+
+        Returns:
+            bool: True if the value is a valid hexadecimal address, False otherwise.
+        
+        Logs an error if the value is invalid.
+        """
         if re.fullmatch(r'^[0-9A-Fa-f]{4,5}$', value.upper()):
             return True
         else:
@@ -92,6 +126,17 @@ class Validator:
             return False
         
     def convert_string_hex_str_to_int(self, hex_str):
+        """
+        Converts a hexadecimal string to an integer.
+
+        Args:
+            hex_str (str): The hexadecimal string to convert.
+
+        Returns:
+            int: The integer value of the hexadecimal string if valid, None otherwise.
+
+        Logs an error if the value is invalid.
+        """
         if self.valid_hex_address_value(hex_str):
             return int(hex_str, 16)
         else:
