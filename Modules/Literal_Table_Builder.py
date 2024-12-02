@@ -244,7 +244,8 @@ class LiteralTableList:
         current = self.head
         while current is not None:
             literal_data = current.literal_data
-            address = f"{literal_data.address:05X}" if literal_data.address is not None else "None"
+            # address = f"{literal_data.address:05X}" if literal_data.address is not None else "None"
+            address = f"{literal_data.address:<05}" if literal_data.address is not None else "None"
             result.append(f"{literal_data.name:<10} {literal_data.value:<10} {literal_data.length:<6} {address:<8}")
             current = current.next
         
