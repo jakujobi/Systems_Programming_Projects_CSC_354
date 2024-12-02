@@ -18,7 +18,7 @@ class SourceCodeLine:
                  opcode_mnemonic = '',
                  operands = '',
                  comment = '',
-                 errors = [],
+                 errors = None,
                  opcode_hex = None,
                  address = 0x00000,
                  object_code = None,
