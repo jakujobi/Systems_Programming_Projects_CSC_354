@@ -109,7 +109,7 @@ class LiteralData:
     """
 
 
-    def __init__(self, name: str, value: str, length: int):
+    def __init__(self, name: str, value: str, length: int, address: int = None):
         """
         /***************************************************************************************
         ***  METHOD : __init__                                                               ***
@@ -133,13 +133,14 @@ class LiteralData:
         :param length: Length of the literal in bytes.
         :raises ValueError: If name, value, or length is invalid.
         """
-        if not name or not value or length <= 0:
+        # if not name or not value or length <= 0:
+        if not name or not value or not length:
             raise ValueError("Invalid literal data: ensure the name is provided, value is not empty, and length is positive.")
         
         self.name: str = name
         self.value: str = value.upper()  # Normalize value
         self.length: int = length
-        self.address: int = None  # Address will be assigned later
+        self.address: int = address or None
 
 
 
@@ -233,20 +234,7 @@ class LiteralTableList:
         ***      A string representation of the literal table.                               ***
         ***************************************************************************************/
         """
-        # if self.head is None:
-        #     return "Literal table is empty."
-        # divider = "-" * 40
-        # result = [f"\n\n{divider}\nLiteral Table\n{divider}"]
-        # result.append(f"{'Literal':<10} {'Value':<10} {'Length':<6} {'Address':<8}")
-        
-        # current = self.head
-        # while current is not None:
-        #     literal = current.literal_data
-        #     result.append(f"{literal.name:<10} {literal.value:<10} {literal.length:<6} {literal.address:<8}")
-        #     current = current.next
-        # result.append(f"{divider}\n")
-        
-        # return "\n".join(result)
+
         if self.head is None:
             return "Literal table is empty."
         
@@ -256,7 +244,7 @@ class LiteralTableList:
         current = self.head
         while current is not None:
             literal_data = current.literal_data
-            address = f"{literal_data.address:04X}" if literal_data.address is not None else "None"
+            address = f"{literal_data.address:05X}" if literal_data.address is not None else "None"
             result.append(f"{literal_data.name:<10} {literal_data.value:<10} {literal_data.length:<6} {address:<8}")
             current = current.next
         
