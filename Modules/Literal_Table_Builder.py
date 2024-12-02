@@ -220,6 +220,7 @@ class LiteralTableList:
         """
         self.head: LiteralNode = None
         self.log_handler = log_handler
+        self.str_header = (f"{'Literal':<10} {'Value':<10} {'Length':<6} {'Address':<8}")
         
     def __str__(self) -> str:
         """
@@ -250,7 +251,7 @@ class LiteralTableList:
             return "Literal table is empty."
         
         result = ["Literal Table:"]
-        result.append(f"{'Literal':<10} {'Value':<10} {'Length':<6} {'Address':<8}")
+        result.append(self.str_header)
         
         current = self.head
         while current is not None:
