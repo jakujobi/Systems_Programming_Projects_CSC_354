@@ -5,7 +5,7 @@ The IntermediateFileParser class provides methods to parse the various sections 
 
 The class is designed to be used as part of a larger system that processes and analyzes intermediate code files.
 """
-# Intermediate_File_Parser.py
+# IntermediateFileParser.py
 
 
 import sys
@@ -22,17 +22,25 @@ from Modules.Literal_Table_Builder import *
 from Modules.SourceCodeLine import *
 
 
-class Intermediate_File_Parser:
+class IntermediateFileParser:
     """
     /********************************************************************
-    ***  CLASS  : Intermediate_File_Parser                                ***
+    ***  CLASS  : IntermediateFileParser                                ***
     *********************************************************************
     ***  DESCRIPTION : This class is responsible for parsing the        ***
     ***  intermediate file and extracting the necessary information.   ***
     ********************************************************************/
     """
     
-    def __init__(self, symbol_table_passed=None, literal_table_passed=None, logger=None, int_file_content=None):
+    def __init__(self,
+                 symbol_table_passed: SymbolTable = None,
+                 literal_table_passed: LiteralTableList = None,
+                 logger: ErrorLogHandler = None,
+                 int_file_content=[],
+                 read_error_line_input: bool = None,
+                 Program_length_prefix_for_Hex: str = None,
+                 Program_length_prefix_for_Decimal: str = None
+                 ):
         self.symbol_table = symbol_table_passed or SymbolTable()
         self.literal_table = literal_table_passed or LiteralTableList()
         self.logger = logger or ErrorLogHandler()
@@ -42,7 +50,29 @@ class Intermediate_File_Parser:
         self.int_file_lines = int_file_content or []
         self.parsed_code_lines = []
         
+        self_read_error_line_input = read_error_line_input or False
+
+        self.Program_length_prefix_for_Hex = Program_length_prefix_for_Hex or "Program Length (HEX):"
+        self.Program_length_prefix_for_Decimal = Program_length_prefix_for_Decimal  or "Program Length (DEC):"
+        
+        self.fluff_lines = [
+            '___',
+            'Literal Table:',
+            'Literal    Value      Length Address',
+            'Symbol     Value      RFlag  IFlag  MFlag',
+            self.symbol_table.str_header,
+            self.literal_table.str_header,
+
+        ]
+        
     def parse_intermediate_file_content(self):
+        """
+        This method parses the intermediate file content and extracts the necessary information, including the symbol table, literal table, and program length.
+
+        The method iterates over the lines of the intermediate file content and determines which section each line belongs to. If the line is a title line, it delegates the parsing to the appropriate method (parse_symbol_table, parse_literal_table, or parse_program_length). If the line is not a title line, it delegates the parsing to the parse_single_line method.
+
+        :return: None
+        """
         lines_iterator = iter(self.int_file_lines)
         for line in lines_iterator:
             line = line.strip()
@@ -58,6 +88,37 @@ class Intermediate_File_Parser:
                 else:
                     # Unknown section; skip or log error
                     self.errors.append(f"Unknown section title: '{line}'")
+            else:
+                self.parse_single_line(line)
+                
+    def parse_single_line(self, line):
+    
+        """
+        Processes a single line of the intermediate file content. If the line is an error code line and
+        read_error_line_input is False, then the line is skipped. Otherwise, the line is split into parts and
+        checked for a line number. If the line number is invalid, an error is logged.
+
+        :param line: The single line of the intermediate file content to be processed
+        :return: None
+        """
+        if not self.read_error_line_input and self.is_error_code_line(line):
+            return
+        
+        parts = line.strip().split()
+        if not parts:
+            return
+        
+        if not parts[0].isdigit():
+            self.logger.log_error(f"Invalid line doesn't have a line number: '{line}'")
+            return
+        
+        if parts[0].isdigit():
+            self.parse_code_line(line)
+            
+        
+    def is_error_code_line(self, line):
+        parts = line.upper().strip().split()
+        return len(parts) > 2 and '[ERROR' in parts[2]
     
     def is_divider_line(self, line):
         return line.startswith('___')
@@ -124,7 +185,6 @@ class Intermediate_File_Parser:
             opcode_mnemonic=opcode_mnemonic,
             operands=operands,
             comment=comment,
-            # error=error
         )
         self.parsed_code_lines.append(source_line)
         
@@ -176,7 +236,7 @@ class Intermediate_File_Parser:
             comment=comment,
             error=error_message
         )
-        self.code_lines.append(source_line)
+        self.parsed_code_lines.append(source_line)
         self.errors.append(f"Line {line_number}: {error_message}")
 
     def parse_symbol_table(self, lines_iterator):
@@ -469,7 +529,7 @@ def test_parsing_intermediate_code():
         "===PROG_LEN_END==="
     ]
 
-    parser = Intermediate_File_Parser()
+    parser = IntermediateFileParser()
     parsed_data = parser.parse_intermediate_file_content(test_lines)
 
     #Print the parsed data
