@@ -64,13 +64,16 @@ class AssemblerPass2:
         self.object_program_file_name = None
         
         self.logger = logger or ErrorLogHandler()
-        self.opcode_handler = OpcodeHandler()
+        self.opcode_handler = OpcodeHandler(logger=self.logger)
         
         self.file_explorer = file_explorer or FileExplorer()
-        self.location_counter = LocationCounter()
+        self.location_counter = LocationCounter(
+            opcode_handler=self.opcode_handler,
+            logger=self.logger
+            )
 
         # Symbol Table
-        self.symbol_table = SymbolTable()
+        self.symbol_table = SymbolTable(logger=self.logger)
         #self.symbol_table_driver = SymbolTableDriver(logger=self.logger)
         self.literal_table = LiteralTableList(logger=self.logger)
         
@@ -110,10 +113,9 @@ class AssemblerPass2:
         """
         Initializes object code generator, record managers, and object program writer.
 
-        Resets any existing states and prepares the object code generator and record managers for a new assembly run.
+        Prepares the object code generator and record managers for a new assembly run.
         :return: None
         """
-        self.opcode_handler = OpcodeHandler()
         self.object_code_generator = ObjectCodeGenerator(
             symbol_table=self.symbol_table,
             literal_table=self.literal_table,
@@ -121,8 +123,11 @@ class AssemblerPass2:
             logger=self.logger,
             location_counter=self.location_counter  # Pass LocationCounter
         )
-        self.text_record_manager = TextRecordManager()
-        self.modification_record_manager = ModificationRecordManager()
+        self.text_record_manager = TextRecordManager(logger=self.logger)
+        self.modification_record_manager = ModificationRecordManager(
+            location_counter=self.location_counter,
+            logger=self.logger
+            )
         self.object_program_writer = ObjectProgramWriter(
             header_record=None,
             text_records=[],
@@ -155,8 +160,8 @@ class AssemblerPass2:
         Utilizes IntermediateFileParser to convert raw lines into SourceCodeLine objects.
         Logs the number of parsed lines or any errors encountered during parsing.
         """
-        if not hasattr(self, 'int_file_content') or not self.int_file_content:
-            self.logger.log_error("No content to parse in intermediate file.")
+        if not self.int_file_content:
+            self.logger.log_error(f"No content to parse in intermediate file '{self.int_file_name}'.")
             return
         
         int_file_parser = IntermediateFileParser(
@@ -204,7 +209,7 @@ class AssemblerPass2:
             if source_line.is_comment() or source_line.has_errors():
                 continue  # Skip comments and erroneous lines
 
-            if source_line.is_directive():
+            if self.check_if_sourceline_is_directive(source_line):
                 self.handle_directive(source_line)
                 continue  # Directives are handled separately
 
@@ -228,6 +233,16 @@ class AssemblerPass2:
                 # Object code generation failed
                 self.logger.log_error(f"Failed to generate object code for line: {source_line}")
                 continue
+            
+    def check_if_sourceline_is_directive(self, source_line):
+        """
+        Checks if a given source line is a directive.
+
+        :param source_line: The source line to check.
+        :return: True if the source line is a directive, False otherwise.
+        """
+        opcode = source_line.opcode_mnemonic.upper()
+        return opcode in self.opcode_handler.directives
 
     def finalize_records(self):
         """
@@ -236,7 +251,24 @@ class AssemblerPass2:
         Finalizes current text records, retrieves all text and modification records, creates header and end records,
         assigns them to ObjectProgramWriter, and logs the finalization.
         """
-        # [Method implementation as shown above]
+        # Finalize any pending text records
+        self.text_record_manager.finalize_current_record()
+
+        # Retrieve text and modification records
+        text_records = self.text_record_manager.get_text_records()
+        modification_records = self.modification_record_manager.get_modification_records()
+
+        # Create header and end records
+        header_record = self.create_header_record()
+        end_record = self.create_end_record()
+
+        # Assign records to ObjectProgramWriter
+        self.object_program_writer.header_record = header_record
+        self.object_program_writer.text_records = text_records
+        self.object_program_writer.modification_records = modification_records
+        self.object_program_writer.end_record = end_record
+
+        self.logger.log_action("Finalized all records for object program assembly.")
 
     def create_header_record(self) -> str:
         """
@@ -246,7 +278,13 @@ class AssemblerPass2:
 
         :return: The formatted header record string.
         """
-        # [Method implementation as shown above]
+        program_name_formatted = f"{self.program_name:<6}"[:6]  # Ensure 6 characters
+        _current_address = self.location_counter.get_current_address_int()
+        program_length = _current_address - self.program_start_address
+        self.program_length = program_length  # Store the program length
+        header_record = f"H^{program_name_formatted}^{self.program_start_address:06X}^{program_length:06X}"
+        self.logger.log_action(f"Created header record: {header_record}")
+        return header_record
 
     def create_end_record(self) -> str:
         """
@@ -256,7 +294,10 @@ class AssemblerPass2:
 
         :return: The formatted end record string.
         """
-        # [Method implementation as shown above]
+        end_record = f"E^{self.first_executable_address:06X}"
+        self.logger.log_action(f"Created end record: {end_record}")
+        return end_record
+
 
     def assemble_object_program(self):
         """
@@ -264,7 +305,8 @@ class AssemblerPass2:
 
         Logs the successful assembly of the object program.
         """
-        # [Method implementation as shown above]
+        self.object_program = self.object_program_writer.assemble_object_program()
+        self.logger.log_action("Assembled the complete object program.")
 
     def write_output_files(self):
         """
@@ -272,7 +314,11 @@ class AssemblerPass2:
 
         Handles any exceptions during file writing and logs the outcome.
         """
-        # [Method implementation as shown above]
+        try:
+            self.object_program_writer.write_to_file(self.object_program_file_name)
+            self.logger.log_action(f"Object program successfully written to '{self.object_program_file_name}'.")
+        except Exception as e:
+            self.logger.log_error(f"Failed to write object program to '{self.object_program_file_name}': {e}")
 
     def report_errors(self):
         """
@@ -281,7 +327,13 @@ class AssemblerPass2:
         Displays errors if any exist and logs the final assembly status.
         Optionally raises an exception to halt the assembly process if critical errors are present.
         """
-        # [Method implementation as shown above]
+        if self.logger.has_errors():
+            self.logger.display_errors()
+            self.logger.log_action("Assembly completed with errors.")
+            if not self.allow_error_lines_in_generated_document:
+                raise Exception("Assembly terminated due to errors.")
+        else:
+            self.logger.log_action("Assembly completed successfully without errors.")
 
     def evaluate_expression(self, expression: str) -> int:
         """
@@ -292,7 +344,21 @@ class AssemblerPass2:
         :param expression: The arithmetic expression to evaluate.
         :return: The evaluated integer value, or None if evaluation fails.
         """
-        # [Method implementation as shown above]
+        try:
+            # For simplicity, allow only digits, operators, and spaces
+            allowed_chars = "0123456789ABCDEFabcdef+-*/() "
+            if any(char not in allowed_chars for char in expression):
+                self.logger.log_error(f"Invalid characters in expression '{expression}'.")
+                return None
+            value = eval(expression, {"__builtins__": None}, {})
+            if isinstance(value, int):
+                return value
+            else:
+                self.logger.log_error(f"Expression '{expression}' did not evaluate to an integer.")
+                return None
+        except Exception as e:
+            self.logger.log_error(f"Failed to evaluate expression '{expression}': {e}")
+            return None
 
     def reset(self):
         """
@@ -346,7 +412,7 @@ class AssemblerPass2:
             try:
                 self.program_start_address = int(operand, 16)
                 self.program_name = source_line.label.strip()
-                self.text_record_manager.set_current_address(self.program_start_address)
+                self.text_record_manager.set_curret_start_address(self.program_start_address)
                 self.location_counter = self.location_counter.set_start_address(self.program_start_address)
                 self.logger.log_action(f"Program '{self.program_name}' starting at address {self.program_start_address:X}.")
             except ValueError:
@@ -365,10 +431,10 @@ class AssemblerPass2:
         operand = source_line.operands
         if operand:
             symbol = operand.strip()
-            executable_address = self.symbol_table.get_symbol_address(symbol)
+            executable_address = self.symbol_table.get(symbol)
             if executable_address is not None:
                 self.first_executable_address = executable_address
-                self.logger.log_action(f"Execution begins at address {self.first_executable_address:X}.")
+                self.logger.log_action(f"Execution begins at address {self.first_executable_address}.")
             else:
                 self.logger.log_error(f"Undefined symbol '{symbol}' in END directive at line {source_line.line_number}.")
         else:
