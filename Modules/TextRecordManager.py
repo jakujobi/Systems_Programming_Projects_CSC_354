@@ -46,7 +46,7 @@ class TextRecordManager:
         """
         
         _action = f"Adding object code {object_code} at address {address:X}"
-        self.logger.log_action(_action, False)
+        self.logger.log_action(_action)
         
         if not self.current_record:
             # Start a new text record
@@ -79,7 +79,7 @@ class TextRecordManager:
         
         # Log confirmation
         _action = f"Added object code {object_code} to current record at address {address:X}"
-        self.logger.log_action(_action, False)
+        self.logger.log_action(_action)
 
     def finalize_current_record(self):
         """
@@ -88,7 +88,7 @@ class TextRecordManager:
         """
         # Finalize the current record
         _action = f"Finalizing current record with {len(self.current_record)} object codes."
-        self.logger.log_action(_action, False)
+        self.logger.log_action(_action)
         
         # Check if there are any object codes in the current record
         if self.current_record:
@@ -111,7 +111,7 @@ class TextRecordManager:
             
         # Log confirmation
         _action = f"Finalized current record with {len(self.current_record)} object codes."
-        self.logger.log_action(_action, False)
+        self.logger.log_action(_action)
 
     def get_text_records(self) -> List[str]:
         """
