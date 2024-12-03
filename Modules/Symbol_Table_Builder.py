@@ -244,7 +244,7 @@ class SymbolTable:
 
         if self.root is None:
             self.root = SymbolNode(symbol_data)
-            self.logger.log_action(f"New symbol table created. Symbol '{symbol_data.symbol}' inserted.", False)
+            self.logger.log_action(f"New symbol table created. Symbol '{symbol_data.symbol}' inserted.")
         else:
             self._insert(self.root, symbol_data)
 
@@ -268,19 +268,19 @@ class SymbolTable:
         # Set MFlag to true if there's a duplicate
         if symbol_data.symbol == current_node.symbol_data.symbol:
             current_node.symbol_data.mflag = True
-            self.logger.log_action(f"Duplicate symbol '{symbol_data.symbol}' found. MFlag set to True.", False)
+            self.logger.log_action(f"Duplicate symbol '{symbol_data.symbol}' found. MFlag set to True.")
         # Insert into left subtree
         elif symbol_data.symbol < current_node.symbol_data.symbol:
             if current_node.left is None:
                 current_node.left = SymbolNode(symbol_data)
-                self.logger.log_action(f"Symbol '{symbol_data.symbol}' inserted.", False)
+                self.logger.log_action(f"Symbol '{symbol_data.symbol}' inserted.")
             else:
                 self._insert(current_node.left, symbol_data)
         # Insert into right subtree
         else:
             if current_node.right is None:
                 current_node.right = SymbolNode(symbol_data)
-                self.logger.log_action(f"Symbol '{symbol_data.symbol}' inserted.", False)
+                self.logger.log_action(f"Symbol '{symbol_data.symbol}' inserted.")
             else:
                 self._insert(current_node.right, symbol_data)
     
@@ -341,7 +341,7 @@ class SymbolTable:
         """
         result = self._search(self.root, symbol.upper()[:4])
         if result is None:
-            self.logger.log_action(f"Symbol '{symbol.upper()[:4]}' not found.", False)
+            self.logger.log_action(f"Symbol '{symbol.upper()[:4]}' not found.")
             return None
         return result
         # return {'value': result.value, 'rflag': result.rflag}
@@ -367,7 +367,7 @@ class SymbolTable:
         if current_node is None:
             return None  # Symbol not found
         if symbol == current_node.symbol_data.symbol:
-            self.logger.log_action(f"Symbol '{symbol}' found in symbol table.", False)
+            self.logger.log_action(f"Symbol '{symbol}' found in symbol table.")
             return current_node.symbol_data
         elif symbol < current_node.symbol_data.symbol:
             return self._search(current_node.left, symbol)
@@ -458,7 +458,7 @@ class SymbolTable:
         
         self.root, removed = self._remove(self.root, symbol.upper()[:4])
         if removed:
-            self.logger.log_action(f"Symbol '{symbol.upper()[:4]}' removed.", False)
+            self.logger.log_action(f"Symbol '{symbol.upper()[:4]}' removed.")
         else:
             print(f"Symbol '{symbol.upper()[:4]}' not found.")
             self.logger.log_error(f"Symbol '{symbol.upper()[:4]}' not found.")
@@ -516,7 +516,7 @@ class SymbolTable:
             self.logger.log_error("Symbol table is already empty.")
         else:
             self._destroy()
-            self.logger.log_action("Symbol Table Destroyed.", False)
+            self.logger.log_action("Symbol Table Destroyed.")
             
     def _destroy(self):
         """
