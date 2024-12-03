@@ -34,6 +34,8 @@ class TextRecordManager:
         self.current_length = 0               # Current length of the text record in bytes
         self.MAX_RECORD_LENGTH = 30           
         
+    def set_curret_start_address(self, address: int):
+        self.current_start_address = address
 
     def add_object_code(self, address: int, object_code: str):
         """
