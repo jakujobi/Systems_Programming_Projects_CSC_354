@@ -75,13 +75,22 @@ class ObjectCodeGenerator:
         :param logger: Instance of ErrorLogHandler.
         :param location_counter: Instance of LocationCounter.
         """
+        self.logger = logger or ErrorLogHandler()
+        self.location_counter = location_counter or LocationCounter()
         self.symbol_table = symbol_table
         self.literal_table = literal_table
         self.opcode_handler = opcode_handler
-        self.logger = logger or ErrorLogHandler()
-        self.text_record_manager = TextRecordManager()
-        self.modification_record_manager = ModificationRecordManager()
-        self.location_counter = location_counter or LocationCounter()
+
+        self.text_record_manager = TextRecordManager(
+            location_counter = self.location_counter,
+            logger = self.logger
+            )
+        
+        self.modification_record_manager = ModificationRecordManager(
+            location_counter = self.location_counter,
+            logger = self.logger
+            )
+        
         self.base_register_value = None
         self.nixbpe_flags = [0, 0, 0, 0, 0, 0]  # [n, i, x, b, p, e]
     
@@ -116,10 +125,11 @@ class ObjectCodeGenerator:
         # Verify address consistency
         expected_address = self.location_counter.get_current_address_int()
         if source_line.address != expected_address:
+            _error_msg = f"Address mismatch at line {source_line.line_number}: expected {expected_address}, found {source_line.address}."
             self.logger.log_error(
-                f"Address mismatch at line {source_line.line_number}: expected {expected_address:X}, found {source_line.address:X}."
+                f"Address mismatch at line {source_line.line_number}: expected {expected_address}, found {source_line.address}."
             )
-            source_line.mark_error()
+            source_line.add_error(_error_msg)
             return None
         
         # Handle '+' prefix for format 4 instructions
