@@ -139,11 +139,12 @@ class ErrorLogHandler:
         self.log_entries.append(log_message)
         
         if self.print_log_actions or (print_actions is not None and print_actions):
-            print(f"[ACTION]: {message}")
+            
             # Paginate after every 18 lines of actions
             self.action_counter += 1
             if self.action_counter % 18 == 0:
-                self.paginate_output(self.log_entries, "Displaying Actions Log")
+                #self.paginate_output(self.log_entries, "Displaying Actions Log")
+                print(f"[ACTION]: {message}")
 
 
 
@@ -172,10 +173,11 @@ class ErrorLogHandler:
             log_message += f" | Context: {context_info}"
         self.error_log.append(log_message)
         
-        self.print_colored(log_message, 'red', 'black')
+        
         # Paginate after every 18 lines of errors
         if len(self.error_log) % 18 == 0:
-            self.paginate_output(self.error_log, "Displaying Error Log")
+            # self.paginate_output(self.error_log, "Displaying Error Log")
+            self.print_colored(log_message, 'red', 'black')
 
     @staticmethod
     def print_colored(text, color, bg_color='black'):
