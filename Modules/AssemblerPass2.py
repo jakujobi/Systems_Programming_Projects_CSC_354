@@ -61,6 +61,8 @@ class AssemblerPass2:
         self.int_file_content = []
         self.int_source_code_lines = []
         
+        self.object_program_file_name = None
+        
         self.logger = logger or ErrorLogHandler()
         self.opcode_handler = OpcodeHandler()
         
@@ -75,6 +77,7 @@ class AssemblerPass2:
         self.program_name = None
         self.program_start_address = 0
         self.program_length = 0
+        self.first_executable_address = 0
         
         self.Program_length_prefix_for_Hex = Program_length_prefix_for_Hex or "Program Length (HEX):"
         self.Program_length_prefix_for_Decimal = Program_length_prefix_for_Decimal or "Program Length (DEC):"
@@ -88,6 +91,8 @@ class AssemblerPass2:
         
         self.character_literal_prefix = character_literal_prefix or '0C'
         self.hex_literal_prefix = hex_literal_prefix or '0X'
+        
+        self.allow_error_lines_in_generated_document = allow_error_lines_in_generated_document
         
         
         
@@ -113,7 +118,7 @@ class AssemblerPass2:
             symbol_table=self.symbol_table,
             literal_table=self.literal_table,
             opcode_handler=self.opcode_handler,
-            error_handler=self.logger,
+            logger=self.logger,
             location_counter=self.location_counter  # Pass LocationCounter
         )
         self.text_record_manager = TextRecordManager()
@@ -122,21 +127,26 @@ class AssemblerPass2:
             header_record=None,
             text_records=[],
             modification_records=[],
-            end_record=None
+            end_record=None,
+            logger=self.logger
         )
+        self.logger.log_action("Initialized generators and managers.")
+        
 
-
-    def load_immediate_file(self):
+    def load_intermediate_file(self):
         """
-        Loads the source code from the file into int_file_content list.
+        Loads the intermediate file content into memory.
         """
-        self.int_file_content = self.file_explorer.read_file_raw(self.int_file_name)
-        # Check if the file is empty
-        if not self.int_file_content:
-            self.logger.log_error(f"The file '{self.int_file_name}' is empty.")
-            return
-        # Log the number of lines read
-        self.logger.log_action(f"Read {len(self.int_file_content)} lines from '{self.int_file_name}'.")
+        try:
+            self.int_file_content = self.file_explorer.read_file_raw(self.int_file_name)
+            if not self.int_file_content:
+                self.logger.log_error("Intermediate file is empty.")
+                return
+            self.logger.log_action(f"Read {len(self.int_file_content)} lines from '{self.int_file_name}'.")
+        except FileNotFoundError:
+            self.logger.log_error(f"Intermediate file '{self.int_file_name}' not found.")
+        except IOError as e:
+            self.logger.log_error(f"Error reading intermediate file '{self.int_file_name}': {e}")
 
     def parse_intermediate_lines(self):
         """
@@ -145,12 +155,20 @@ class AssemblerPass2:
         Utilizes IntermediateFileParser to convert raw lines into SourceCodeLine objects.
         Logs the number of parsed lines or any errors encountered during parsing.
         """
-        int_file_parser = IntermediateFileParser(symbol_table_passed=self.symbol_table,
-                                                 literal_table_passed=self.literal_table,
-                                                 logger=self.logger,
-                                                 int_file_content=self.int_file_content)
+        if not hasattr(self, 'int_file_content') or not self.int_file_content:
+            self.logger.log_error("No content to parse in intermediate file.")
+            return
+        
+        int_file_parser = IntermediateFileParser(
+            symbol_table_passed=self.symbol_table,
+            literal_table_passed=self.literal_table,
+            logger=self.logger,
+            int_file_content=self.int_file_content
+            )
         int_file_parser.parse_intermediate_file_content()
         self.int_source_code_lines = int_file_parser.parsed_code_lines
+        
+        self.logger.log_action(f"Parsed {len(self.int_source_code_lines)} source lines.")
     
     def print_all_things(self):
         """
@@ -178,8 +196,37 @@ class AssemblerPass2:
             - Records modifications if necessary using ModificationRecordManager.
             - Logs actions and errors.
         """
-        # [Method implementation as shown above]
-        pass
+        if not hasattr(self, 'int_source_code_lines') or not self.int_source_code_lines:
+            self.logger.log_error("No source lines to process.")
+            return
+
+        for source_line in self.int_source_code_lines:
+            if source_line.is_comment() or source_line.has_errors():
+                continue  # Skip comments and erroneous lines
+
+            if source_line.is_directive():
+                self.handle_directive(source_line)
+                continue  # Directives are handled separately
+
+            # Generate object code for the instruction
+            object_code = self.object_code_generator.generate_object_code_for_line(source_line)
+
+            if object_code:
+                # Add object code to text records
+                self.text_record_manager.add_object_code(source_line.address, object_code)
+                self.logger.log_action(f"Added object code '{object_code}' at address {source_line.address:X}.")
+
+                # If modification is required, add to modification records
+                if self.object_code_generator.requires_modification(source_line):
+                    modification_offset, modification_length = self.object_code_generator.get_modification_details(source_line)
+                    self.modification_record_manager.add_modification(
+                        address=source_line.address + modification_offset,
+                        length=modification_length
+                    )
+                    self.logger.log_action(f"Added modification record for address {source_line.address + modification_offset:X} with length {modification_length}.")
+            else:
+                # Object code generation failed; error already logged
+                continue
 
     def finalize_records(self):
         """
@@ -326,3 +373,4 @@ class AssemblerPass2:
         
         
 #endregion
+
