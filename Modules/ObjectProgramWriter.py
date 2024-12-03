@@ -7,10 +7,6 @@ repo_home_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.append(repo_home_path)
 
 from Modules.ErrorLogHandler import *
-
-class ObjectProgramWriter:
-    def __init__(self, logger: ErrorLogHandler = None):
-        self.logger = logger or ErrorLogHandler()
         
 
 class ObjectProgramWriter:
@@ -28,7 +24,8 @@ class ObjectProgramWriter:
                  header_record: str,
                  text_records: List[str],
                  modification_records: List[str],
-                 end_record: str, logger: ErrorLogHandler):
+                 end_record: str,
+                 logger: ErrorLogHandler):
         """
         Initializes the ObjectProgramWriter with all necessary records and an error handler.
         
