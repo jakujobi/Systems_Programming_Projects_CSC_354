@@ -17,39 +17,7 @@ from Modules.SourceCodeLine import *
 from Modules.TextRecordManager import *
 from Modules.ModificationRecordManager import *
 from Modules.ObjectCodeGenerator import *
-
-        
-class ObjectCodeGenerator:
-    """
-    Translates assembly instructions into machine code (object code).
-    Resolves symbols and literals, handles different instruction formats and addressing modes,
-    manages the location counter, and performs error checking.
-    """
-    
-    def __init__(self,
-                 symbol_table,
-                 literal_table,
-                 opcode_handler,
-                 logger = ErrorLogHandler(),
-                 location_counter = LocationCounter()):
-        """
-        Initializes the ObjectCodeGenerator with necessary references.
-        
-        :param symbol_table: Instance of SymbolTable.
-        :param literal_table: Instance of LiteralTableList.
-        :param opcode_handler: Instance of OpcodeHandler.
-        :param logger: Instance of ErrorLogHandler.
-        :param location_counter: Instance of LocationCounter.
-        """
-        self.symbol_table = symbol_table
-        self.literal_table = literal_table
-        self.opcode_handler = opcode_handler
-        self.logger = logger
-        self.text_record_manager = TextRecordManager()
-        self.modification_record_manager = ModificationRecordManager()
-        self.location_counter = location_counter
-        self.base_register_value = None
-        self.nixbpe_flags = [0, 0, 0, 0, 0, 0]  # [n, i, x, b, p, e]
+from Modules.Validator import *
     
 # Updated ObjectCodeGenerator.py
 
@@ -80,6 +48,8 @@ class ObjectCodeGenerator:
         self.symbol_table = symbol_table
         self.literal_table = literal_table
         self.opcode_handler = opcode_handler
+        self.validator = Validator(logger = self.logger)
+
 
         self.text_record_manager = TextRecordManager(
             location_counter = self.location_counter,
@@ -124,8 +94,11 @@ class ObjectCodeGenerator:
         """
         # Verify address consistency
         expected_address = self.location_counter.get_current_address_int()
-        if source_line.address != expected_address:
-            _error_msg = f"Address mismatch at line {source_line.line_number}: expected {expected_address}, found {source_line.address}."
+        # Commpare the int conversion of the address to the expected address
+        # If they don't match, log an error and return None
+        int_address = self.validator.convert_string_hex_str_to_int(source_line.address)
+        if int_address != expected_address:
+            _error_msg = f"Address mismatch at line {source_line.line_number}: expected {expected_address}, found {source_line.address} hex or {self.validator.convert_string_hex_str_to_int(source_line.address)} int."
             self.logger.log_error(
                 f"Address mismatch at line {source_line.line_number}: expected {expected_address}, found {source_line.address}."
             )
@@ -208,8 +181,9 @@ class ObjectCodeGenerator:
         
         operands = source_line.operands.split(',')
         if len(operands) != 2:
-            self.logger.log_error(f"Incorrect number of registers for format 2 instruction '{source_line.opcode_mnemonic}' at line {source_line.line_number}.")
-            source_line.mark_error()
+            _error_msg = f"Incorrect number of operands for format 2 instruction '{source_line.opcode_mnemonic}' at line {source_line.line_number}."
+            self.logger.log_error(_error_msg)
+            source_line.add_error(_error_msg)
             return None
         reg1 = operands[0].strip().upper()
         reg2 = operands[1].strip().upper()
@@ -385,8 +359,9 @@ class ObjectCodeGenerator:
         allowed_modes = opcode_info.get('allowed_addressing_modes', [])
         
         if addressing_mode not in allowed_modes:
-            self.logger.log_error(f"Illegal addressing mode '{addressing_mode}' for instruction '{source_line.opcode_mnemonic}' at line {source_line.line_number}.")
-            source_line.mark_error()
+            _error = f"Illegal addressing mode '{addressing_mode}' for instruction '{source_line.opcode_mnemonic}' at line {source_line.line_number}."
+            self.logger.log_error(_error)
+            source_line.add_error(_error)
     
     def identify_addressing_mode(self, operand):
         """
@@ -494,8 +469,9 @@ class ObjectCodeGenerator:
             "PC": 8, "SW": 9
         }
         if register not in REGISTER_CODES:
-            self.logger.log_error(f"Invalid register '{register}' at line {source_line.line_number}.")
-            source_line.mark_error()
+            _error = f"Invalid register '{register}' at line {source_line.line_number}."
+            self.logger.log_error(_error)
+            source_line.add_error(_error)
             return None
         return REGISTER_CODES[register]
     
