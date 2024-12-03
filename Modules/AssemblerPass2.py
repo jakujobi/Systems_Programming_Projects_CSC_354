@@ -238,7 +238,7 @@ class AssemblerPass2:
                     self.logger.log_action(f"Added modification record for address {source_line.address + modification_offset:X} with length {modification_length}.")
             else:
                 # Object code generation failed
-                self.logger.log_error(f"Failed to generate object code for line: {source_line}")
+                #self.logger.log_error(f"Failed to generate object code for line: {source_line}")
                 continue
             
     def check_if_sourceline_is_directive(self, source_line):
@@ -417,7 +417,7 @@ class AssemblerPass2:
         operand = source_line.operands
         if operand:
             try:
-                self.program_start_address = int(operand, 16)
+                self.program_start_address = int(operand)
                 self.program_name = source_line.label.strip()
                 self.text_record_manager.set_curret_start_address(self.program_start_address)
                 self.location_counter = self.location_counter.set_start_address(self.program_start_address)
