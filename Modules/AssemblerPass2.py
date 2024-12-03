@@ -20,11 +20,11 @@ from Modules.ObjectProgramWriter import *
 from Modules.ModificationRecordManager import *
 
 
-# ! FIXXXXXXXX
-# TODO: It looks like my program converts from hex to decimal and back to hex again. I should fix this.
-# it gave me 4096 as an int, then compared it with 0003E8 as hex
-# 4096 dec is 1000 hex, and 3E8 hex is 1000 dec
-# so it looks like it's converting from hex to dec and back to hex again
+# ! BUGS
+# * 1. The object program file is not being written to the output file.
+# * 2. It seems liek the locationcounter is not updating after processing each instruction.
+# TODO I think i need to check everywhere the location counter is being updated.
+# TODO And if it is even passed correctly through the classes.
 
 
 class AssemblerPass2:
