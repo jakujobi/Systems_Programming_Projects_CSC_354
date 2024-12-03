@@ -214,7 +214,7 @@ class AssemblerPass2:
             if object_code:
                 # Add object code to text records
                 self.text_record_manager.add_object_code(source_line.address, object_code)
-                self.logger.log_action(f"Added object code '{object_code}' at address {source_line.address:X}.")
+                self.logger.log_action(f"Processed and Added object code '{object_code}' at address {source_line.address:X}.")
 
                 # If modification is required, add to modification records
                 if self.object_code_generator.requires_modification(source_line):
@@ -225,7 +225,8 @@ class AssemblerPass2:
                     )
                     self.logger.log_action(f"Added modification record for address {source_line.address + modification_offset:X} with length {modification_length}.")
             else:
-                # Object code generation failed; error already logged
+                # Object code generation failed
+                self.logger.log_error(f"Failed to generate object code for line: {source_line}")
                 continue
 
     def finalize_records(self):
@@ -282,7 +283,7 @@ class AssemblerPass2:
         """
         # [Method implementation as shown above]
 
-    def evaluate_expression(self, expression: str) -> Optional[int]:
+    def evaluate_expression(self, expression: str) -> int:
         """
         Safely evaluates arithmetic expressions used in directives like EQU.
 
@@ -313,7 +314,24 @@ class AssemblerPass2:
 
         :param source_line: The SourceCodeLine object representing the directive.
         """
-        # [Method implementation as shown above]
+        directive = source_line.opcode_mnemonic.upper()
+        operands = source_line.operands
+
+        if directive == "START":
+            self.handle_start_directive(source_line)
+        elif directive == "END":
+            self.handle_end_directive(source_line)
+        elif directive == "LTORG":
+            self.handle_ltorg_directive()
+        elif directive == "EQU":
+            self.handle_equ_directive(source_line)
+        elif directive == "BASE":
+            self.handle_base_directive(operands)
+        elif directive == "NOBASE":
+            self.handle_nobase_directive()
+        else:
+            self.logger.log_error(f"Unknown directive '{directive}' at line {source_line.line_number}.")
+
 
     def handle_start_directive(self, source_line: SourceCodeLine):
         """
@@ -323,7 +341,18 @@ class AssemblerPass2:
 
         :param source_line: The SourceCodeLine object representing the START directive.
         """
-        # [Method implementation as shown above]
+        operand = source_line.operands
+        if operand:
+            try:
+                self.program_start_address = int(operand, 16)
+                self.program_name = source_line.label.strip()
+                self.text_record_manager.set_current_address(self.program_start_address)
+                self.location_counter = self.location_counter.set_start_address(self.program_start_address)
+                self.logger.log_action(f"Program '{self.program_name}' starting at address {self.program_start_address:X}.")
+            except ValueError:
+                self.logger.log_error(f"Invalid start address '{operand}' in START directive at line {source_line.line_number}.")
+        else:
+            self.logger.log_error(f"Missing start address in START directive at line {source_line.line_number}.")
 
     def handle_end_directive(self, source_line: SourceCodeLine):
         """
@@ -333,7 +362,19 @@ class AssemblerPass2:
 
         :param source_line: The SourceCodeLine object representing the END directive.
         """
-        # [Method implementation as shown above]
+        operand = source_line.operands
+        if operand:
+            symbol = operand.strip()
+            executable_address = self.symbol_table.get_symbol_address(symbol)
+            if executable_address is not None:
+                self.first_executable_address = executable_address
+                self.logger.log_action(f"Execution begins at address {self.first_executable_address:X}.")
+            else:
+                self.logger.log_error(f"Undefined symbol '{symbol}' in END directive at line {source_line.line_number}.")
+        else:
+            # If no operand, default to program start address
+            self.first_executable_address = self.program_start_address
+            self.logger.log_action(f"Execution begins at program start address {self.first_executable_address:X}.")
 
     def handle_ltorg_directive(self):
         """
@@ -341,7 +382,17 @@ class AssemblerPass2:
 
         Iterates through unassigned literals, assigns addresses, generates object codes, and logs actions.
         """
-        # [Method implementation as shown above]
+        unassigned_literals = self.literal_table.get_unassigned_literals()
+        for literal in unassigned_literals:
+            literal.address = self.location_counter.get_current_address_int()
+            object_code = self.object_code_generator.generate_object_code_for_literal(literal)
+            if object_code:
+                self.text_record_manager.add_object_code(literal.address, object_code)
+                self.logger.log_action(f"Assigned address {literal.address:X} to literal '{literal.value}' with object code '{object_code}'.")
+                # Increment location counter by literal length
+                self.location_counter.increment_by_decimal(len(object_code) // 2)  # Assuming object code is hex string
+            else:
+                self.logger.log_error(f"Failed to generate object code for literal '{literal.value}'.")
 
     def handle_equ_directive(self, source_line: SourceCodeLine):
         """
@@ -351,7 +402,15 @@ class AssemblerPass2:
 
         :param source_line: The SourceCodeLine object representing the EQU directive.
         """
-        # [Method implementation as shown above]
+        symbol = source_line.label.strip()
+        expression = source_line.operands.strip()
+        value = self.evaluate_expression(expression)
+        if value is not None:
+            self.symbol_table.define(symbol, value, relocatable=False)
+            self.logger.log_action(f"Defined symbol '{symbol}' with value {value:X} using EQU directive.")
+        else:
+            self.logger.log_error(f"Invalid expression '{expression}' in EQU directive at line {source_line.line_number}.")
+
 
     def handle_base_directive(self, operand: str):
         """
@@ -361,7 +420,14 @@ class AssemblerPass2:
 
         :param operand: The operand specifying the base symbol or address.
         """
-        # [Method implementation as shown above]
+        symbol = operand.strip()
+        base_address = self.symbol_table.get_symbol_address(symbol)
+        if base_address is not None:
+            self.base_register = base_address
+            self.object_code_generator.set_base_register_value(base_address)
+            self.logger.log_action(f"Base register set to symbol '{symbol}' with address {base_address:X}.")
+        else:
+            self.logger.log_error(f"Undefined symbol '{symbol}' in BASE directive.")
 
     def handle_nobase_directive(self):
         """
@@ -369,8 +435,8 @@ class AssemblerPass2:
 
         Clears the base register value in ObjectCodeGenerator and logs the action.
         """
-        # [Method implementation as shown above]
-        
-        
+        self.base_register = None
+        self.object_code_generator.unset_base_register()
+        self.logger.log_action("Base register unset using NOBASE directive.")     
 #endregion
 
