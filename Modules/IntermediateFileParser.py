@@ -85,7 +85,7 @@ class IntermediateFileParser:
 
         :return: None
         """
-        self.logger.log_action("Parsing intermediate file content.", False)
+        self.logger.log_action("Parsing intermediate file content.")
         lines_iterator = iter(self.int_file_lines)
         for line in lines_iterator:
             line = line.strip()
@@ -120,14 +120,14 @@ class IntermediateFileParser:
         :param line: The single line of the intermediate file content to be processed
         :return: None
         """
-        self.logger.log_action(f"Processing single line: '{line}'", False)
+        self.logger.log_action(f"Processing single line: '{line}'")
         if self.is_error_code_line(line):
-            self.logger.log_action(f"Error code line at line: '{line}'", False)
+            self.logger.log_action(f"Error code line at line: '{line}'")
             if self.read_error_line_input:
                 self.logger.log_action("Nothing implemented to deal with error line")
                 return
             else:
-                self.logger.log_action(f"Skipping error code line: '{line}'", False)
+                self.logger.log_action(f"Skipping error code line: '{line}'")
                 return
         
         parts = line.strip().split()
@@ -343,6 +343,8 @@ class IntermediateFileParser:
             line = line.strip()
             if line == '===LIT_END===':
                 break
+            if line in self.fluff_lines:
+                continue
             if self.is_divider_line(line) or not line:
                 continue
             parts = line.split()
