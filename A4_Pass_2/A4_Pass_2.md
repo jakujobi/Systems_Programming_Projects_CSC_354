@@ -2662,17 +2662,6 @@ class ObjectCodeGenerator:
         return (modification_offset, modification_length)
 ```
 
-### 13. Final Considerations
-
-- **Scalability**: The `ObjectCodeGenerator` is designed to handle large assembly programs efficiently by leveraging modular methods and clear interactions with supporting classes.
-  
-- **Modularity**: Each method within `ObjectCodeGenerator` has a single responsibility, enhancing maintainability and readability.
-  
-- **Error Handling**: Comprehensive error checking ensures that all potential issues during object code generation are detected and logged appropriately.
-  
-- **Integration with `LocationCounter`**: Ensures that address management is consistent and accurate, reducing the likelihood of address-related errors.
-  
-- **Testing**: Implement thorough unit and integration tests to validate each method's functionality, especially the interactions with `LocationCounter`, `SymbolTable`, and `LiteralTable`.
 
 ---
 ## 3. ``TextRecordManager``
@@ -2708,168 +2697,6 @@ The `TextRecordManager` is responsible for organizing the generated object codes
     - **Type**: `LocationCounter`
     - **Description**: Reference to the `LocationCounter` instance for address verification and management.
 
-### Methods
-#### A. Initialization
-1. **`__init__(self, location_counter: LocationCounter)`**
-    
-    ```python
-    def __init__(self, location_counter: LocationCounter):
-        self.text_records = []                # List to store finalized text records
-        self.current_record = []              # Buffer for object codes in the current text record
-        self.current_start_address = None     # Starting address of the current text record
-        self.current_length = 0               # Current length of the text record in bytes
-        self.MAX_RECORD_LENGTH = 30           # Maximum length of a text record in bytes
-        self.location_counter = location_counter  # Reference to the LocationCounter
-    ```
-    
-    - **Purpose**: Sets up the initial state of the `TextRecordManager` with empty records and default values. Integrates the `LocationCounter` for address management.
-
-#### B. Core Functionality
-
-2. **`add_object_code(self, address: int, object_code: str)`**
-    
-    ```python
-    def add_object_code(self, address: int, object_code: str):
-        if not self.current_record:
-            # Start a new text record
-            self.current_start_address = address
-        
-        if self.current_record:
-            # Get the last object's end address
-            last_object_code = self.current_record[-1]
-            last_address = address - (len(last_object_code) // 2)
-            contiguous = self.is_contiguous(last_address, address)
-        else:
-            contiguous = True
-        
-        if not contiguous:
-            # Finalize the current record and start a new one
-            self.finalize_current_record()
-            self.current_start_address = address
-        
-        # Calculate the length of the new object code in bytes
-        object_length = self.calculate_length(object_code)
-        
-        if self.current_length + object_length > self.MAX_RECORD_LENGTH:
-            # Finalize the current record and start a new one
-            self.finalize_current_record()
-            self.current_start_address = address
-        
-        # Add the object code to the current record
-        self.current_record.append(object_code)
-        self.current_length += object_length
-    ```
-    
-    - **Parameters**:
-        - `address`: The memory address of the object code.
-        - `object_code`: The hexadecimal string representing the machine code.
-    - **Purpose**: Adds an object code to the current text record while ensuring length constraints and address continuity. Utilizes the `LocationCounter` to verify address consistency.
-3. **`finalize_current_record(self)`**
-    
-    ```python
-    def finalize_current_record(self):
-        if self.current_record:
-            # Calculate the total length of the current record in bytes
-            record_length = self.current_length
-            
-            # Concatenate all object codes in the current record
-            concatenated_object_code = ''.join(self.current_record)
-            
-            # Format the text record as per the specification
-            formatted_record = f"T{self.current_start_address:06X}{record_length:02X}{concatenated_object_code}"
-            
-            # Add the formatted record to the list of text records
-            self.text_records.append(formatted_record)
-            
-            # Reset the current record buffer and counters
-            self.current_record = []
-            self.current_start_address = None
-            self.current_length = 0
-    ```
-    
-    - **Purpose**: Finalizes the current text record by formatting it and adding it to the list of text records. Resets the buffer and counters for the next record.
-4. **`get_text_records(self) -> List[str]`**
-    
-    ```python
-    def get_text_records(self) -> List[str]:
-        # Finalize any remaining object codes in the current record
-        self.finalize_current_record()
-        
-        # Return the list of all finalized text records
-        return self.text_records
-    ```
-    
-    - **Purpose**: Returns all finalized text records, ensuring that any remaining object codes are included.
-
-#### C. Helper Functions
-
-5. **`is_contiguous(self, last_address: int, new_address: int) -> bool`**
-    
-    ```python
-    def is_contiguous(self, last_address: int, new_address: int) -> bool:
-        expected_address = last_address + (len(self.current_record[-1]) // 2)
-        return new_address == expected_address
-    ```
-    
-    - **Parameters**:
-        - `last_address`: The address where the last object code ended.
-        - `new_address`: The address of the incoming object code.
-    - **Purpose**: Determines if the new object code address is contiguous with the current record.
-6. **`calculate_length(self, object_code: str) -> int`**
-    
-    ```python
-    def calculate_length(self, object_code: str) -> int:
-        return len(object_code) // 2  # Each pair of hex digits represents one byte
-    ```
-    
-    - **Parameters**:
-        - `object_code`: The hexadecimal string representing the machine code.
-    - **Purpose**: Calculates the length of the object code in bytes.
-7. **`verify_address_consistency(self, expected_address: int, actual_address: int, line_number: int)`**
-    
-    ```python
-    def verify_address_consistency(self, expected_address: int, actual_address: int, line_number: int):
-        if actual_address != expected_address:
-            self.location_counter.log_error(
-                f"Address mismatch at line {line_number}: expected {expected_address:06X}, found {actual_address:06X}."
-            )
-            # Additional error handling if necessary
-    ```
-    
-    - **Parameters**:
-        - `expected_address`: The address as per the `LocationCounter`.
-        - `actual_address`: The address from the `SourceCodeLine`.
-        - `line_number`: The line number in the source code for error reporting.
-    - **Purpose**: Verifies that the actual address matches the expected address from the `LocationCounter`.
-8. **`log_error(self, message: str)`**
-    
-    ```python
-    def log_error(self, message: str):
-        self.location_counter.error_handler.log_error(message)
-    ```
-    
-    - **Parameters**:
-        - `message`: The error message to be logged.
-    - **Purpose**: Logs an error message using the integrated `ErrorHandler` from the `LocationCounter`.
-
-#### D. Edge Case Handling
-
-9. **Handling Non-Contiguous Addresses**
-    
-    - **Scenario**: When an object code is not contiguous with the previous one, a new text record should be started.
-    - **Implementation**:  
-        In the `add_object_code` method, use the `is_contiguous` helper to check continuity. If not contiguous, finalize the current record and start a new one.
-10. **Handling Maximum Record Length Exceedance**
-    
-    - **Scenario**: Adding a new object code exceeds the maximum allowed length of a text record.
-    - **Implementation**:  
-        In the `add_object_code` method, check if the current length plus the new object code's length exceeds `MAX_RECORD_LENGTH`. If so, finalize the current record and start a new one with the new object code.
-11. **Handling Empty Records**
-    
-    - **Scenario**: Ensuring that no empty records are added to the `text_records` list.
-    - **Implementation**:  
-        In the `finalize_current_record` method, check if `current_record` is not empty before formatting and adding it to `text_records`.
-
 ### Interactions with Other Classes
 
 - **`ObjectCodeGenerator`**:
@@ -2888,314 +2715,7 @@ The `TextRecordManager` is responsible for organizing the generated object codes
     - **Role**: Assembles the final object program.
     - **Interaction**: Receives the finalized text records from `TextRecordManager` to compile the final object program.
 
-### Pseudocode Examples
-
-Below are detailed pseudocode examples for each method within the `TextRecordManager` class, illustrating how the class operates with the integration of the `LocationCounter`.
-
-#### A. `__init__` Method
-
-```python
-class TextRecordManager:
-    def __init__(self, location_counter: LocationCounter):
-        """
-        Initializes the TextRecordManager with empty records and default values.
-
-        :param location_counter: Instance of LocationCounter for address verification.
-        """
-        self.text_records = []
-        self.current_record = []
-        self.current_start_address = None
-        self.current_length = 0
-        self.MAX_RECORD_LENGTH = 30
-        self.location_counter = location_counter
-```
-
-#### B. `add_object_code` Method
-
-```python
-def add_object_code(self, address: int, object_code: str):
-    """
-    Adds an object code to the current text record, ensuring length and continuity constraints.
-
-    :param address: The memory address of the object code.
-    :param object_code: The hexadecimal string representing the machine code.
-    """
-    if not self.current_record:
-        # Start a new text record
-        self.current_start_address = address
-
-    if self.current_record:
-        # Get the last object's end address
-        last_object_code = self.current_record[-1]
-        last_address = address - (len(last_object_code) // 2)
-        contiguous = self.is_contiguous(last_address, address)
-    else:
-        contiguous = True
-
-    if not contiguous:
-        # Finalize the current record and start a new one
-        self.finalize_current_record()
-        self.current_start_address = address
-
-    # Calculate the length of the new object code in bytes
-    object_length = self.calculate_length(object_code)
-
-    if self.current_length + object_length > self.MAX_RECORD_LENGTH:
-        # Finalize the current record and start a new one
-        self.finalize_current_record()
-        self.current_start_address = address
-
-    # Add the object code to the current record
-    self.current_record.append(object_code)
-    self.current_length += object_length
-```
-
-#### C. `finalize_current_record` Method
-
-```python
-def finalize_current_record(self):
-    """
-    Finalizes the current text record by formatting and adding it to the list of text records.
-    Resets the current record buffer and counters.
-    """
-    if self.current_record:
-        # Calculate the total length of the current record in bytes
-        record_length = self.current_length
-
-        # Concatenate all object codes in the current record
-        concatenated_object_code = ''.join(self.current_record)
-
-        # Format the text record as per the specification
-        formatted_record = f"T{self.current_start_address:06X}{record_length:02X}{concatenated_object_code}"
-
-        # Add the formatted record to the list of text records
-        self.text_records.append(formatted_record)
-
-        # Reset the current record buffer and counters
-        self.current_record = []
-        self.current_start_address = None
-        self.current_length = 0
-```
-
-#### D. `get_text_records` Method
-
-```python
-def get_text_records(self) -> List[str]:
-    """
-    Retrieves all finalized text records.
-
-    :return: A list of formatted text record strings.
-    """
-    # Finalize any remaining object codes in the current record
-    self.finalize_current_record()
-
-    # Return the list of all finalized text records
-    return self.text_records
-```
-
-#### E. `is_contiguous` Helper Method
-
-```python
-def is_contiguous(self, last_address: int, new_address: int) -> bool:
-    """
-    Checks if the new address is contiguous with the last address.
-
-    :param last_address: The address where the last object code ended.
-    :param new_address: The address of the incoming object code.
-    :return: True if contiguous, False otherwise.
-    """
-    expected_address = last_address + (len(self.current_record[-1]) // 2)
-    return new_address == expected_address
-```
-
-#### F. `calculate_length` Helper Method
-
-```python
-def calculate_length(self, object_code: str) -> int:
-    """
-    Calculates the length of the object code in bytes.
-
-    :param object_code: The hexadecimal string representing the machine code.
-    :return: The length of the object code in bytes.
-    """
-    return len(object_code) // 2  # Each pair of hex digits represents one byte
-```
-
-#### G. `verify_address_consistency` Method
-
-```python
-def verify_address_consistency(self, expected_address: int, actual_address: int, line_number: int):
-    """
-    Verifies that the actual address matches the expected address from the LocationCounter.
-
-    :param expected_address: The address as per the LocationCounter.
-    :param actual_address: The address from the SourceCodeLine.
-    :param line_number: The line number in the source code for error reporting.
-    """
-    if actual_address != expected_address:
-        self.log_error(
-            f"Address mismatch at line {line_number}: expected {expected_address:06X}, found {actual_address:06X}."
-        )
-        # Additional error handling if necessary
-```
-
-#### H. `log_error` Method
-
-```python
-def log_error(self, message: str):
-    """
-    Logs an error message using the integrated ErrorHandler from the LocationCounter.
-
-    :param message: The error message to be logged.
-    """
-    self.location_counter.error_handler.log_error(message)
-```
-
-### Pseudocode Summary
-
-To encapsulate the entire functionality, here's a summary of the `TextRecordManager` pseudocode with `LocationCounter` integration:
-
-```python
-class TextRecordManager:
-    """
-    Manages the creation and organization of text records in the object program.
-
-    Responsibilities:
-        - Collects object codes and groups them into text records.
-        - Ensures that each text record does not exceed 30 bytes.
-        - Handles the continuity of addresses, starting new records as necessary.
-        - Verifies address consistency using LocationCounter.
-        - Formats text records for output.
-    """
-
-    def __init__(self, location_counter: LocationCounter):
-        """
-        Initializes the TextRecordManager with empty records and default values.
-
-        :param location_counter: Instance of LocationCounter for address verification.
-        """
-        self.text_records = []
-        self.current_record = []
-        self.current_start_address = None
-        self.current_length = 0
-        self.MAX_RECORD_LENGTH = 30
-        self.location_counter = location_counter
-
-    def add_object_code(self, address: int, object_code: str):
-        """
-        Adds an object code to the current text record, ensuring length and continuity constraints.
-
-        :param address: The memory address of the object code.
-        :param object_code: The hexadecimal string representing the machine code.
-        """
-        if not self.current_record:
-            # Start a new text record
-            self.current_start_address = address
-
-        if self.current_record:
-            # Get the last object's end address
-            last_object_code = self.current_record[-1]
-            last_address = address - (len(last_object_code) // 2)
-            contiguous = self.is_contiguous(last_address, address)
-        else:
-            contiguous = True
-
-        if not contiguous:
-            # Finalize the current record and start a new one
-            self.finalize_current_record()
-            self.current_start_address = address
-
-        # Calculate the length of the new object code in bytes
-        object_length = self.calculate_length(object_code)
-
-        if self.current_length + object_length > self.MAX_RECORD_LENGTH:
-            # Finalize the current record and start a new one
-            self.finalize_current_record()
-            self.current_start_address = address
-
-        # Add the object code to the current record
-        self.current_record.append(object_code)
-        self.current_length += object_length
-
-    def finalize_current_record(self):
-        """
-        Finalizes the current text record by formatting and adding it to the list of text records.
-        Resets the current record buffer and counters.
-        """
-        if self.current_record:
-            # Calculate the total length of the current record in bytes
-            record_length = self.current_length
-
-            # Concatenate all object codes in the current record
-            concatenated_object_code = ''.join(self.current_record)
-
-            # Format the text record as per the specification
-            formatted_record = f"T{self.current_start_address:06X}{record_length:02X}{concatenated_object_code}"
-
-            # Add the formatted record to the list of text records
-            self.text_records.append(formatted_record)
-
-            # Reset the current record buffer and counters
-            self.current_record = []
-            self.current_start_address = None
-            self.current_length = 0
-
-    def get_text_records(self) -> List[str]:
-        """
-        Retrieves all finalized text records.
-
-        :return: A list of formatted text record strings.
-        """
-        # Finalize any remaining object codes in the current record
-        self.finalize_current_record()
-
-        # Return the list of all finalized text records
-        return self.text_records
-
-    def is_contiguous(self, last_address: int, new_address: int) -> bool:
-        """
-        Checks if the new address is contiguous with the last address.
-
-        :param last_address: The address where the last object code ended.
-        :param new_address: The address of the incoming object code.
-        :return: True if contiguous, False otherwise.
-        """
-        expected_address = last_address + (len(self.current_record[-1]) // 2)
-        return new_address == expected_address
-
-    def calculate_length(self, object_code: str) -> int:
-        """
-        Calculates the length of the object code in bytes.
-
-        :param object_code: The hexadecimal string representing the machine code.
-        :return: The length of the object code in bytes.
-        """
-        return len(object_code) // 2  # Each pair of hex digits represents one byte
-
-    def verify_address_consistency(self, expected_address: int, actual_address: int, line_number: int):
-        """
-        Verifies that the actual address matches the expected address from the LocationCounter.
-
-        :param expected_address: The address as per the LocationCounter.
-        :param actual_address: The address from the SourceCodeLine.
-        :param line_number: The line number in the source code for error reporting.
-        """
-        if actual_address != expected_address:
-            self.log_error(
-                f"Address mismatch at line {line_number}: expected {expected_address:06X}, found {actual_address:06X}."
-            )
-            # Additional error handling if necessary
-
-    def log_error(self, message: str):
-        """
-        Logs an error message using the integrated ErrorHandler from the LocationCounter.
-
-        :param message: The error message to be logged.
-        """
-        self.location_counter.error_handler.log_error(message)
-```
-
-### 4. Detailed Method Descriptions
+### Method Descriptions
 
 #### A. Initialization
 
@@ -3425,54 +2945,26 @@ class TextRecordManager:
     - **Implementation**:  
         In the `finalize_current_record` method, check if `current_record` is not empty before formatting and adding it to `text_records`.
 
-### Interactions with Other Classes
-
-- **`ObjectCodeGenerator`**:
-    - **Role**: Generates object codes for each instruction.
-    - **Interaction**: Calls `text_record_manager.add_object_code(address, object_code)` to add generated codes to text records.
-- **`ModificationRecordManager`**:
-    - **Role**: Manages relocation information.
-    - **Interaction**: Works independently but is part of the overall record management alongside `TextRecordManager`.
-- **`AssemblerPass2`**:
-    - **Role**: Orchestrates the assembly process.
-    - **Interaction**: Utilizes `TextRecordManager` to collect and manage text records during object code generation.
-- **`LocationCounter`**:
-    - **Role**: Manages current address and program length.
-    - **Interaction**: `TextRecordManager` uses `LocationCounter` to verify address consistency and manage address-related operations.
-- **`ObjectProgramWriter`**:
-    - **Role**: Assembles the final object program.
-    - **Interaction**: Receives the finalized text records from `TextRecordManager` to compile the final object program.
-
 ### Implementation Details
-
 #### Instruction Address Consistency
-
 - **Purpose**: Ensures that each object code is placed at the correct memory address as tracked by the `LocationCounter`.
 - **Implementation**:
     - Before adding an object code, verify that the provided `address` matches the expected address from the `LocationCounter`.
     - If there is a mismatch, log an error indicating the inconsistency.
-
 #### Record Continuity and Length Management
-
 - **Contiguity Check**:
-    
     - Determines if the incoming object code is contiguous with the last one in the `current_record`.
     - Utilizes the `is_contiguous` helper method to perform this check.
 - **Length Check**:
-    
     - Ensures that adding the new object code does not exceed `MAX_RECORD_LENGTH`.
     - If it does, finalizes the current record and starts a new one.
 
 #### Integration with `LocationCounter`
-
 - **Address Verification**:
-    
     - `TextRecordManager` uses `LocationCounter` to verify that the addresses of object codes are consistent.
     - This helps in detecting address mismatches and maintaining accurate address tracking.
 - **Error Logging**:
-    
     - Uses the `ErrorHandler` from `LocationCounter` to log any address-related errors.
-
 ### Pseudocode Example
 
 Below is a detailed pseudocode example for the updated `TextRecordManager` class, incorporating the `LocationCounter`.
@@ -3617,33 +3109,23 @@ class TextRecordManager:
         self.location_counter.error_handler.log_error(message)
 ```
 
-### 5. Integration with `LocationCounter`
+### Integration with `LocationCounter`
 
 Integrating the `LocationCounter` into the `TextRecordManager` ensures accurate address tracking and validation throughout the object code organization process. Here's how the integration impacts various parts of the `TextRecordManager`:
 
 #### a. **Address Verification**
 
 Before adding an object code to a text record, verify that the `address` in the `SourceCodeLine` matches the current address from `LocationCounter`. This ensures consistency between Pass 1 and Pass 2.
-
 ```python
 def verify_address_consistency(self, expected_address: int, actual_address: int, line_number: int):
     if actual_address != expected_address:
-        self.log_error(
+        self.logger.log_error(
             f"Address mismatch at line {line_number}: expected {expected_address:06X}, found {actual_address:06X}."
         )
         # Additional error handling if necessary
 ```
 
-#### b. **Error Logging**
-
-Leverage the `ErrorHandler` from `LocationCounter` to log any address-related errors, ensuring that all discrepancies are appropriately recorded.
-
-```python
-def log_error(self, message: str):
-    self.location_counter.error_handler.log_error(message)
-```
-
-### 6. Example Workflow Incorporating `LocationCounter`
+### Example Workflow Incorporating `LocationCounter`
 
 1. **Initialization**:
     
@@ -3682,202 +3164,42 @@ def log_error(self, message: str):
     
     - `ObjectProgramWriter` assembles the final object program using the header record, text records, modification records, and end record.
 
-### 7. Testing the `TextRecordManager`
+### Testing the `TextRecordManager`
 
 To ensure the `TextRecordManager` functions correctly with `LocationCounter`, implement the following test cases:
 
 #### a. **Address Consistency**
-
 - **Test Case**: Intermediate file has sequential addresses matching `LocationCounter`.
 - **Expected Outcome**: Object codes are added to text records without address mismatch errors.
 
 #### b. **Address Mismatch Detection**
-
 - **Test Case**: Intermediate file contains a line with an address that does not match `LocationCounter`.
 - **Expected Outcome**: Error is logged specifying the expected and found addresses, and the object code is not added to the current record.
 
 #### c. **Displacement Calculation**
-
 - **Test Case**: Operand displacement within range for PC-relative and base-relative addressing.
-    
 - **Expected Outcome**: Correct displacement is calculated, and appropriate flags are set in `ObjectCodeGenerator`.
-    
 - **Edge Case**: Operand displacement out of range.
-    
 - **Expected Outcome**: Error is logged indicating displacement out of range, and the object code is not added to the current record.
-    
-
 #### d. **Format Handling**
-
 - **Test Case**: Instructions of all formats (1 to 4).
 - **Expected Outcome**: Object codes are correctly generated for each format and appropriately grouped into text records.
 
 #### e. **Addressing Modes**
-
 - **Test Case**: Instructions using various addressing modes (immediate, indirect, indexed).
 - **Expected Outcome**: Flags are correctly set in `ObjectCodeGenerator`, and object codes reflect addressing modes in the text records.
 
 #### f. **Base Register Usage**
-
 - **Test Case**: Instructions requiring base-relative addressing with `BASE` directive set.
-    
 - **Expected Outcome**: Displacement is calculated relative to the base register, and `b` flag is set in `ObjectCodeGenerator`.
-    
 - **Edge Case**: `BASE` register not set when required.
-    
 - **Expected Outcome**: Error is logged, and displacement calculation fails, preventing object code addition to text records.
-    
-
 #### g. **Literal Handling**
-
 - **Test Case**: Instructions referencing literals.
 - **Expected Outcome**: Object codes for literals are correctly generated, added to text records, and their addresses are verified against `LocationCounter`.
 
-### 8. Documentation and Code Comments
 
-Ensure that all methods within the `TextRecordManager` class are well-documented with clear docstrings and inline comments explaining their purpose, parameters, and logic. This practice facilitates maintenance and future enhancements.
-
-```python
-class TextRecordManager:
-    """
-    Manages the creation and organization of text records in the object program.
-    
-    Responsibilities:
-        - Collects object codes and groups them into text records.
-        - Ensures that each text record does not exceed 30 bytes.
-        - Handles the continuity of addresses, starting new records as necessary.
-        - Verifies address consistency using LocationCounter.
-        - Formats text records for output.
-    """
-    
-    def __init__(self, location_counter: LocationCounter):
-        """
-        Initializes the TextRecordManager with empty records and default values.
-
-        :param location_counter: Instance of LocationCounter for address verification.
-        """
-        self.text_records = []
-        self.current_record = []
-        self.current_start_address = None
-        self.current_length = 0
-        self.MAX_RECORD_LENGTH = 30
-        self.location_counter = location_counter
-
-    def add_object_code(self, address: int, object_code: str):
-        """
-        Adds an object code to the current text record, ensuring length and continuity constraints.
-
-        :param address: The memory address of the object code.
-        :param object_code: The hexadecimal string representing the machine code.
-        """
-        if not self.current_record:
-            # Start a new text record
-            self.current_start_address = address
-
-        if self.current_record:
-            # Get the last object's end address
-            last_object_code = self.current_record[-1]
-            last_address = address - (len(last_object_code) // 2)
-            contiguous = self.is_contiguous(last_address, address)
-        else:
-            contiguous = True
-
-        if not contiguous:
-            # Finalize the current record and start a new one
-            self.finalize_current_record()
-            self.current_start_address = address
-
-        # Calculate the length of the new object code in bytes
-        object_length = self.calculate_length(object_code)
-
-        if self.current_length + object_length > self.MAX_RECORD_LENGTH:
-            # Finalize the current record and start a new one
-            self.finalize_current_record()
-            self.current_start_address = address
-
-        # Add the object code to the current record
-        self.current_record.append(object_code)
-        self.current_length += object_length
-
-    def finalize_current_record(self):
-        """
-        Finalizes the current text record by formatting and adding it to the list of text records.
-        Resets the current record buffer and counters.
-        """
-        if self.current_record:
-            # Calculate the total length of the current record in bytes
-            record_length = self.current_length
-
-            # Concatenate all object codes in the current record
-            concatenated_object_code = ''.join(self.current_record)
-
-            # Format the text record as per the specification
-            formatted_record = f"T{self.current_start_address:06X}{record_length:02X}{concatenated_object_code}"
-
-            # Add the formatted record to the list of text records
-            self.text_records.append(formatted_record)
-
-            # Reset the current record buffer and counters
-            self.current_record = []
-            self.current_start_address = None
-            self.current_length = 0
-
-    def get_text_records(self) -> List[str]:
-        """
-        Retrieves all finalized text records.
-
-        :return: A list of formatted text record strings.
-        """
-        # Finalize any remaining object codes in the current record
-        self.finalize_current_record()
-
-        # Return the list of all finalized text records
-        return self.text_records
-
-    def is_contiguous(self, last_address: int, new_address: int) -> bool:
-        """
-        Checks if the new address is contiguous with the last address.
-
-        :param last_address: The address where the last object code ended.
-        :param new_address: The address of the incoming object code.
-        :return: True if contiguous, False otherwise.
-        """
-        expected_address = last_address + (len(self.current_record[-1]) // 2)
-        return new_address == expected_address
-
-    def calculate_length(self, object_code: str) -> int:
-        """
-        Calculates the length of the object code in bytes.
-
-        :param object_code: The hexadecimal string representing the machine code.
-        :return: The length of the object code in bytes.
-        """
-        return len(object_code) // 2  # Each pair of hex digits represents one byte
-
-    def verify_address_consistency(self, expected_address: int, actual_address: int, line_number: int):
-        """
-        Verifies that the actual address matches the expected address from the LocationCounter.
-
-        :param expected_address: The address as per the LocationCounter.
-        :param actual_address: The address from the SourceCodeLine.
-        :param line_number: The line number in the source code for error reporting.
-        """
-        if actual_address != expected_address:
-            self.log_error(
-                f"Address mismatch at line {line_number}: expected {expected_address:06X}, found {actual_address:06X}."
-            )
-            # Additional error handling if necessary
-
-    def log_error(self, message: str):
-        """
-        Logs an error message using the integrated ErrorHandler from the LocationCounter.
-
-        :param message: The error message to be logged.
-        """
-        self.location_counter.error_handler.log_error(message)
-```
-
-### 9. Example Workflow Incorporating `LocationCounter`
+### Example Workflow Incorporating `LocationCounter`
 
 Here’s how the `TextRecordManager` operates within the assembly process, leveraging the `LocationCounter`:
 
@@ -3919,159 +3241,12 @@ Here’s how the `TextRecordManager` operates within the assembly process, lever
     
     - `ObjectProgramWriter` assembles the final object program using the header record, text records, modification records, and end record.
 
-### 10. Comprehensive Pseudocode Example
 
-Below is an example implementation snippet showcasing the integration of `LocationCounter` within the `TextRecordManager` class.
-
-```python
-class TextRecordManager:
-    """
-    Manages the creation and organization of text records in the object program.
-    
-    Responsibilities:
-        - Collects object codes and groups them into text records.
-        - Ensures that each text record does not exceed 30 bytes.
-        - Handles the continuity of addresses, starting new records as necessary.
-        - Verifies address consistency using LocationCounter.
-        - Formats text records for output.
-    """
-
-    def __init__(self, location_counter: LocationCounter):
-        """
-        Initializes the TextRecordManager with empty records and default values.
-
-        :param location_counter: Instance of LocationCounter for address verification.
-        """
-        self.text_records = []
-        self.current_record = []
-        self.current_start_address = None
-        self.current_length = 0
-        self.MAX_RECORD_LENGTH = 30
-        self.location_counter = location_counter
-
-    def add_object_code(self, address: int, object_code: str):
-        """
-        Adds an object code to the current text record, ensuring length and continuity constraints.
-
-        :param address: The memory address of the object code.
-        :param object_code: The hexadecimal string representing the machine code.
-        """
-        if not self.current_record:
-            # Start a new text record
-            self.current_start_address = address
-
-        if self.current_record:
-            # Get the last object's end address
-            last_object_code = self.current_record[-1]
-            last_address = address - (len(last_object_code) // 2)
-            contiguous = self.is_contiguous(last_address, address)
-        else:
-            contiguous = True
-
-        if not contiguous:
-            # Finalize the current record and start a new one
-            self.finalize_current_record()
-            self.current_start_address = address
-
-        # Calculate the length of the new object code in bytes
-        object_length = self.calculate_length(object_code)
-
-        if self.current_length + object_length > self.MAX_RECORD_LENGTH:
-            # Finalize the current record and start a new one
-            self.finalize_current_record()
-            self.current_start_address = address
-
-        # Add the object code to the current record
-        self.current_record.append(object_code)
-        self.current_length += object_length
-
-    def finalize_current_record(self):
-        """
-        Finalizes the current text record by formatting and adding it to the list of text records.
-        Resets the current record buffer and counters.
-        """
-        if self.current_record:
-            # Calculate the total length of the current record in bytes
-            record_length = self.current_length
-
-            # Concatenate all object codes in the current record
-            concatenated_object_code = ''.join(self.current_record)
-
-            # Format the text record as per the specification
-            formatted_record = f"T{self.current_start_address:06X}{record_length:02X}{concatenated_object_code}"
-
-            # Add the formatted record to the list of text records
-            self.text_records.append(formatted_record)
-
-            # Reset the current record buffer and counters
-            self.current_record = []
-            self.current_start_address = None
-            self.current_length = 0
-
-    def get_text_records(self) -> List[str]:
-        """
-        Retrieves all finalized text records.
-
-        :return: A list of formatted text record strings.
-        """
-        # Finalize any remaining object codes in the current record
-        self.finalize_current_record()
-
-        # Return the list of all finalized text records
-        return self.text_records
-
-    def is_contiguous(self, last_address: int, new_address: int) -> bool:
-        """
-        Checks if the new address is contiguous with the last address.
-
-        :param last_address: The address where the last object code ended.
-        :param new_address: The address of the incoming object code.
-        :return: True if contiguous, False otherwise.
-        """
-        expected_address = last_address + (len(self.current_record[-1]) // 2)
-        return new_address == expected_address
-
-    def calculate_length(self, object_code: str) -> int:
-        """
-        Calculates the length of the object code in bytes.
-
-        :param object_code: The hexadecimal string representing the machine code.
-        :return: The length of the object code in bytes.
-        """
-        return len(object_code) // 2  # Each pair of hex digits represents one byte
-
-    def verify_address_consistency(self, expected_address: int, actual_address: int, line_number: int):
-        """
-        Verifies that the actual address matches the expected address from the LocationCounter.
-
-        :param expected_address: The address as per the LocationCounter.
-        :param actual_address: The address from the SourceCodeLine.
-        :param line_number: The line number in the source code for error reporting.
-        """
-        if actual_address != expected_address:
-            self.log_error(
-                f"Address mismatch at line {line_number}: expected {expected_address:06X}, found {actual_address:06X}."
-            )
-            # Additional error handling if necessary
-
-    def log_error(self, message: str):
-        """
-        Logs an error message using the integrated ErrorHandler from the LocationCounter.
-
-        :param message: The error message to be logged.
-        """
-        self.location_counter.error_handler.log_error(message)
-```
-
-### 11. Finalization and Output
-
+### Finalization and Output
 After processing all lines, the `TextRecordManager` finalizes any remaining object codes and provides the complete list of text records to the `ObjectProgramWriter` for assembling the final object program.
-
 1. **Generating the Header Record**:
-    
     - `AssemblerPass2` creates the header record using the program name, starting address, and program length from `LocationCounter`.
 2. **Generating the End Record**:
-    
     - The end record references the address of the first executable instruction, as determined by `LocationCounter`.
 3. **Assembling the Final Object Program**:
     
@@ -4171,14 +3346,11 @@ class AssemblerPass2:
     - **Finalization**: Retrieves all text records and passes them to `ObjectProgramWriter` along with header and end records.
 
 ### 13. Additional Design Enhancements
-
-#### a. **Handling Base and PC Relative Addressing**
-
+#### a. Handling Base and PC Relative Addressing
 - **Purpose**: Ensure that object codes are correctly grouped based on addressing modes.
 - **Implementation**:
     - Use `LocationCounter` to determine the current address and manage displacement calculations in `ObjectCodeGenerator`.
     - `TextRecordManager` relies on accurate addresses from `LocationCounter` to maintain continuity.
-
 #### b. **Managing Extended Instructions (Format 4)**
 
 - **Purpose**: Properly handle object codes that require extended addressing and relocation.
@@ -4187,14 +3359,11 @@ class AssemblerPass2:
     - `TextRecordManager` manages the addition of such object codes into text records without violating length constraints.
 
 #### c. **Supporting Multiple Control Sections**
-
 - **Purpose**: If the assembler supports multiple control sections, manage object codes across different sections.
 - **Implementation**:
     - `TextRecordManager` can reset its state when a new control section starts.
     - Ensure that addresses are correctly managed across sections using `LocationCounter`.
-
-#### d. **Listing File Generation (Optional)**
-
+#### d. Listing File Generation (Optional)
 - **Purpose**: Create a human-readable listing file that combines source lines with their corresponding object codes and addresses for debugging purposes.
 - **Implementation**:
     - Integrate a `ListingFileWriter` class that formats and writes the listing file based on processed `SourceCodeLine` objects.
@@ -4607,126 +3776,6 @@ The `ModificationRecordManager` is responsible for tracking and managing modific
     - **Role**: Assembles the final object program.
     - **Interaction**: Receives the finalized modification records from `ModificationRecordManager` to include them in the final object program.
 
-### Pseudocode Examples
-Below are detailed pseudocode examples for each method within the `ModificationRecordManager` class to illustrate how the class operates, especially with the integration of the `LocationCounter`.
-#### A. `__init__` Method
-```python
-class ModificationRecordManager:
-    def __init__(self, location_counter: LocationCounter):
-        """
-        Initializes the ModificationRecordManager with an empty list of modification records.
-        
-        :param location_counter: Instance of LocationCounter for address verification.
-        """
-        self.modification_records = []             # List to store finalized modification records
-        self.location_counter = location_counter   # Reference to the LocationCounter
-```
-#### B. `add_modification` Method
-```python
-def add_modification(self, address: int, length: int):
-    """
-    Records a modification at the specified address with the given length.
-    
-    :param address: The memory address that requires modification.
-    :param length: The length in half-bytes (nibbles) that need to be modified.
-    """
-    # Validate modification parameters
-    if not self.validate_modification(address, length):
-        return  # Validation failed; error already logged
-    
-    # Check for duplicate modification records
-    if any(record.startswith(f"M^{address:06X}") for record in self.modification_records):
-        self.log_error(
-            f"Duplicate modification record for address {address:06X}."
-        )
-        return
-    
-    # Format the modification record as per the specification
-    formatted_record = f"M^{address:06X}^{length:02X}"
-    
-    # Add the formatted record to the list of modification records
-    self.modification_records.append(formatted_record)
-    
-    # Optional: Log the action
-    self.location_counter.error_handler.log_action(
-        f"Added modification record: {formatted_record}"
-    )
-```
-- **Explanation**:
-    - **Validation**: Ensures that the `address` and `length` are within valid ranges.
-    - **Duplication Check**: Prevents adding multiple modification records for the same address.
-    - **Formatting**: Adheres to the `M^Address^Length` format.
-    - **Logging**: Optionally logs the addition of a new modification record.
-
-#### C. `finalize_modification_records` Method
-```python
-def finalize_modification_records(self):
-    """
-    Finalizes all modification records, performing any necessary final processing.
-    Currently, no additional processing is required as records are stored as formatted strings.
-    """
-    # Placeholder for future enhancements, such as grouping records or additional formatting
-    pass
-```
-- **Explanation**:
-    - Currently, modification records are stored as formatted strings upon addition. This method serves as a placeholder for any future processing needs.
-
-#### D. `get_modification_records` Method
-```python
-def get_modification_records(self) -> List[str]:
-    """
-    Retrieves all finalized modification records.
-    
-    :return: A list of formatted modification record strings.
-    """
-    # Finalize any remaining modification records
-    self.finalize_modification_records()
-    
-    # Return the list of all finalized modification records
-    return self.modification_records
-```
-- **Explanation**:
-    - Ensures that any final processing is completed before retrieving the modification records.
-#### E. `validate_modification` Helper Method
-```python
-def validate_modification(self, address: int, length: int) -> bool:
-    """
-    Validates the modification parameters.
-    
-    :param address: The memory address that requires modification.
-    :param length: The length in half-bytes (nibbles) that need to be modified.
-    :return: True if valid, False otherwise.
-    """
-    # Example validation: address should be within program range
-    program_length = self.location_counter.program_length
-    if address < 0 or address + (length // 2) > program_length:
-        self.log_error(
-            f"Invalid modification address or length: Address={address:06X}, Length={length}"
-        )
-        return False
-    
-    # Additional validations can be implemented here
-    
-    return True
-```
-- **Explanation**:
-    - Ensures that the modification does not exceed the program's memory bounds.
-    - Prevents negative addresses and zero-length modifications.
-    - Logs an error message if validation fails.
-#### F. `log_error` Method
-```python
-def log_error(self, message: str):
-    """
-    Logs an error message using the integrated ErrorHandler from the LocationCounter.
-    
-    :param message: The error message to be logged.
-    """
-    self.location_counter.error_handler.log_error(message)
-```
-
-- **Explanation**:
-    - Utilizes the `ErrorHandler` from `LocationCounter` to log error messages related to modification records.
-
 ### Example Workflow Incorporating `LocationCounter`
 
 Here's how the `ModificationRecordManager` operates within the assembly process, leveraging the `LocationCounter`:
@@ -4997,107 +4046,6 @@ To ensure the `ModificationRecordManager` functions correctly with `LocationCoun
 - **Test Case**: Adding a modification record with maximum possible length.
 - **Expected Outcome**: Record is added successfully, ensuring boundary conditions are handled.
 
-### Documentation and Code Comments
-
-Ensure that all methods within the `ModificationRecordManager` class are well-documented with clear docstrings and inline comments explaining their purpose, parameters, and logic. This practice facilitates maintenance and future enhancements.
-
-```python
-class ModificationRecordManager:
-    """
-    Manages the creation and organization of modification records in the object program.
-    
-    Responsibilities:
-        - Tracks addresses that require modification for relocation.
-        - Generates formatted modification records.
-        - Validates modification parameters.
-        - Integrates with LocationCounter for address management and error logging.
-    """
-
-    def __init__(self, location_counter: LocationCounter):
-        """
-        Initializes the ModificationRecordManager with an empty list of modification records.
-        
-        :param location_counter: Instance of LocationCounter for address verification.
-        """
-        self.modification_records = []             # List to store finalized modification records
-        self.location_counter = location_counter   # Reference to the LocationCounter
-
-    def add_modification(self, address: int, length: int):
-        """
-        Records a modification at the specified address with the given length.
-        
-        :param address: The memory address that requires modification.
-        :param length: The length in half-bytes (nibbles) that need to be modified.
-        """
-        # Validate modification parameters
-        if not self.validate_modification(address, length):
-            return  # Validation failed; error already logged
-        
-        # Check for duplicate modification records
-        if any(record.startswith(f"M^{address:06X}") for record in self.modification_records):
-            self.log_error(
-                f"Duplicate modification record for address {address:06X}."
-            )
-            return
-        
-        # Format the modification record
-        formatted_record = f"M^{address:06X}^{length:02X}"
-        
-        # Add the formatted record to the list of modification records
-        self.modification_records.append(formatted_record)
-        
-        # Optional: Log the action
-        self.location_counter.error_handler.log_action(
-            f"Added modification record: {formatted_record}"
-        )
-
-    def finalize_modification_records(self):
-        """
-        Finalizes all modification records, performing any necessary final processing.
-        Currently, modification records are stored as formatted strings.
-        """
-        # Placeholder for future enhancements, such as grouping records or additional formatting
-        pass
-
-    def get_modification_records(self) -> List[str]:
-        """
-        Retrieves all finalized modification records.
-        
-        :return: A list of formatted modification record strings.
-        """
-        # Finalize any remaining modification records
-        self.finalize_modification_records()
-        
-        return self.modification_records
-
-    def validate_modification(self, address: int, length: int) -> bool:
-        """
-        Validates the modification parameters.
-        
-        :param address: The memory address that requires modification.
-        :param length: The length in half-bytes (nibbles) that need to be modified.
-        :return: True if valid, False otherwise.
-        """
-        # Example validation: address should be within program range
-        program_length = self.location_counter.program_length
-        if address < 0 or address + (length // 2) > program_length:
-            self.log_error(
-                f"Invalid modification address or length: Address={address:06X}, Length={length}"
-            )
-            return False
-        
-        # Additional validations can be implemented here
-        
-        return True
-
-    def log_error(self, message: str):
-        """
-        Logs an error message using the integrated ErrorHandler from the LocationCounter.
-        
-        :param message: The error message to be logged.
-        """
-        self.location_counter.error_handler.log_error(message)
-```
 
 ### Example Usage
 
@@ -5569,218 +4517,6 @@ The `ObjectProgramWriter` is responsible for assembling all the records generate
         - Optimize the `assemble_object_program` method to handle large lists efficiently.
         - Consider writing records incrementally to the file to manage memory usage.
 
-### Interactions with Other Classes
-
-- **`TextRecordManager`**:
-    - **Role**: Manages the creation and organization of text records.
-    - **Interaction**: Provides a list of formatted text records to `ObjectProgramWriter` for assembly.
-- **`ModificationRecordManager`**:
-    - **Role**: Manages relocation information by tracking addresses needing modification.
-    - **Interaction**: Provides a list of formatted modification records to `ObjectProgramWriter` for assembly.
-- **`LocationCounter`**:
-    - **Role**: Manages current address, program length, and other address-related operations.
-    - **Interaction**: Supplies program metadata (name, start address, length) and assists in formatting records.
-- **`ErrorLogHandler`**:
-    - **Role**: Manages logging of errors and actions throughout the assembly process.
-    - **Interaction**: `ObjectProgramWriter` utilizes it to log any errors encountered during record assembly and file writing.
-- **`AssemblerPass2`**:
-    - **Role**: Orchestrates the second pass of the assembly process, generating object codes, text records, and modification records.
-    - **Interaction**: Collects records from `TextRecordManager` and `ModificationRecordManager` and passes them to `ObjectProgramWriter` for final assembly and output.
-- **`ObjectCodeGenerator`**:
-    - **Role**: Generates object codes for each instruction.
-    - **Interaction**: Identifies symbols and instructions requiring modifications and coordinates with `ModificationRecordManager`.
-
-### Pseudocode Examples
-
-Below are detailed pseudocode examples for each method within the `ObjectProgramWriter` class, illustrating how the class operates and integrates with other components.
-
-#### A. `__init__` Method
-
-```python
-class ObjectProgramWriter:
-    def __init__(self, header_record: str, text_records: List[str], modification_records: List[str], end_record: str, error_handler: ErrorLogHandler):
-        """
-        Initializes the ObjectProgramWriter with all necessary records and an error handler.
-        
-        :param header_record: The header record string.
-        :param text_records: List of text record strings.
-        :param modification_records: List of modification record strings.
-        :param end_record: The end record string.
-        :param error_handler: Instance of ErrorLogHandler for logging errors.
-        """
-        self.header_record = header_record
-        self.text_records = text_records
-        self.modification_records = modification_records
-        self.end_record = end_record
-        self.error_handler = error_handler
-```
-
-#### B. `assemble_object_program` Method
-
-```python
-def assemble_object_program(self) -> str:
-    """
-    Assembles all records into the final object program string.
-    
-    :return: The complete object program as a single string.
-    """
-    object_program = ""
-    
-    # Append header record
-    if self.header_record:
-        object_program += f"{self.header_record}\n"
-    else:
-        self.error_handler.log_error("Header record is missing.")
-    
-    # Append text records
-    for text_record in self.text_records:
-        object_program += f"{text_record}\n"
-    
-    # Append modification records
-    for modification_record in self.modification_records:
-        object_program += f"{modification_record}\n"
-    
-    # Append end record
-    if self.end_record:
-        object_program += f"{self.end_record}\n"
-    else:
-        self.error_handler.log_error("End record is missing.")
-    
-    return object_program
-```
-
-- **Explanation**:
-    - **Header Record**: Checks for the presence of the header record and appends it. Logs an error if missing.
-    - **Text Records**: Iterates through all text records and appends each one.
-    - **Modification Records**: Iterates through all modification records and appends each one.
-    - **End Record**: Checks for the presence of the end record and appends it. Logs an error if missing.
-    - **Final Output**: Returns the concatenated string representing the complete object program.
-
-#### C. `write_to_file` Method
-
-```python
-def write_to_file(self, file_name: str):
-    """
-    Writes the assembled object program to the specified output file.
-    
-    :param file_name: The name/path of the output file.
-    """
-    object_program = self.assemble_object_program()
-    
-    try:
-        with open(file_name, 'w') as file:
-            file.write(object_program)
-        self.error_handler.log_action(f"Object program successfully written to {file_name}.")
-    except IOError as e:
-        self.error_handler.log_error(f"Failed to write object program to {file_name}: {e}")
-```
-
-- **Explanation**:
-    - **Assembly**: Calls `assemble_object_program` to get the complete object program.
-    - **File Writing**: Attempts to open the specified file in write mode and writes the object program.
-    - **Logging**: Logs a success message upon successful writing or an error message if an I/O error occurs.
-
-#### D. `validate_records` Method
-
-```python
-def validate_records(self) -> bool:
-    """
-    Validates that all necessary records are present and correctly formatted.
-    
-    :return: True if all records are valid, False otherwise.
-    """
-    is_valid = True
-    
-    # Validate header record
-    if not self.header_record:
-        self.error_handler.log_error("Header record is missing.")
-        is_valid = False
-    elif not self.header_record.startswith("H"):
-        self.error_handler.log_error("Header record format is incorrect.")
-        is_valid = False
-    
-    # Validate end record
-    if not self.end_record:
-        self.error_handler.log_error("End record is missing.")
-        is_valid = False
-    elif not self.end_record.startswith("E"):
-        self.error_handler.log_error("End record format is incorrect.")
-        is_valid = False
-    
-    # Validate text records
-    for text_record in self.text_records:
-        if not text_record.startswith("T"):
-            self.error_handler.log_error(f"Invalid text record format: {text_record}")
-            is_valid = False
-            break  # Stop further validation on first error
-    
-    # Validate modification records
-    for modification_record in self.modification_records:
-        if not modification_record.startswith("M"):
-            self.error_handler.log_error(f"Invalid modification record format: {modification_record}")
-            is_valid = False
-            break  # Stop further validation on first error
-    
-    return is_valid
-```
-
-- **Explanation**:
-    - **Header and End Records**: Ensures that both are present and start with the correct characters (`H` and `E` respectively).
-    - **Text Records**: Validates that each text record starts with `T`.
-    - **Modification Records**: Validates that each modification record starts with `M`.
-    - **Error Logging**: Logs specific error messages for any malformed or missing records.
-    - **Return Value**: Indicates whether all records are valid (`True`) or if any validation failed (`False`).
-
-#### E. `format_header_record` and `format_end_record` Methods
-
-While these methods are primarily handled by other components (`TextRecordManager` and `AssemblerPass2`), including them here can provide flexibility for re-formatting or regenerating records if needed.
-
-```python
-def format_header_record(self, program_name: str, start_address: int, program_length: int) -> str:
-    """
-    Formats the header record according to the specification.
-    
-    :param program_name: The name of the program.
-    :param start_address: The starting memory address of the program.
-    :param program_length: The total length of the program.
-    :return: The formatted header record string.
-    """
-    # Ensure program name is exactly 6 characters, padded with spaces if necessary
-    program_name_formatted = f"{program_name:<6}"[:6]
-    return f"H^{program_name_formatted}^{start_address:06X}^{program_length:06X}"
-
-def format_end_record(self, first_executable_address: int) -> str:
-    """
-    Formats the end record according to the specification.
-    
-    :param first_executable_address: The address of the first executable instruction.
-    :return: The formatted end record string.
-    """
-    return f"E^{first_executable_address:06X}"
-```
-
-- **Purpose**:
-    - **Header Record Formatting**: Ensures the program name is exactly 6 characters and formats the header record accordingly.
-    - **End Record Formatting**: Formats the end record based on the first executable instruction's address.
-- **Note**: Depending on design preferences, these formatting methods can be managed by `AssemblerPass2` or other related classes instead of `ObjectProgramWriter`.
-
-### Interactions with Other Classes
-
-- **`TextRecordManager`**:
-    - **Role**: Manages the creation and organization of text records.
-    - **Interaction**: Provides a list of formatted text records to `ObjectProgramWriter` for assembly.
-- **`ModificationRecordManager`**:
-    - **Role**: Manages relocation information by tracking addresses needing modification.
-    - **Interaction**: Provides a list of formatted modification records to `ObjectProgramWriter` for assembly.
-- **`LocationCounter`**:
-    - **Role**: Manages current address, program length, and other address-related operations.
-    - **Interaction**: Supplies program metadata (name, start address, length) and assists in formatting records.
-- **`ErrorLogHandler`**:
-    - **Role**: Manages logging of errors and actions throughout the assembly process.
-    - **Interaction**: `ObjectProgramWriter` utilizes it to log any errors encountered during record assembly and file writing.
-- **`AssemblerPass2`**:
-    - **Role**: Orchestrates the second pass of the assembly process, generating object codes, text records, and modification records.
-    - **Interaction**: Collects records from `TextRecordManager` and `ModificationRecordManager` and passes them to `ObjectProgramWriter` for final assembly and output.
 
 ### Pseudocode Examples
 
@@ -6764,12 +5500,12 @@ class ObjectProgramWriter:
 
 ## 6. `AssemblerPass2` Class Overview
 
-### 1. **Class Overview**
+### 1. Class Overview
 The `AssemblerPass2` class orchestrates the second pass of the assembly process. It coordinates interactions between various helper classes, manages the flow from parsing the intermediate file to generating object codes, organizing records, and producing the final object program. The class emphasizes robustness, maintainability, and scalability, ensuring accurate assembly even for complex programs.
 
 ---
 
-### 2. **Enhanced Responsibilities**
+### 2. Enhanced Responsibilities
 
 - **Initialize and Load Tables:** Set up and manage symbol tables, literal tables, and other necessary data structures.
 - **Read and Parse Intermediate File:** Utilize `IntermediateFileParser` to parse the intermediate file and create structured `SourceCodeLine` objects.
@@ -6817,7 +5553,7 @@ To streamline the class and adhere to the Single Responsibility Principle, attri
 
 ---
 
-### 4. **Detailed Methods and Their Responsibilities**
+### 4. Detailed Methods and Their Responsibilities
 
 #### A. Initialization and Setup
 
@@ -7373,7 +6109,7 @@ Understanding how `AssemblerPass2` interacts with other classes is essential for
 
 ---
 
-### 6. **Comprehensive Pseudocode Example**
+### 6. Comprehensive Pseudocode Example
 
 Below is an enhanced pseudocode representation of the `AssemblerPass2` class, incorporating all the discussed improvements and ensuring a robust, maintainable, and efficient assembly process.
 
@@ -7773,7 +6509,7 @@ class AssemblerPass2:
 
 ---
 
-### 7. **Key Enhancements and Design Improvements**
+### 7. Key Enhancements and Design Improvements
 
 #### **A. Enhanced Error Handling**
 
@@ -8039,7 +6775,7 @@ class AssemblerPass2:
 - **Docstrings and Inline Comments:** Each method includes detailed docstrings explaining its purpose, parameters, and behavior. Inline comments clarify specific logic and steps within methods.
 - **Error Logging and Actions:** All significant actions and errors are logged, providing a comprehensive trail for debugging and verification.
 ---
-### 10. **Additional Design Enhancements**
+### 10. Additional Design Enhancements
 #### A. Handling Base and PC Relative Addressing
 - **Base Register Management:**
     - **Set and Unset:** Implement methods within `ObjectCodeGenerator` to set and unset the base register based on `BASE` and `NOBASE` directives.
@@ -8076,7 +6812,7 @@ class AssemblerPass2:
 
 ---
 
-### 11. **Comprehensive Testing Plan**
+### 11. Comprehensive Testing Plan
 To ensure the updated `AssemblerPass2` class functions correctly and integrates seamlessly with other components, implement the following comprehensive testing strategies:
 #### A. Unit Tests
 - **Initialization Tests:**
@@ -8166,7 +6902,7 @@ To ensure the updated `AssemblerPass2` class functions correctly and integrates 
 
 ---
 
-### 12. **Documentation and Code Comments**
+### 12. Documentation and Code Comments
 
 Comprehensive documentation is essential for maintainability and ease of understanding. Ensure that all classes and methods within the assembler are well-documented with clear docstrings and inline comments.
 
