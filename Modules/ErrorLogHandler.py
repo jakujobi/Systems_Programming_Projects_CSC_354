@@ -98,6 +98,7 @@ class ErrorLogHandler:
         self.log_entries: list[str] = []
         self.error_log: list[str] = []
         self.print_log_actions = print_log_actions
+        self.action_counter = 0
 
 
     def get_caller_info(self) -> str:
@@ -137,10 +138,11 @@ class ErrorLogHandler:
         log_message = f"[ACTION] {caller_info}: {message}"
         self.log_entries.append(log_message)
         
-        if self.print_log_actions or print_actions:
+        if self.print_log_actions or (print_actions is not None and print_actions):
             print(f"[ACTION]: {message}")
             # Paginate after every 18 lines of actions
-            if len(self.log_entries) % 18 == 0:
+            self.action_counter += 1
+            if self.action_counter % 18 == 0:
                 self.paginate_output(self.log_entries, "Displaying Actions Log")
 
 
