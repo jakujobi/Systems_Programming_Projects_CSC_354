@@ -85,7 +85,7 @@ class ErrorLogHandler:
     """
 
 
-    def __init__(self):
+    def __init__(self, print_log_actions: bool = False):
         """
         /***************************************************************************************
         ***  METHOD : __init__                                                               ***
@@ -97,6 +97,7 @@ class ErrorLogHandler:
         """
         self.log_entries: list[str] = []
         self.error_log: list[str] = []
+        self.print_log_actions = print_log_actions
 
 
     def get_caller_info(self) -> str:
@@ -113,7 +114,7 @@ class ErrorLogHandler:
 
 
 
-    def log_action(self, message: str, print_actions: bool = False):
+    def log_action(self, message: str, print_actions: bool = None):
         """
         /***************************************************************************************
         ***  METHOD : log_action                                                             ***
@@ -135,12 +136,14 @@ class ErrorLogHandler:
         caller_info = self.get_caller_info()
         log_message = f"[ACTION] {caller_info}: {message}"
         self.log_entries.append(log_message)
-           
-        if print_actions:
+        
+        if self.print_log_actions or print_actions:
             print(f"[ACTION]: {message}")
             # Paginate after every 18 lines of actions
             if len(self.log_entries) % 18 == 0:
                 self.paginate_output(self.log_entries, "Displaying Actions Log")
+
+
 
 
     def log_error(self, error_message: str, context_info: str = None):
