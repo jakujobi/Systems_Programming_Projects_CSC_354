@@ -24,8 +24,9 @@ class TextRecordManager:
         - Formats text records for output.
     """
 
-    def __init__(self, logger: ErrorLogHandler = None, location_counter: LocationCounter = None):
-        self.logger = logger or ErrorLogHandler()
+    def __init__(self, logger: ErrorLogHandler,
+                 location_counter: LocationCounter):
+        self.logger = logger
         self.location_counter = location_counter
         
         self.text_records = []
