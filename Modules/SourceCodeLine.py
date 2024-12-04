@@ -22,9 +22,10 @@ class SourceCodeLine:
                  operands: str = '',
                  comment: str = '',
                  errors = None,
+                 opcode_int: int = None,
                  opcode_hex = None,
                  address: int = None,
-                 object_code: int = None,
+                 object_code_int: int = None,
                  instr_format: int = None,
                  instruction_length: int = None,
                  original_line_number: int = None
@@ -49,11 +50,11 @@ class SourceCodeLine:
         self.comment = comment or ''
 
 
-        self.opcode_hex = opcode_hex or None  # Opcode in hexadecimal
+        self.opcode_int = opcode_int or None  # Opcode in int
         # self.address = address or 0x00000  # Address of the instruction
         self.address = address or None
         
-        self.object_code = object_code or None
+        self.object_code_int = object_code_int or None
         self.instr_format = instr_format or None
 
         # Additional attributes
@@ -61,13 +62,20 @@ class SourceCodeLine:
         self.instruction_length = instruction_length or 0
         
         self.original_line_number = original_line_number
-        
+    
+    @property
+    def opcode_hex(self):
+        """
+        Returns the opcode in hexadecimal format.
+        """
+        return format(self.opcode_int, '02X') if self.opcode_int is not None else None
+    
     @property
     def object_code_hex(self):
         """
         Returns the object code in hexadecimal format.
         """
-        return format(self.object_code, '06X') if self.object_code is not None else None
+        return format(self.object_code_int, '06X') if self.object_code_int is not None else None
     
     @property
     def address_hex(self):
@@ -116,14 +124,6 @@ class SourceCodeLine:
         except ValueError:
             raise ValueError(f"Invalid hexadecimal string: {hex_string}")
         
-    def set_opcode_hex_from_hex_string(self, hex_string: str):
-        """
-        Sets the opcode in hexadecimal format from a hexadecimal string.
-        """
-        try:
-            self.opcode_hex = int(hex_string, 16)
-        except ValueError:
-            raise ValueError(f"Invalid hexadecimal string: {hex_string}")
     def remove_comment(self):
         """
         Removes the comment from the line.
@@ -168,7 +168,7 @@ class SourceCodeLine:
             self.logger.error(_error_message)
             raise ValueError(_error_message)
 
-    def set_opcode_hex(self, hex_string: str):
+    def set_opcode_from_hex_string(self, hex_string: str):
         """
         Sets the opcode in hexadecimal format from a hexadecimal string.
 
@@ -177,7 +177,7 @@ class SourceCodeLine:
         hex_string = hex_string.strip().upper()
         if not re.fullmatch(r'[0-9A-Fa-f]+', hex_string):
             raise ValueError(f"Opcode '{hex_string}' is not a valid hexadecimal string.")
-        self.opcode_hex = int(hex_string, 16)
+        self.opcode = int(hex_string, 16)
 
 
     def set_operands(self, operands: str):
@@ -199,19 +199,19 @@ class SourceCodeLine:
             self.logger.error(_error_message)
             raise ValueError(_error_message)
         
-    def set_object_code_from_hex_string(self, object_code: str):
+    def set_object_code_int_from_hex_string(self, object_code: str):
         """
         Sets the object code of the line.
 
         :param object_code: The object code to set.
         """
-        self.object_code = int(object_code, 16)
+        self.object_code_int = int(object_code, 16)
         
-    def set_object_code_from_int(self, object_code: int):
+    def set_object_code_int_from_int(self, object_code: int):
         """
         Sets the object code of the line.
         """
-        self.object_code = object_code
+        self.object_code_int = object_code
 
     def set_comment(self, comment: str):
         """
@@ -263,12 +263,6 @@ class SourceCodeLine:
         """
         return format(self.address, '06X')
 
-    def get_opcode_hex(self):
-        """
-        Returns the opcode in hexadecimal format.
-        """
-        return format(self.opcode_hex, '02X')
-
     def get_opcode_mnemonic(self):
         """
         Returns the opcode mnemonic.
@@ -281,11 +275,23 @@ class SourceCodeLine:
         """
         return self.operands
 
-    def get_object_code(self):
+    def get_object_code_int(self):
         """
         Returns the object code.
         """
-        return self.object_code
+        return self.object_code_int
+
+    def get_object_code_hex(self):
+        """
+        Returns the object code in hexadecimal format.
+        """
+        return format(self.object_code_int, '02X')
+    
+    def get_opcode_hex(self):
+        """
+        Returns the opcode in hexadecimal format.
+        """
+        return format(self.opcode_hex, '02X')
 
     def get_comment(self):
         """
