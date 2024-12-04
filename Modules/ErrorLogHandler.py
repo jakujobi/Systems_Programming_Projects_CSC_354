@@ -100,6 +100,13 @@ class ErrorLogHandler:
         self.print_log_actions = print_log_actions
         self.action_counter = 0
 
+    def set_print_log_actions(self, print_log_actions: bool):
+        """
+        Sets the flag to control whether to print log actions.
+
+        :param print_log_actions: True to print log actions, False otherwise.
+        """
+        self.print_log_actions = print_log_actions
 
     def get_caller_info(self) -> str:
         """
@@ -139,12 +146,12 @@ class ErrorLogHandler:
         self.log_entries.append(log_message)
         
         if self.print_log_actions or (print_actions is not None and print_actions):
-            
-            # Paginate after every 18 lines of actions
-            self.action_counter += 1
-            if self.action_counter % 18 == 0:
-                #self.paginate_output(self.log_entries, "Displaying Actions Log")
-                print(f"[ACTION]: {message}")
+            print(log_message)
+            # if len(self.log_entries) % 18 == 0:
+            #     print(log_message)
+                # # Paginate after every 18 lines of actions
+                #     #self.paginate_output(self.log_entries, "Displaying Actions Log")
+                #     print(log_message)
 
 
 
@@ -173,11 +180,11 @@ class ErrorLogHandler:
             log_message += f" | Context: {context_info}"
         self.error_log.append(log_message)
         
-        
-        # Paginate after every 18 lines of errors
-        if len(self.error_log) % 18 == 0:
-            # self.paginate_output(self.error_log, "Displaying Error Log")
-            self.print_colored(log_message, 'red', 'black')
+        self.print_colored(log_message, 'red', 'black')
+        # # Paginate after every 18 lines of errors
+        # if len(self.error_log) % 18 == 0:
+        #     # self.paginate_output(self.error_log, "Displaying Error Log")
+        #     self.print_colored(log_message, 'red', 'black')
 
     @staticmethod
     def print_colored(text, color, bg_color='black'):
@@ -378,3 +385,20 @@ class ErrorLogHandler:
         :return: True if there are errors, False otherwise.
         """
         return bool(self.error_log)
+    
+    def has_logs(self) -> bool:
+        """
+        /***************************************************************************************
+        ***  METHOD : has_logs                                                               ***
+        ***  DESCRIPTION :                                                                   ***
+        ***      Checks if there are any logged actions.                                     ***
+        ***                                                                                  ***
+        ***  RETURN : bool                                                                   ***
+        ***      Returns True if there are actions, False otherwise.                         ***
+        ***************************************************************************************/
+
+        Check if there are any logged actions.
+
+        :return: True if there are actions, False otherwise.
+        """
+        return bool(self.log_entries)
