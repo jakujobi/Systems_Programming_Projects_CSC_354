@@ -168,15 +168,17 @@ class SourceCodeLine:
             self.logger.error(_error_message)
             raise ValueError(_error_message)
 
-    def set_opcode_hex(self, opcode: str):
+    def set_opcode_hex(self, hex_string: str):
         """
-        Sets the opcode in hexadecimal format.
+        Sets the opcode in hexadecimal format from a hexadecimal string.
 
-        :param opcode: The opcode in hexadecimal format to set.
+        :param hex_string: The opcode in hexadecimal format to set.
         """
-        if not re.fullmatch(r'[0-9A-Fa-f]+', opcode):
-            raise ValueError(f"Opcode '{opcode}' is not a valid hexadecimal string.")
-        self.opcode_hex = opcode.upper()
+        hex_string = hex_string.strip().upper()
+        if not re.fullmatch(r'[0-9A-Fa-f]+', hex_string):
+            raise ValueError(f"Opcode '{hex_string}' is not a valid hexadecimal string.")
+        self.opcode_hex = int(hex_string, 16)
+
 
     def set_operands(self, operands: str):
         """
