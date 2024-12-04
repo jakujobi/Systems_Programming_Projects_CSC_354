@@ -501,8 +501,8 @@ class AssemblerPass1:
             program_length = self.calculate_program_length()
             program_length_hex = format(self.program_length, '05X')
             self.intermediate_file.write("\n\n" + self.Start_div_program_length + "\n")
-            self.intermediate_file.write(f"Program Length (INT): {program_length}\n")
-            self.intermediate_file.write(f"Program Length (HEX): {program_length_hex}\n")
+            self.intermediate_file.write(f"{self.Program_length_prefix_for_Decimal} {program_length}\n")
+            self.intermediate_file.write(f"{self.Program_length_prefix_for_Hex} {program_length_hex}\n")
             self.intermediate_file.write("\n" + self.End_div_program_length + "\n")
         except ValueError as e:
             self.logger.log_error(f"An error occurred while writing the program length to the output: {e}")
