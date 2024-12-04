@@ -4,13 +4,12 @@ import sys
 from pathlib import Path
 
 
-from Modules.ComboAssembler import ComboAssembler
 
 # Add the parent directory to the system path
 repo_home_path = Path(__file__).resolve().parent.parent
 sys.path.append(str(repo_home_path))
 
-from Modules.AssemblerPass2 import AssemblerPass2
+from Modules.ComboAssembler import ComboAssembler
 
 if __name__ == "__main__":
     # Get the source file from the command-line argument or use the default
