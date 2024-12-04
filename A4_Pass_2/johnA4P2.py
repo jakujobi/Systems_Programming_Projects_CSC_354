@@ -10,8 +10,11 @@ sys.path.append(str(repo_home_path))
 from Modules.AssemblerPass2 import AssemblerPass2
 
 if __name__ == "__main__":
+    
+    hardcoded_file = "P0.int"
+    
     # Get the source file from the command-line argument or use the default
-    source_file = sys.argv[1] if len(sys.argv) > 1 else "source.int"
+    source_file = sys.argv[1] if len(sys.argv) > 1 else hardcoded_file
     
     # Create an instance of AssemblerPass1 with the source file
     assembler_pass2 = AssemblerPass2(source_file)
