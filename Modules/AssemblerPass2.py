@@ -1,3 +1,4 @@
+# AssemberPass2.py
 import os
 import sys
 from pathlib import Path
@@ -8,7 +9,6 @@ sys.path.append(repo_home_path)
 from Modules.SourceCodeLine import *
 from Modules.ParsingHandler import *
 from Modules.OpcodeHandler import *
-from Modules.LocationCounter import *
 from Modules.ErrorLogHandler import *
 from Modules.Symbol_Table_Builder import *
 from Modules.Literal_Table_Builder import *
@@ -18,7 +18,8 @@ from Modules.ObjectCodeGenerator import *
 from Modules.TextRecordManager import *
 from Modules.ObjectProgramWriter import *
 from Modules.ModificationRecordManager import *
-
+from Modules.Validator import *
+from Modules.LocationCounter import LocationCounter
 
 # ! BUGS
 # * 1. The object program file is not being written to the output file.
@@ -57,7 +58,7 @@ class AssemblerPass2:
 
     def __init__(self, int_filename: str,
                  file_explorer: FileExplorer = None,
-                 logger: ErrorLogHandler = None,
+                #  logger: ErrorLogHandler = None,
                  Program_length_prefix_for_Hex: str = "Program Length (HEX):",
                  Program_length_prefix_for_Decimal: str = "Program Length (DEC):",
                  character_literal_prefix: str = '0C',
@@ -70,7 +71,9 @@ class AssemblerPass2:
         
         self.object_program_file_name = None
         
-        self.logger = logger or ErrorLogHandler()
+        # self.logger = logger or ErrorLogHandler()
+        self.logger = ErrorLogHandler(print_log_actions=True)
+        self.logger.set_print_log_actions(True)
         self.opcode_handler = OpcodeHandler(logger=self.logger)
         
         self.file_explorer = file_explorer or FileExplorer()
@@ -113,8 +116,12 @@ class AssemblerPass2:
         self.process_source_lines()
         self.finalize_records()
         self.assemble_object_program()
+        self.create_output_files()
         self.write_output_files()
         self.report_errors()
+        # print the log
+        self.logger.display_log()
+        
         
     def initialize_generators_and_managers(self):
         """
@@ -123,6 +130,7 @@ class AssemblerPass2:
         Prepares the object code generator and record managers for a new assembly run.
         :return: None
         """
+        self.logger.log_action("Initializing generators and managers.")
         self.object_code_generator = ObjectCodeGenerator(
             symbol_table=self.symbol_table,
             literal_table=self.literal_table,
@@ -130,7 +138,7 @@ class AssemblerPass2:
             logger=self.logger,
             location_counter=self.location_counter  # Pass LocationCounter
         )
-        self.text_record_manager = TextRecordManager(logger=self.logger)
+        self.text_record_manager = TextRecordManager(logger=self.logger, location_counter=self.location_counter)
         self.modification_record_manager = ModificationRecordManager(
             location_counter=self.location_counter,
             logger=self.logger
@@ -149,6 +157,7 @@ class AssemblerPass2:
         """
         Loads the intermediate file content into memory.
         """
+        self.logger.log_action(f"Loading intermediate file '{self.int_file_name}'.")
         try:
             self.int_file_content = self.file_explorer.read_file_raw(self.int_file_name)
             if not self.int_file_content:
@@ -160,6 +169,19 @@ class AssemblerPass2:
         except IOError as e:
             self.logger.log_error(f"Error reading intermediate file '{self.int_file_name}': {e}")
 
+    def create_output_files(self):
+        """
+        Creates the output files for the object program.
+        """
+        self.logger.log_action("Creating output files.")
+        self.object_program_file_name = self.file_explorer.create_new_file_in_main(self.program_name, "obj")
+        self.logger.log_action(f"Created object program file '{self.object_program_file_name}'.")
+        
+        # Confirm the file was created
+        if not self.file_explorer.file_exists(self.object_program_file_name):
+            self.logger.log_error(f"Failed to create object program file '{self.object_program_file_name}'.")
+            return
+
     def parse_intermediate_lines(self):
         """
         Parses the loaded intermediate file into structured SourceCodeLine objects.
@@ -167,6 +189,7 @@ class AssemblerPass2:
         Utilizes IntermediateFileParser to convert raw lines into SourceCodeLine objects.
         Logs the number of parsed lines or any errors encountered during parsing.
         """
+        self.logger.log_action("Parsing intermediate file.")
         if not self.int_file_content:
             self.logger.log_error(f"No content to parse in intermediate file '{self.int_file_name}'.")
             return
@@ -208,19 +231,24 @@ class AssemblerPass2:
             - Records modifications if necessary using ModificationRecordManager.
             - Logs actions and errors.
         """
+        self.logger.log_action("Processing source lines.")
+        
         if not hasattr(self, 'int_source_code_lines') or not self.int_source_code_lines:
             self.logger.log_error("No source lines to process.")
             return
 
         for source_line in self.int_source_code_lines:
             if source_line.is_comment() or source_line.has_errors():
+                self.logger.log_action(f"Skipping comment or erroneous line: {source_line}")
                 continue  # Skip comments and erroneous lines
 
             if self.check_if_sourceline_is_directive(source_line):
+                self.logger.log_action(f"Handling directive: {source_line}")
                 self.handle_directive(source_line)
                 continue  # Directives are handled separately
 
             # Generate object code for the instruction
+            self.logger.log_action(f"Processing source line: {source_line}")
             object_code = self.object_code_generator.generate_object_code_for_line(source_line)
 
             if object_code:
@@ -285,7 +313,16 @@ class AssemblerPass2:
 
         :return: The formatted header record string.
         """
+        # mention that this method is being called
+        self.logger.log_action("Creating header record with create_header_record method.")
         program_name_formatted = f"{self.program_name:<6}"[:6]  # Ensure 6 characters
+        # check if location counter exists
+        if self.location_counter is None:
+            print ("Location counter is None")
+            self.logger.log_error("Location counter is not initialized.")
+            return None
+        # print address from location counter
+        print(self.location_counter.get_current_address_int())
         _current_address = self.location_counter.get_current_address_int()
         program_length = _current_address - self.program_start_address
         self.program_length = program_length  # Store the program length
@@ -301,7 +338,8 @@ class AssemblerPass2:
 
         :return: The formatted end record string.
         """
-        end_record = f"E^{self.first_executable_address:06X}"
+        self.logger.log_action("Creating end record with create_end_record method.")
+        end_record = f"E^{self.first_executable_address}"
         self.logger.log_action(f"Created end record: {end_record}")
         return end_record
 
@@ -312,6 +350,7 @@ class AssemblerPass2:
 
         Logs the successful assembly of the object program.
         """
+        
         self.object_program = self.object_program_writer.assemble_object_program()
         self.logger.log_action("Assembled the complete object program.")
 
@@ -321,6 +360,9 @@ class AssemblerPass2:
 
         Handles any exceptions during file writing and logs the outcome.
         """
+        # create the output file
+        self.logger.log_action("Creating the output file with create_output_file method.")
+        self.logger.log_action("Writing the assembled object program to the output file with write_to_file method.")  
         try:
             self.object_program_writer.write_to_file(self.object_program_file_name)
             self.logger.log_action(f"Object program successfully written to '{self.object_program_file_name}'.")
@@ -420,7 +462,7 @@ class AssemblerPass2:
                 self.program_start_address = int(operand)
                 self.program_name = source_line.label.strip()
                 self.text_record_manager.set_curret_start_address(self.program_start_address)
-                self.location_counter = self.location_counter.set_start_address(self.program_start_address)
+                self.location_counter.set_start_address(self.program_start_address)
                 self.logger.log_action(f"Program '{self.program_name}' starting at address {self.program_start_address:X}.")
             except ValueError:
                 self.logger.log_error(f"Invalid start address '{operand}' in START directive at line {source_line.line_number}.")
