@@ -75,9 +75,12 @@ class SourceCodeLine:
         opcode_mnemonic = f"{self.opcode_mnemonic:<{column_size_opcode_mnemonic}}" if self.opcode_mnemonic else (' ' * column_size_opcode_mnemonic)
         
         operands = f"{self.operands}{spacing}" if self.operands else ''
+        
+        object_code = f"{self.object_code}{spacing}" if self.object_code else ''
+        
         #comment = f"{self.comment}{spacing}" if self.comment else ''
         errors = f"[ERROR: {'; '.join(self.errors)}]{spacing}" if self.errors else ''
-        return f"{line_number} {address}{errors}{label} {opcode_mnemonic} {operands}"
+        return f"{line_number} {address}{errors}{label} {opcode_mnemonic} {operands} {object_code}"
         # return f"{line_number} {address}{errors}{label} {opcode_mnemonic} {operands}{comment}"
 
     def is_comment(self) -> bool:
@@ -175,6 +178,31 @@ class SourceCodeLine:
         :param operands: The operands to set.
         """
         self.operands = operands
+        
+    def set_object_code(self, object_code: str):
+        """
+        Sets the object code of the line.
+
+        :param object_code: The object code to set.
+        """
+        self.object_code = object_code
+
+    def set_comment(self, comment: str):
+        """
+        Sets the comment of the line.
+
+        :param comment: The comment to set.
+        """
+        self.comment = comment
+        
+    def set_instruction_length(self, length: int):
+        """
+        Sets the instruction length of the line.
+
+        :param length: The instruction length to set.
+        """
+        self.instruction_length = length
+
 
     @staticmethod
     def test():
