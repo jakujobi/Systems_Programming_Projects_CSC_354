@@ -39,7 +39,7 @@ class ObjectProgramWriter:
         self.text_records = text_records
         self.modification_records = modification_records
         self.end_record = end_record
-        self.logger = logger or ErrorLogHandler()
+        self.logger = logger
     
     def assemble_object_program(self) -> str:
         """
