@@ -70,6 +70,7 @@ class AssemblerPass2:
         self.int_source_code_lines = []
         
         self.object_program_file_name = None
+        self.listing_file_name = None
         
         # self.logger = logger or ErrorLogHandler()
         self.logger = ErrorLogHandler(print_log_actions=True)
@@ -95,6 +96,10 @@ class AssemblerPass2:
         self.Program_length_prefix_for_Hex = Program_length_prefix_for_Hex or "Program Length (HEX):"
         self.Program_length_prefix_for_Decimal = Program_length_prefix_for_Decimal or "Program Length (DEC):"
         
+        
+        self.listing_file_extension = "lst"
+        self.object_program_file_extension = "obj"
+        
         self.Start_div_symbol_table = "===SYM_START==="
         self.End_div_symbol_table = "===SYM_END==="
         self.Start_div_literal_table = "===LIT_START==="
@@ -117,7 +122,9 @@ class AssemblerPass2:
         self.finalize_records()
         self.assemble_object_program()
         self.create_output_files()
+        self.print_all_things
         self.write_output_files()
+        self.create_and_write_listing_file()
         self.report_errors()
         # print the log
         self.logger.display_log()
@@ -174,7 +181,7 @@ class AssemblerPass2:
         Creates the output files for the object program.
         """
         self.logger.log_action("Creating output files.")
-        self.object_program_file_name = self.file_explorer.create_new_file_in_main(self.program_name, "obj")
+        self.object_program_file_name = self.file_explorer.create_new_file_in_main(self.program_name, self.object_program_file_extension)
         self.logger.log_action(f"Created object program file '{self.object_program_file_name}'.")
         
         # Confirm the file was created
@@ -253,6 +260,7 @@ class AssemblerPass2:
 
             if object_code:
                 # Add object code to text records
+                source_line.set_object_code(object_code)
                 self.text_record_manager.add_object_code(source_line.address, object_code)
                 self.logger.log_action(f"Processed and Added object code '{object_code}' at address {source_line.address:X}.")
 
@@ -368,6 +376,26 @@ class AssemblerPass2:
             self.logger.log_action(f"Object program successfully written to '{self.object_program_file_name}'.")
         except Exception as e:
             self.logger.log_error(f"Failed to write object program to '{self.object_program_file_name}': {e}")
+
+    def create_and_write_listing_file(self):
+        """
+        This contains all the sourcelines from the intermediate file without errors
+        """
+        self.logger.log_action("Creating and writing the listing file.")
+        listing_file_name = self.file_explorer.create_new_file_in_main(self.program_name, self.listing_file_extension)
+        if not self.file_explorer.file_exists(listing_file_name):
+            self.logger.log_error(f"Failed to create listing file '{listing_file_name}'.")
+            return
+
+        try:
+            with open(listing_file_name, 'w') as file:
+                for source_line in self.int_source_code_lines:
+                    if not source_line.has_errors():
+                        file.write(str(source_line) + '\n')
+            self.logger.log_action(f"Listing file successfully written to '{listing_file_name}'.")
+        except IOError as e:
+            self.logger.log_error(f"Failed to write listing file to '{listing_file_name}': {e}")
+        
 
     def report_errors(self):
         """
