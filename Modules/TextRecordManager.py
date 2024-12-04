@@ -8,10 +8,11 @@ from typing import List
 repo_home_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.append(repo_home_path)
 
-from Modules.ErrorLogHandler import *
-from Modules.LocationCounter import *
+from Modules.ErrorLogHandler import ErrorLogHandler
+from Modules.LocationCounter import LocationCounter
+from Modules.Validator import Validator
 
-       
+
 class TextRecordManager:
     """
     Manages the creation and organization of text records in the object program.
@@ -33,11 +34,18 @@ class TextRecordManager:
         self.current_record = []
         self.current_start_address = None     # Starting address of the current text record
         self.current_length = 0               # Current length of the text record in bytes
-        self.MAX_RECORD_LENGTH = 30           
-        
-    def set_curret_start_address(self, address: int):
-        self.current_start_address = address
+        self.MAX_RECORD_LENGTH = 30   
+        self.validator = Validator(self.logger)        
+    
+    def set_current_start_address(self, address: int):
+        """
+        Sets the starting address for the current text record.
 
+        :param address: The starting memory address.
+        """
+        self.current_start_address = address
+        self.logger.log_action(f"Set current text record start address to {self.current_start_address}.")
+    
     def add_object_code(self, address: int, object_code: str):
         """
         Adds an object code to the current text record, ensuring length and continuity constraints.
@@ -46,53 +54,60 @@ class TextRecordManager:
         :param object_code: The hexadecimal string representing the machine code.
         """
         
-        _action = f"Adding object code {object_code} at address {address:X}"
+        _action = f"Adding object code {object_code} at address {address}"
         self.logger.log_action(_action)
+        
+        object_length = self.calculate_length(object_code)
         
         if not self.current_record:
             # Start a new text record
             self.current_start_address = address
-
-        if self.current_record:
-            # Get the last object's end address
-            last_object_code = self.current_record[-1]
-            last_address = address - (len(last_object_code) // 2)
-            contiguous = self.is_contiguous(last_address, address)
-        else:
-            contiguous = True
-
-        if not contiguous:
-            # Finalize the current record and start a new one
+            self.current_record.append(object_code)
+            self.current_length += object_length
+            self.logger.log_action(f"Started new text record at address {self.current_start_address}.")
+            return
+        
+        # Expected address for next object code
+        expected_address = self.current_start_address + self.current_length
+        
+        if address != expected_address:
+            # Address is not contiguous, finalize current record and start a new one
+            self.logger.log_action(f"Non-contiguous address detected. Expected {expected_address}, found {address}. Finalizing current record.")
             self.finalize_current_record()
             self.current_start_address = address
-
-        # Calculate the length of the new object code in bytes
-        object_length = self.calculate_length(object_code)
-
+            self.current_record.append(object_code)
+            self.current_length += object_length
+            self.logger.log_action(f"Started new text record at address {self.current_start_address}.")
+            return
+        
+        # Check if adding the object code exceeds the maximum record length
         if self.current_length + object_length > self.MAX_RECORD_LENGTH:
             # Finalize the current record and start a new one
+            self.logger.log_action(f"Current record length {self.current_length} bytes exceeds maximum {self.MAX_RECORD_LENGTH} bytes with new object code of length {object_length}. Finalizing current record.")
             self.finalize_current_record()
             self.current_start_address = address
-
+            self.current_record.append(object_code)
+            self.current_length += object_length
+            self.logger.log_action(f"Started new text record at address {self.current_start_address}.")
+            return
+        
         # Add the object code to the current record
         self.current_record.append(object_code)
         self.current_length += object_length
-        
-        # Log confirmation
-        _action = f"Added object code {object_code} to current record at address {address:X}"
-        self.logger.log_action(_action)
-
+        self.logger.log_action(f"Added object code {object_code} to current record at address {address}. Current record length: {self.current_length} bytes.")
+    
     def finalize_current_record(self):
         """
         Finalizes the current text record by formatting and adding it to the list of text records.
         Resets the current record buffer and counters.
         """
-        # Finalize the current record
-        _action = f"Finalizing current record with {len(self.current_record)} object codes."
-        self.logger.log_action(_action)
-        
         # Check if there are any object codes in the current record
         if self.current_record:
+            # Log the number of object codes before finalizing
+            num_object_codes = len(self.current_record)
+            _action = f"Finalizing current record with {num_object_codes} object codes."
+            self.logger.log_action(_action)
+
             # Calculate the total length of the current record in bytes
             record_length = self.current_length
 
@@ -109,11 +124,11 @@ class TextRecordManager:
             self.current_record = []
             self.current_start_address = None
             self.current_length = 0
-            
-        # Log confirmation
-        _action = f"Finalized current record with {len(self.current_record)} object codes."
-        self.logger.log_action(_action)
 
+            # Log confirmation
+            _action = f"Finalized current record with {num_object_codes} object codes."
+            self.logger.log_action(_action)
+    
     def get_text_records(self) -> List[str]:
         """
         Retrieves all finalized text records.
@@ -142,7 +157,7 @@ class TextRecordManager:
         :param new_address: The address of the incoming object code.
         :return: True if contiguous, False otherwise.
         """
-        expected_address = last_address + (len(self.current_record[-1]) // 2)
+        expected_address = last_address + (self.calculate_length(self.current_record[-1]))
         return new_address == expected_address
 
     def calculate_length(self, object_code: str) -> int:
