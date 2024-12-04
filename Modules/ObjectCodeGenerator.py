@@ -32,8 +32,8 @@ class ObjectCodeGenerator:
                  symbol_table,
                  literal_table,
                  opcode_handler,
-                 logger = None,
-                 location_counter = None):
+                 logger,
+                 location_counter):
         """
         Initializes the ObjectCodeGenerator with necessary references.
         
@@ -43,8 +43,8 @@ class ObjectCodeGenerator:
         :param logger: Instance of ErrorLogHandler.
         :param location_counter: Instance of LocationCounter.
         """
-        self.logger = logger or ErrorLogHandler()
-        self.location_counter = location_counter or LocationCounter()
+        self.logger = logger
+        self.location_counter = location_counter
         self.symbol_table = symbol_table
         self.literal_table = literal_table
         self.opcode_handler = opcode_handler
@@ -92,18 +92,18 @@ class ObjectCodeGenerator:
         :param source_line: Instance of SourceCodeLine.
         :return: Object code as a hexadecimal string or None if error occurred.
         """
-        # Verify address consistency
-        expected_address = self.location_counter.get_current_address_int()
-        # Commpare the int conversion of the address to the expected address
-        # If they don't match, log an error and return None
-        int_address = self.validator.convert_string_hex_str_to_int(source_line.address)
-        if int_address != expected_address:
-            _error_msg = f"Address mismatch at line {source_line.line_number}: expected {expected_address}, found {source_line.address} hex or {self.validator.convert_string_hex_str_to_int(source_line.address)} int."
-            self.logger.log_error(
-                f"Address mismatch at line {source_line.line_number}: expected {expected_address}, found {source_line.address}."
-            )
-            source_line.add_error(_error_msg)
-            return None
+        # # Verify address consistency
+        # expected_address = self.location_counter.get_current_address_int()
+        # # Commpare the int conversion of the address to the expected address
+        # # If they don't match, log an error and return None
+        # int_address = self.validator.convert_string_hex_str_to_int(source_line.address)
+        # if int_address != expected_address:
+        #     _error_msg = f"Address mismatch at line {source_line.line_number}: expected {expected_address}, found {source_line.address} hex or {self.validator.convert_string_hex_str_to_int(source_line.address)} int."
+        #     self.logger.log_error(
+        #         f"Address mismatch at line {source_line.line_number}: expected {expected_address}, found {source_line.address}."
+        #     )
+        #     source_line.add_error(_error_msg)
+        #     return None
         
         # Handle '+' prefix for format 4 instructions
         opcode_mnemonic = source_line.opcode_mnemonic
@@ -144,8 +144,12 @@ class ObjectCodeGenerator:
         # Add object code to text record
         self.text_record_manager.add_object_code(source_line.address, object_code)
         
+        # add object code to source line
+        source_line.object_code = object_code
+        
         # Update LocationCounter based on instruction length
         instruction_length = format_type  # Assuming format corresponds to instruction length
+        source_line.instruction_length = instruction_length
         self.location_counter.increment_by_decimal(instruction_length)
         
         # Handle modification records if necessary
@@ -166,6 +170,7 @@ class ObjectCodeGenerator:
         :param opcode: Opcode hexadecimal value.
         :return: Object code as a hexadecimal string.
         """
+        self.logger.log_action(f"Handling format 1 instruction '{source_line.opcode_mnemonic}' at line {source_line.line_number}.")
         object_code = f"{opcode:02X}"
         return object_code
     
@@ -202,6 +207,7 @@ class ObjectCodeGenerator:
         :param opcode: Opcode hexadecimal value.
         :return: Object code as a hexadecimal string or None if error occurred.
         """
+        self.logger.log_action(f"Handling format 3 instruction '{source_line.opcode_mnemonic}' at line {source_line.line_number}.")
         operand = source_line.operands
         current_address = source_line.address
         
@@ -240,6 +246,7 @@ class ObjectCodeGenerator:
         :param opcode: Opcode hexadecimal value.
         :return: Object code as a hexadecimal string or None if error occurred.
         """
+        self.logger.log_action(f"Handling format 4 instruction '{source_line.opcode_mnemonic}' at line {source_line.line_number}.")
         operand = source_line.operands
         current_address = source_line.address
         
@@ -285,6 +292,8 @@ class ObjectCodeGenerator:
         :param current_address: Current address from LocationCounter.
         :return: Tuple (resolved_value, relocation_info)
         """
+        # log
+        self.logger.log_action(f"Resolving operand '{operand}' at address {current_address}.")
         relocation_info = 'A'  # Default to absolute
         
         if operand.startswith('='):
@@ -317,7 +326,7 @@ class ObjectCodeGenerator:
         :return: Displacement as an integer or None if out of range.
         """
         # log
-        self.logger.log_info(f"Calculating displacement for format 3 instruction at address {current_address}.")
+        self.logger.log_action(f"Calculating displacement for format 3 instruction at address {current_address}.")
         
         displacement = target_address - (current_address + 3)
         
@@ -341,6 +350,8 @@ class ObjectCodeGenerator:
         :param format_type: The instruction format (3 or 4).
         :return: True if within range, False otherwise.
         """
+        # log
+        self.logger.log_action(f"Checking address range for {displacement} in the format {format_type} instruction.")
         if format_type == 3:
             return -2048 <= displacement <= 4095  # Considering both PC and base-relative
         elif format_type == 4:
@@ -354,6 +365,7 @@ class ObjectCodeGenerator:
         :param source_line: Instance of SourceCodeLine.
         :param opcode_info: Dictionary containing opcode details.
         """
+        self.logger.log_action(f"Checking for illegal addressing modes for instruction '{source_line.opcode_mnemonic}' at line {source_line.line_number}.")
         operand = source_line.operands
         addressing_mode = self.identify_addressing_mode(operand)
         allowed_modes = opcode_info.get('allowed_addressing_modes', [])
@@ -370,6 +382,9 @@ class ObjectCodeGenerator:
         :param operand: Operand string.
         :return: Addressing mode as a string ('immediate', 'indirect', 'simple', 'indexed').
         """
+        # log
+        self.logger.log_action(f"Identifying addressing mode for operand '{operand}'.")
+        operand = operand.strip()
         if operand.startswith('#'):
             return 'immediate'
         elif operand.startswith('@'):
@@ -388,6 +403,8 @@ class ObjectCodeGenerator:
         :param source_line: Instance of SourceCodeLine.
         :return: Tuple (processed_operand, flags)
         """
+        # log
+        self.logger.log_action(f"Processing addressing modes for operand '{operand}' at line {source_line.line_number}.")
         operand = operand.strip()
         
         # Immediate addressing
@@ -424,6 +441,8 @@ class ObjectCodeGenerator:
         :param format_type: Instruction format (3 or 4).
         :return: Encoded object code as a hexadecimal string.
         """
+        # log
+        self.logger.log_action(f"Encoding object code for format {format_type} instruction.")
         # Convert opcode to binary (6 bits)
         opcode_bin = format(opcode, '06b')
         
@@ -463,6 +482,7 @@ class ObjectCodeGenerator:
         :param source_line: Instance of SourceCodeLine.
         :return: Register code as an integer or None if invalid.
         """
+        self.logger.log_action(f"Validating register '{register}' at line {source_line.line_number}.")
         register = register.upper()
         REGISTER_CODES = {
             "A": 0, "X": 1, "L": 2, "B": 3, "S": 4, "T": 5, "F": 6,
@@ -473,6 +493,7 @@ class ObjectCodeGenerator:
             self.logger.log_error(_error)
             source_line.add_error(_error)
             return None
+        self.logger.log_action(f"Register '{register}' validated.")
         return REGISTER_CODES[register]
     
     def set_base_register(self, register):
@@ -481,6 +502,7 @@ class ObjectCodeGenerator:
         
         :param register: Register name as a string (e.g., 'B').
         """
+        self.logger.log_action(f"Setting base register to '{register}'.")
         register = register.upper()
         REGISTER_CODES = {
             "A": 0, "X": 1, "L": 2, "B": 3, "S": 4, "T": 5, "F": 6,
@@ -511,6 +533,7 @@ class ObjectCodeGenerator:
         :param literal: Instance of a Literal (from LiteralTableList).
         :return: Object code as a hexadecimal string.
         """
+        self.logger.log_action(f"Generating object code for literal '{literal.name}'.")
         if literal.type == 'C':
             # Convert each character to its ASCII hexadecimal value
             object_code = ''.join([format(ord(char), '02X') for char in literal.value])
@@ -529,6 +552,7 @@ class ObjectCodeGenerator:
         :param source_line: Instance of SourceCodeLine.
         :return: Boolean indicating if modification is required.
         """
+        self.logger.log_action(f"Checking if instruction '{source_line.opcode_mnemonic}' requires modification.")
         # Typically, format 4 instructions require modification
         opcode_info = self.opcode_handler.get_info(source_line.opcode_mnemonic)
         if not opcode_info:
@@ -542,6 +566,7 @@ class ObjectCodeGenerator:
         :param source_line: Instance of SourceCodeLine.
         :return: Tuple (modification_offset, modification_length).
         """
+        self.logger.log_action(f"Getting modification details for instruction '{source_line.opcode_mnemonic}'.")
         # Assuming the modification occurs at the address after the opcode byte
         # and spans the next 5 half-bytes (20 bits)
         modification_offset = 1  # Address offset where modification starts
