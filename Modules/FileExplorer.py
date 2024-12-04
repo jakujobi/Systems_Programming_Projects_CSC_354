@@ -461,6 +461,11 @@ class FileExplorer:
             print(f"An error occurred while appending to the file: {e}")
             return False
 
+    def file_exists(self, file_name):
+        """
+        Checks if a file exists in the current directory.
+        """
+        return os.path.exists(file_name)
 
 
 # Test main program
