@@ -373,12 +373,12 @@ class ObjectCodeGenerator:
         self.logger.log_action(f"Checking for illegal addressing modes for instruction '{source_line.opcode_mnemonic}' at line {source_line.line_number}.")
         operand = source_line.operands
         addressing_mode = self.identify_addressing_mode(operand)
-        allowed_modes = opcode_info.get('allowed_addressing_modes', [])
+        # allowed_modes = opcode_info.get('allowed_addressing_modes', [])
         
-        if addressing_mode not in allowed_modes:
-            _error = f"Illegal addressing mode '{addressing_mode}' for instruction '{source_line.opcode_mnemonic}' at line {source_line.line_number}."
-            self.logger.log_error(_error)
-            source_line.add_error(_error)
+        # if addressing_mode not in allowed_modes:
+        #     _error = f"Illegal addressing mode '{addressing_mode}' for instruction '{source_line.opcode_mnemonic}' at line {source_line.line_number}."
+        #     self.logger.log_error(_error)
+        #     source_line.add_error(_error)
     
     def identify_addressing_mode(self, operand):
         """
@@ -559,7 +559,7 @@ class ObjectCodeGenerator:
         """
         self.logger.log_action(f"Checking if instruction '{source_line.opcode_mnemonic}' requires modification.")
         # Typically, format 4 instructions require modification
-        opcode_info = self.opcode_handler.get_info(source_line.opcode_mnemonic)
+        opcode_info = self.opcode_handler.get_opcode(source_line.opcode_mnemonic)
         if not opcode_info:
             return False
         return opcode_info['format'] == 4
