@@ -22,7 +22,7 @@ class ModificationRecordManager:
     """
 
     def __init__(self, location_counter: LocationCounter,
-                 logger: ErrorLogHandler = None):
+                 logger: ErrorLogHandler):
         """
         Initializes the ModificationRecordManager with an empty list of modification records.
         
