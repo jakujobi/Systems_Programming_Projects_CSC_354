@@ -75,6 +75,7 @@ class ObjectCodeGenerator:
                 continue
             if source_line.is_instruction():
                 object_code = self.generate_object_code_for_line(source_line)
+                source_line.set_object_code(object_code)
                 if object_code:
                     self.text_record_manager.add_object_code(source_line.address, object_code)
                     if self.requires_modification(source_line):
@@ -106,6 +107,8 @@ class ObjectCodeGenerator:
         #     return None
         
         # Handle '+' prefix for format 4 instructions
+        #log
+        self.logger.log_action(f"Generating object code for instruction '{source_line.opcode_mnemonic}' at line {source_line.line_number}.")
         opcode_mnemonic = source_line.opcode_mnemonic
         format4 = False
         if opcode_mnemonic.startswith('+'):
@@ -145,11 +148,11 @@ class ObjectCodeGenerator:
         self.text_record_manager.add_object_code(source_line.address, object_code)
         
         # add object code to source line
-        source_line.object_code = object_code
+        source_line.set_object_code(object_code)
         
         # Update LocationCounter based on instruction length
         instruction_length = format_type  # Assuming format corresponds to instruction length
-        source_line.instruction_length = instruction_length
+        source_line.set_instruction_length(instruction_length)
         self.location_counter.increment_by_decimal(instruction_length)
         
         # Handle modification records if necessary
@@ -160,6 +163,8 @@ class ObjectCodeGenerator:
                 length=modification_length
             )
         
+        # log
+        self.logger.log_action(f"Object code '{object_code}' generated for instruction '{source_line.opcode_mnemonic}' at line {source_line.line_number} {source_line.line_text}.")
         return object_code
     
     def handle_format1(self, source_line, opcode):
