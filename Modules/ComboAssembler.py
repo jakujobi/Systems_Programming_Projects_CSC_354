@@ -17,10 +17,17 @@ class ComboAssembler:
     def __init__(self, source_file):
         self.source_file = source_file
         self.pass1 = AssemblerPass1(self.source_file)
-        self.pass2 = AssemblerPass2(self.source_file)
+        # add `.int` to the source file name to get the intermediate file name
+        self.intermediate_file = self.source_file + ".int"
+        self.pass2 = AssemblerPass2(self.intermediate_file)
     
     def assemble(self):
         self.pass1.run()
-        self.pass2.run()
-        
+        # Ask the user if they want to proceed with Pass 2
+        proceed = input("Proceed with Pass 2? (y/n): ") # accept enter 
+        if proceed.lower() == "y":
+            self.pass2.run()
+        else:
+            print("Pass 2 skipped.")
+
         
