@@ -9,7 +9,7 @@ from Modules.FileExplorer import FileExplorer
 from Modules.ErrorLogHandler import ErrorLogHandler
 
 class OpcodeHandler:
-    directives = ['START', 'END', 'BYTE', 'WORD', 'RESB', 'RESW', 'EQU', 'ORG', 'EXTDEF', 'EXTREF']
+    # directives = ['START', 'END', 'BYTE', 'WORD', 'RESB', 'RESW', 'EQU', 'ORG', 'EXTDEF', 'EXTREF']
     pseudo_ops = ['EXTDEF', 'EXTREF', 'EQU', 'ORG']
         # Default opcodes list
     default_opcodes = [
@@ -88,6 +88,7 @@ class OpcodeHandler:
         self.file_path = file_path
         self._load_opcodes()
         self.make_format_4()
+        self.directives = ['START', 'END', 'BYTE', 'WORD', 'RESB', 'RESW', 'EQU', 'ORG', 'EXTDEF', 'EXTREF']
         
 
     def _load_opcodes(self):
@@ -102,7 +103,7 @@ class OpcodeHandler:
             if not lines:
                 raise FileNotFoundError(f"No lines found in '{self.file_path}' or file is empty.")
 
-            self.logger.log_action(f"Loading opcodes from file: {self.file_path}", False)
+            self.logger.log_action(f"Loading opcodes from file: {self.file_path}")
 
             for line_num, line in enumerate(lines, start=1):
                 # Use regex to handle inconsistent spacing
@@ -134,8 +135,9 @@ class OpcodeHandler:
                     'format': format_parsed,
                     'hex': hex_value
                 }
-                self.logger.log_action(f"Loaded opcode '{name}' with format {format_parsed} and hex {hex_value:02X}", False)
+                self.logger.log_action(f"Loaded opcode '{name}' with format {format_parsed} and hex {hex_value:02X}")
 
+            self.logger.log_action(f"Loaded {len(self.opcodes)} opcodes from file: {self.file_path}")
         except FileNotFoundError as e:
             self.logger.log_error(str(e), "File Error")
         except Exception as e:
@@ -146,6 +148,9 @@ class OpcodeHandler:
         for opcode in self.opcodes:
             if self.opcodes[opcode]['format'] == 3:
                 self.format_4.append('+' + opcode)
+        # Add the format 4 opcodes to the opcodes dictionary
+        for opcode in self.format_4:
+            self.opcodes[opcode] = {'format': 4, 'hex': 0}
         
     def get_opcode(self, name):
         """
@@ -153,7 +158,7 @@ class OpcodeHandler:
         """
         try:
             opcode_info = self.opcodes[name]
-            self.logger.log_action(f"Retrieved opcode '{name}': {opcode_info}", False)
+            self.logger.log_action(f"Retrieved opcode '{name}': {opcode_info}")
             return opcode_info
         except KeyError:
             error_message = f"Opcode '{name}' not found."
@@ -225,8 +230,7 @@ class OpcodeHandler:
         Prints all loaded opcodes to the screen in a readable format.
         """
         if not self.opcodes:
-            self.logger.log_action("No opcodes loaded.", False)
-            print("No opcodes loaded.")
+            self.logger.log_error("No opcodes loaded.")
             return
 
         print(f"{'Mnemonic':<10} {'Hex Code':<10} {'Format':<10}")
@@ -378,7 +382,7 @@ def main():
         return
 
     # Print all loaded opcodes
-    logger.log_action("\nLoaded Opcodes:", False)
+    logger.log_action("\nLoaded Opcodes:")
     try:
         opcode_handler.print_opcodes()
     except Exception as e:
