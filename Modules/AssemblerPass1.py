@@ -219,7 +219,8 @@ class AssemblerPass1:
             return
 
         # Set address for the line
-        source_line.address = self.location_counter.get_current_address_hex()
+        source_line.set_address_from_hex_string(self.location_counter.get_current_address_hex())
+        # source_line.address = self.location_counter.get_current_address_hex()
         
         # Check for START directive
         if source_line.opcode_mnemonic == "START":
