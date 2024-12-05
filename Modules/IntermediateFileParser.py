@@ -34,7 +34,7 @@ class IntermediateFileParser:
     """
     
     def __init__(self,
-                 logger: ErrorLogHandler,
+                 logger: ErrorLogHandler = None,
                  symbol_table_passed: SymbolTable = None,
                  literal_table_passed: LiteralTableList = None,
                  int_file_content=None,
@@ -200,12 +200,12 @@ class IntermediateFileParser:
     def parse_code_line(self, line):
         parts = line.strip().split()
         if len(parts) < 2:
-            _error = (f"Invalid code line format: '{line}'")
+            _error = (f"Invalid code line format less that 2 parts: '{line}'")
             self.logger.log_error(_error)
             return
 
         original_line_number = parts[0]
-        address = parts[1]
+        address = int(parts[1], 16)
         index = 2
 
         # Initialize variables
@@ -647,9 +647,10 @@ def test_parsing_intermediate_code():
     print(program_length)
 
     # Display errors
-    print("\nErrors:")
-    for error in errors:
-        print(error)
+    if errors:
+        print("\nErrors:")
+        for error in errors:
+            print(error)
 
 
 # Example usage
