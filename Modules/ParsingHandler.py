@@ -62,7 +62,7 @@ class ParsingHandler:
         """
         Extracts the label from the line.
         """
-        label_end_index = line.find(SourceCodeLine.label_suffix_symbol)
+        label_end_index = line.find(SourceCodeLine.LABEL_SUFFIX_SYMBOL)
         if label_end_index != -1:
             _label = line[:label_end_index].strip()
             self.source_line.set_label(_label)
@@ -73,7 +73,7 @@ class ParsingHandler:
         """
         Extracts the comment from the line.
         """
-        comment_start_index = line.find(SourceCodeLine.comment_symbol)
+        comment_start_index = line.find(SourceCodeLine.COMMENT_SYMBOL)
         if comment_start_index != -1:
             self.source_line.comment = line[comment_start_index + 1:].strip()
             line = line[:comment_start_index].strip()
