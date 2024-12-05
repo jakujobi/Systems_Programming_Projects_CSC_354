@@ -97,7 +97,8 @@ class SourceCodeLine:
         line_number = f"{self.line_number:<{column_size_line_number}}"
         
         column_size_address = 6
-        address = f"{self.address:<{column_size_address}}{spacing}" if self.address is not None else ' ' * (column_size_address)
+        hex_address = format(self.address, '05X') if self.address is not None else ''
+        address = f"{hex_address:<{column_size_address}}{spacing}" if self.address is not None else ' ' * (column_size_address)
         
         column_size_label = 11
         raw_label = f"{self.label}{self.LABEL_SUFFIX_SYMBOL}" if self.label else ''
@@ -409,7 +410,11 @@ class SourceCodeLine:
         """
         return self.line_text.strip().startswith(self.COMMENT_SYMBOL)
 
-
+    def add_error(self, error_message: str):
+        """
+        Adds an error message to the list of errors associated with the line.
+        """
+        self.errors.append(error_message)
 
     def is_empty_line(self) -> bool:
         """
