@@ -58,14 +58,20 @@ class TextRecordManager:
         self.logger.log_action(_action)
         
         object_length = self.calculate_length(object_code)
+        self.logger.log_action(f"Calculated length of object code: {object_length}")
         
         if not self.current_record:
             # Start a new text record
-            self.current_start_address = address
+            self.set_current_start_address(address)
             self.current_record.append(object_code)
             self.current_length += object_length
             self.logger.log_action(f"Started new text record at address {self.current_start_address}.")
             return
+        self.logger.log_action(f"Current start address: {self.current_start_address}")
+        self.logger.log_action(f"Current length: {self.current_length}")
+        
+        if self.current_start_address is None:
+            self.set_current_start_address(address)
         
         # Expected address for next object code
         expected_address = self.current_start_address + self.current_length
