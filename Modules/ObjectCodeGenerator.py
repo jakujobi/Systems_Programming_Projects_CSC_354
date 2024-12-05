@@ -75,7 +75,7 @@ class ObjectCodeGenerator:
                 continue
             if source_line.is_instruction():
                 object_code = self.generate_object_code_for_line(source_line)
-                source_line.set_object_code(object_code)
+                source_line.set_object_code_int_from_hex_string(object_code)
                 if object_code:
                     self.text_record_manager.add_object_code(source_line.address, object_code)
                     if self.requires_modification(source_line):
@@ -145,10 +145,12 @@ class ObjectCodeGenerator:
             return None
         
         # Add object code to text record
+        self.logger.log_action(f"Adding object code '{object_code}' to text record at address {source_line.address}.")
         self.text_record_manager.add_object_code(source_line.address, object_code)
+        self.logger.log_action(f"Added object code '{object_code}' to text record at address {source_line.address}.")
         
         # add object code to source line
-        source_line.set_object_code(object_code)
+        source_line.set_object_code_int_from_hex_string(object_code)
         
         # Update LocationCounter based on instruction length
         instruction_length = format_type  # Assuming format corresponds to instruction length
@@ -314,7 +316,7 @@ class ObjectCodeGenerator:
             resolved_value = int(operand)
         else:
             # Symbol
-            symbol = self.symbol_table.get_symbol(operand)
+            symbol = self.symbol_table.get(operand)
             if not symbol:
                 return (None, None)
             resolved_value = symbol.value
