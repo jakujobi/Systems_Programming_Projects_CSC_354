@@ -265,9 +265,9 @@ class AssemblerPass2:
 
             if object_code:
                 # Add object code to text records
-                source_line.set_object_code(object_code)
+                source_line.set_object_code_int_from_hex_string(object_code)
                 self.text_record_manager.add_object_code(source_line.address, object_code)
-                self.logger.log_action(f"Processed and Added object code '{object_code}' at address {source_line.address}.")
+                self.logger.log_action(f"Processed and Added object code '{object_code}' at address {source_line.address_hex}.")
 
                 # If modification is required, add to modification records
                 if self.object_code_generator.requires_modification(source_line):
@@ -332,11 +332,11 @@ class AssemblerPass2:
         # program_name_formatted = f"{self.program_name:<6}"[:6]  # Ensure 6 characters
         # check if location counter exists
         if self.location_counter is None:
-            print ("Location counter is None")
+            self.logger.log_error("Location counter is not initialized.")
             self.logger.log_error("Location counter is not initialized.")
             return None
         # print address from location counter
-        print(self.location_counter.get_current_address_int())
+        self.logger.log_action(f"Current address: {self.location_counter.get_current_address_int()}")
         _current_address = self.location_counter.get_current_address_int()
         program_length = _current_address - self.program_start_address
         self.program_length = program_length  # Store the program length
@@ -454,6 +454,20 @@ class AssemblerPass2:
 
 # *Directives Region ______________________________________________________
 #region Directives
+    def get_num_without_hashtag(self, num: str) -> int:
+        """
+        Gets the number without the '#' character.
+        Handles cases like '#24', '24', and '# 24'.
+        """
+        num = num.strip()
+        if num.startswith('#'):
+            num = num[1:].strip()
+        try:
+            return int(num)
+        except ValueError:
+            self.logger.log_error(f"Invalid number format: '{num}'")
+            return 0
+
 
     def handle_directive(self, source_line: SourceCodeLine):
         """
@@ -490,12 +504,17 @@ class AssemblerPass2:
 
         :param source_line: The SourceCodeLine object representing the START directive.
         """
-        operand = source_line.operands
-        if operand:
+        self.logger.log_action(f"Handling START directive with source_line: {source_line}")
+        self.logger.log_action(f"Label: {source_line.label}")
+        self.logger.log_action(f"Operands: {source_line.operands}")
+        operand = self.get_num_without_hashtag(source_line.operands)
+        self.logger.log_action(f"Operand: {operand}")
+        if operand is not None:
+            self.logger.log_action(f"Program start address set to: {operand}")
             try:
                 self.program_start_address = int(operand)
                 self.program_name = source_line.label.strip()
-                self.text_record_manager.set_curret_start_address(self.program_start_address)
+                self.text_record_manager.set_current_start_address(self.program_start_address)
                 self.location_counter.set_start_address(self.program_start_address)
                 self.logger.log_action(f"Program '{self.program_name}' starting at address {self.program_start_address}.")
             except ValueError:
