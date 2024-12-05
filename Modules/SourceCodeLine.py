@@ -85,7 +85,7 @@ class SourceCodeLine:
         """
         Returns the address in hexadecimal format.
         """
-        return format(self.address, '06X')
+        return format(self.address, '06X') if self.address is not None else None
 
 
     def __str__(self) -> str:
