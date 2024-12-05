@@ -113,6 +113,88 @@ class SourceCodeLine:
         return f"{line_number} {address}{errors}{label} {opcode_mnemonic} {operands} {object_code_in_hex}"
         # return f"{line_number} {address}{errors}{label} {opcode_mnemonic} {operands}{comment}"
 
+    # def __str__(self) -> str:
+    #     """
+    #     Provides a string representation of the SourceCodeLine object.
+    #     """
+    #     parts = [
+    #         f"{self.line_number:<10}",  # Line Number
+    #         f"{self.address_hex or '':<6}",  # Address
+    #     ]
+
+    #     if self.errors:
+    #         parts.append(f"[ERROR: {'; '.join(self.errors)}]    ")
+    #     else:
+    #         parts.append(" " * 20)
+
+    #     label = f"{self.label}{self.LABEL_SUFFIX_SYMBOL}" if self.label else ""
+    #     parts.append(f"{label:<11}")  # Label
+
+    #     parts.append(f"{self.opcode_mnemonic:<10}")  # Opcode Mnemonic
+    #     parts.append(f"{self.operands:<15}")  # Operands
+    #     parts.append(f"{self.object_code_hex or '':<6}")  # Object Code
+
+        return ' '.join(parts)
+
+    def __eq__(self, other):
+        if not isinstance(other, SourceCodeLine):
+            return False
+        return (
+            self.line_number == other.line_number and
+            self.line_text == other.line_text and
+            self.label == other.label and
+            self.opcode_mnemonic == other.opcode_mnemonic and
+            self.operands == other.operands and
+            self.comment == other.comment and
+            self.opcode_int == other.opcode_int and
+            self.address == other.address and
+            self.object_code_int == other.object_code_int and
+            self.instr_format == other.instr_format and
+            self.instruction_length == other.instruction_length and
+            self.original_line_number == other.original_line_number and
+            self.errors == other.errors
+        )
+
+# * Has Attributes  
+#region Has Attributes
+    def has_label(self) -> bool:
+        """
+        Checks if the line has a label.
+        """
+        return bool(self.label)
+
+    def has_opcode_mnemonic(self) -> bool:
+        """
+        Checks if the line has an opcode mnemonic.
+        """
+        return bool(self.opcode_mnemonic)
+
+    def has_operands(self) -> bool:
+        """
+        Checks if the line has operands.
+        """
+        return bool(self.operands)
+
+    def has_comment(self) -> bool:
+        """
+        Checks if the line has a comment.
+        """
+        return bool(self.comment)
+
+    def has_object_code(self) -> bool:
+        """
+        Checks if the line has object code.
+        """
+        return bool(self.object_code)
+    
+    def has_errors(self) -> bool:
+        """
+        Checks if there are any errors associated with the line.
+        """
+        return bool(self.errors)
+#endregion Has Attributes
+
+
 #* region Setters
 #region Setters
     def set_address_from_hex_string(self, hex_string: str):
@@ -142,7 +224,6 @@ class SourceCodeLine:
             self.logger.error(_error_message)
             raise ValueError(_error_message)
         try:
-            # check if the label is a valid label
             self.label = label
         except ValueError:
             _error_message = f"Could not set Label '{label}'"
@@ -268,6 +349,12 @@ class SourceCodeLine:
         Returns the opcode mnemonic.
         """
         return self.opcode_mnemonic
+    
+    def get_opcode_hex(self):
+        """
+        Returns the opcode in hexadecimal format.
+        """
+        return format(self.opcode_hex, '02X')
 
     def get_operands(self):
         """
@@ -287,12 +374,6 @@ class SourceCodeLine:
         """
         return format(self.object_code_int, '02X')
     
-    def get_opcode_hex(self):
-        """
-        Returns the opcode in hexadecimal format.
-        """
-        return format(self.opcode_hex, '02X')
-
     def get_comment(self):
         """
         Returns the comment.
@@ -316,6 +397,14 @@ class SourceCodeLine:
         Returns the line number.
         """
         return self.line_number
+    
+    def get_errors(self) -> List[str]:
+        """
+        Returns the list of error messages associated with the line.
+
+        :return: A list of error messages.
+        """
+        return self.errors
 #endregion Getters
 
 
@@ -324,6 +413,8 @@ class SourceCodeLine:
         Checks if the line is a comment.
         """
         return self.line_text.strip().startswith(self.comment_symbol)
+
+
 
     def is_empty_line(self) -> bool:
         """
@@ -336,45 +427,22 @@ class SourceCodeLine:
         Clears all errors associated with the line.
         """
         self.errors = []
-
-# * Has Attributes  
-#region Has Attributes
-    def has_label(self) -> bool:
+        
+    def clear_fields(self):
         """
-        Checks if the line has a label.
+        Clears all non-essential fields of the SourceCodeLine.
         """
-        return bool(self.label)
-
-    def has_opcode_mnemonic(self) -> bool:
-        """
-        Checks if the line has an opcode mnemonic.
-        """
-        return bool(self.opcode_mnemonic)
-
-    def has_operands(self) -> bool:
-        """
-        Checks if the line has operands.
-        """
-        return bool(self.operands)
-
-    def has_comment(self) -> bool:
-        """
-        Checks if the line has a comment.
-        """
-        return bool(self.comment)
-
-    def has_object_code(self) -> bool:
-        """
-        Checks if the line has object code.
-        """
-        return bool(self.object_code)
-    
-    def has_errors(self) -> bool:
-        """
-        Checks if there are any errors associated with the line.
-        """
-        return bool(self.errors)
-#endregion Has Attributes
+        self.label = ''
+        self.opcode_mnemonic = ''
+        self.operands = ''
+        self.comment = ''
+        self.errors = []
+        self.opcode_hex = None
+        self.address = None
+        self.object_code = None
+        self.instr_format = None
+        self.instruction_length = 0
+        self.original_line_number = None
     
 
 
