@@ -56,7 +56,8 @@ class AssemblerPass2:
     """
     
 
-    def __init__(self, int_filename: str,
+    def __init__(self,
+                 int_filename: str,
                  file_explorer: FileExplorer = None,
                 #  logger: ErrorLogHandler = None,
                  Program_length_prefix_for_Hex: str = "Program Length (HEX):",
@@ -68,9 +69,9 @@ class AssemblerPass2:
         self.int_file_name = int_filename
         self.int_file_content = []
         self.int_source_code_lines = []
+        self.int_file_extension = "int"
         
-        self.object_program_file_name = None
-        self.listing_file_name = None
+
         
         # self.logger = logger or ErrorLogHandler()
         self.logger = ErrorLogHandler(print_log_actions=True)
@@ -99,6 +100,10 @@ class AssemblerPass2:
         
         self.listing_file_extension = "lst"
         self.object_program_file_extension = "obj"
+        # make object program file name to be `int_file_name` with file extension removed + '.obj', 
+        # and the listing file name to be `int_file_name` with file extension removed + '.lst'
+        self.object_program_file_name = self.int_file_name.replace(self.int_file_extension, self.object_program_file_extension)
+        self.listing_file_name = self.int_file_name.replace(self.int_file_extension, self.listing_file_extension)
         
         self.Start_div_symbol_table = "===SYM_START==="
         self.End_div_symbol_table = "===SYM_END==="
@@ -262,7 +267,7 @@ class AssemblerPass2:
                 # Add object code to text records
                 source_line.set_object_code(object_code)
                 self.text_record_manager.add_object_code(source_line.address, object_code)
-                self.logger.log_action(f"Processed and Added object code '{object_code}' at address {source_line.address:X}.")
+                self.logger.log_action(f"Processed and Added object code '{object_code}' at address {source_line.address}.")
 
                 # If modification is required, add to modification records
                 if self.object_code_generator.requires_modification(source_line):
@@ -271,7 +276,7 @@ class AssemblerPass2:
                         address=source_line.address + modification_offset,
                         length=modification_length
                     )
-                    self.logger.log_action(f"Added modification record for address {source_line.address + modification_offset:X} with length {modification_length}.")
+                    self.logger.log_action(f"Added modification record for address {source_line.address + modification_offset} with length {modification_length}.")
             else:
                 # Object code generation failed
                 #self.logger.log_error(f"Failed to generate object code for line: {source_line}")
@@ -323,7 +328,8 @@ class AssemblerPass2:
         """
         # mention that this method is being called
         self.logger.log_action("Creating header record with create_header_record method.")
-        program_name_formatted = f"{self.program_name:<6}"[:6]  # Ensure 6 characters
+        program_name_formatted = f"{self.program_name}"
+        # program_name_formatted = f"{self.program_name:<6}"[:6]  # Ensure 6 characters
         # check if location counter exists
         if self.location_counter is None:
             print ("Location counter is None")
@@ -491,7 +497,7 @@ class AssemblerPass2:
                 self.program_name = source_line.label.strip()
                 self.text_record_manager.set_curret_start_address(self.program_start_address)
                 self.location_counter.set_start_address(self.program_start_address)
-                self.logger.log_action(f"Program '{self.program_name}' starting at address {self.program_start_address:X}.")
+                self.logger.log_action(f"Program '{self.program_name}' starting at address {self.program_start_address}.")
             except ValueError:
                 self.logger.log_error(f"Invalid start address '{operand}' in START directive at line {source_line.line_number}.")
         else:
@@ -517,7 +523,7 @@ class AssemblerPass2:
         else:
             # If no operand, default to program start address
             self.first_executable_address = self.program_start_address
-            self.logger.log_action(f"Execution begins at program start address {self.first_executable_address:X}.")
+            self.logger.log_action(f"Execution begins at program start address {self.first_executable_address}.")
 
     def handle_ltorg_directive(self):
         """
@@ -531,7 +537,7 @@ class AssemblerPass2:
             object_code = self.object_code_generator.generate_object_code_for_literal(literal)
             if object_code:
                 self.text_record_manager.add_object_code(literal.address, object_code)
-                self.logger.log_action(f"Assigned address {literal.address:X} to literal '{literal.value}' with object code '{object_code}'.")
+                self.logger.log_action(f"Assigned address {literal.address} to literal '{literal.value}' with object code '{object_code}'.")
                 # Increment location counter by literal length
                 self.location_counter.increment_by_decimal(len(object_code) // 2)  # Assuming object code is hex string
             else:
@@ -550,7 +556,7 @@ class AssemblerPass2:
         value = self.evaluate_expression(expression)
         if value is not None:
             self.symbol_table.define(symbol, value, relocatable=False)
-            self.logger.log_action(f"Defined symbol '{symbol}' with value {value:X} using EQU directive.")
+            self.logger.log_action(f"Defined symbol '{symbol}' with value {value} using EQU directive.")
         else:
             self.logger.log_error(f"Invalid expression '{expression}' in EQU directive at line {source_line.line_number}.")
 
@@ -568,7 +574,7 @@ class AssemblerPass2:
         if base_address is not None:
             self.base_register = base_address
             self.object_code_generator.set_base_register_value(base_address)
-            self.logger.log_action(f"Base register set to symbol '{symbol}' with address {base_address:X}.")
+            self.logger.log_action(f"Base register set to symbol '{symbol}' with address {base_address}.")
         else:
             self.logger.log_error(f"Undefined symbol '{symbol}' in BASE directive.")
 
