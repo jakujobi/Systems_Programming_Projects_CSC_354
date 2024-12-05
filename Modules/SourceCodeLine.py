@@ -2,6 +2,8 @@ import re
 import sys
 import os
 from typing import List
+from typing import List, Optional
+
 
 
 repo_home_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
@@ -11,8 +13,8 @@ class SourceCodeLine:
     """
     Represents a single line of assembly code in a SIC/XE assembler.
     """
-    comment_symbol = '.'  # Default comment symbol
-    label_suffix_symbol = ':'
+    COMMENT_SYMBOL = '.'  # Default comment symbol
+    LABEL_SUFFIX_SYMBOL = ':'
 
     def __init__(self,
                  line_number: int,
@@ -59,7 +61,8 @@ class SourceCodeLine:
 
         # Additional attributes
         self.errors = errors or []
-        self.instruction_length = instruction_length or 0
+        self.instruction_length: int = instruction_length if instruction_length is not None else 0
+
         
         self.original_line_number = original_line_number
     
@@ -97,7 +100,7 @@ class SourceCodeLine:
         address = f"{self.address:<{column_size_address}}{spacing}" if self.address is not None else ' ' * (column_size_address)
         
         column_size_label = 11
-        raw_label = f"{self.label}{self.label_suffix_symbol}" if self.label else ''
+        raw_label = f"{self.label}{self.LABEL_SUFFIX_SYMBOL}" if self.label else ''
         label = f"{raw_label:<{column_size_label}}" if self.label else (' ' * column_size_label)
 
         column_size_opcode_mnemonic = 10
@@ -134,7 +137,7 @@ class SourceCodeLine:
     #     parts.append(f"{self.operands:<15}")  # Operands
     #     parts.append(f"{self.object_code_hex or '':<6}")  # Object Code
 
-        return ' '.join(parts)
+        # return ' '.join(parts)
 
     def __eq__(self, other):
         if not isinstance(other, SourceCodeLine):
@@ -221,13 +224,11 @@ class SourceCodeLine:
         # check if the label is a string
         if not isinstance(label, str):
             _error_message = f"Label '{label}' is not a string."
-            self.logger.error(_error_message)
             raise ValueError(_error_message)
         try:
             self.label = label
         except ValueError:
             _error_message = f"Could not set Label '{label}'"
-            self.logger.error(_error_message)
             raise ValueError(_error_message)
 
     def set_opcode_mnemonic(self, opcode: str):
@@ -240,13 +241,11 @@ class SourceCodeLine:
             # check if the opcode is a string
             if not isinstance(opcode, str):
                 _error_message = f"Opcode '{opcode}' is not a string."
-                self.logger.error(_error_message)
                 raise ValueError(_error_message)
             # check if the opcode is a valid opcode mnemonic
             self.opcode_mnemonic = opcode
         except ValueError:
             _error_message = f"Could not set Opcode '{opcode}'"
-            self.logger.error(_error_message)
             raise ValueError(_error_message)
 
     def set_opcode_from_hex_string(self, hex_string: str):
@@ -258,7 +257,7 @@ class SourceCodeLine:
         hex_string = hex_string.strip().upper()
         if not re.fullmatch(r'[0-9A-Fa-f]+', hex_string):
             raise ValueError(f"Opcode '{hex_string}' is not a valid hexadecimal string.")
-        self.opcode = int(hex_string, 16)
+        self.opcode_int = int(hex_string, 16)
 
 
     def set_operands(self, operands: str):
@@ -271,13 +270,11 @@ class SourceCodeLine:
             # check if the operands is a string
             if not isinstance(operands, str):
                 _error_message = f"Operands '{operands}' is not a string."
-                self.logger.error(_error_message)
                 raise ValueError(_error_message)
             # set the operands
             self.operands = operands
         except ValueError:
             _error_message = f"Could not set Operands '{operands}'"
-            self.logger.error(_error_message)
             raise ValueError(_error_message)
         
     def set_object_code_int_from_hex_string(self, object_code: str):
@@ -312,13 +309,11 @@ class SourceCodeLine:
             # check if the length is an integer
             if not isinstance(length, int):
                 _error_message = f"Length '{length}' is not an integer."
-                self.logger.error(_error_message)
                 raise ValueError(_error_message)
             # set the instruction length
             self.instruction_length = length
         except ValueError:
             _error_message = f"Could not set Length '{length}'"
-            self.logger.error(_error_message)
             raise ValueError(_error_message)
 #endregion Setters
 
@@ -372,7 +367,7 @@ class SourceCodeLine:
         """
         Returns the object code in hexadecimal format.
         """
-        return format(self.object_code_int, '02X')
+        return format(self.object_code_int, '06X') if self.object_code_int is not None else None
     
     def get_comment(self):
         """
@@ -412,7 +407,7 @@ class SourceCodeLine:
         """
         Checks if the line is a comment.
         """
-        return self.line_text.strip().startswith(self.comment_symbol)
+        return self.line_text.strip().startswith(self.COMMENT_SYMBOL)
 
 
 
