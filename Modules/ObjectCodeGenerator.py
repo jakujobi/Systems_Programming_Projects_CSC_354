@@ -71,19 +71,15 @@ class ObjectCodeGenerator:
         :param source_lines: List of SourceCodeLine instances.
         """
         for source_line in source_lines:
-            if source_line.is_comment() or source_line.has_errors():
+            if source_line.is_comment() or source_line.has_errors() or self.opcode_handler.is_directive(source_line.opcode_mnemonic.upper()):
                 continue
-            if source_line.is_instruction():
-                object_code = self.generate_object_code_for_line(source_line)
-                source_line.set_object_code_int_from_hex_string(object_code)
-                if object_code:
-                    self.text_record_manager.add_object_code(source_line.address, object_code)
-                    if self.requires_modification(source_line):
-                        modification_offset, modification_length = self.get_modification_details(source_line)
-                        self.modification_record_manager.add_modification(
-                            address=source_line.address + modification_offset,
-                            length=modification_length
-                        )
+            object_code = self.generate_object_code_for_line(source_line)
+            if object_code and self.requires_modification(source_line):
+                    modification_offset, modification_length = self.get_modification_details(source_line)
+                    self.modification_record_manager.add_modification(
+                        address=source_line.address + modification_offset,
+                        length=modification_length
+                    )
             # Directives are handled by AssemblerPass2
     
     def generate_object_code_for_line(self, source_line):
@@ -142,6 +138,10 @@ class ObjectCodeGenerator:
             object_code = self.handle_format4(source_line, opcode)
         else:
             self.logger.log_error(f"Unsupported instruction format '{format_type}' for opcode '{source_line.opcode_mnemonic}' at line {source_line.line_number}.")
+            return None
+        
+        if object_code is None:
+            self.logger.log_error(f"Error generating object code for instruction '{source_line.opcode_mnemonic}' at line {source_line.line_number}.")
             return None
         
         # Add object code to text record
@@ -292,36 +292,29 @@ class ObjectCodeGenerator:
 
     
     def resolve_operand(self, operand, current_address):
-        """
-        Resolves an operand to its address or value.
-        
-        :param operand: Operand string.
-        :param current_address: Current address from LocationCounter.
-        :return: Tuple (resolved_value, relocation_info)
-        """
-        # log
         self.logger.log_action(f"Resolving operand '{operand}' at address {current_address}.")
-        relocation_info = 'A'  # Default to absolute
-        
+        relocation_info = 'A'
+
         if operand.startswith('='):
-            # Literal
+            # It's a literal
             literal = self.literal_table.get_literal(operand)
             if not literal:
                 self.logger.log_error(f"Literal '{operand}' not found in literal table.")
                 return (None, None)
             resolved_value = literal.address
-            relocation_info = 'R'
+            relocation_info = 'R'  # Usually literals are relocatable
         elif operand.isdigit():
             # Immediate numeric value
             resolved_value = int(operand)
         else:
-            # Symbol
-            symbol = self.symbol_table.get(operand)
-            if not symbol:
+            # It's a symbol
+            value, rflag, error = self.symbol_table.get(operand)
+            if error is not None:
+                # Symbol not found
+                self.logger.log_error(error)
                 return (None, None)
-            resolved_value = symbol.value
-            relocation_info = 'R' if symbol.is_relocatable else 'A'
-        
+            resolved_value = value
+            relocation_info = 'R' if rflag else 'A'
         return (resolved_value, relocation_info)
     
     def calculate_displacement(self, target_address, current_address):
@@ -451,7 +444,7 @@ class ObjectCodeGenerator:
         # log
         self.logger.log_action(f"Encoding object code for format {format_type} instruction.")
         # Convert opcode to binary (6 bits)
-        opcode_bin = format(opcode, '06b')
+        opcode_bin = format(opcode >> 2, '06b')
         
         # Convert nixbpe flags to binary (6 bits)
         flags_bin = ''.join(str(flag) for flag in flags)
@@ -560,11 +553,15 @@ class ObjectCodeGenerator:
         :return: Boolean indicating if modification is required.
         """
         self.logger.log_action(f"Checking if instruction '{source_line.opcode_mnemonic}' requires modification.")
-        # Typically, format 4 instructions require modification
-        opcode_info = self.opcode_handler.get_opcode(source_line.opcode_mnemonic)
+        opcode_mnemonic = source_line.opcode_mnemonic
+        format4 = opcode_mnemonic.startswith('+')
+        if format4:
+            opcode_mnemonic = opcode_mnemonic[1:]
+        opcode_info = self.opcode_handler.get_opcode(opcode_mnemonic)
         if not opcode_info:
             return False
-        return opcode_info['format'] == 4
+        return format4 or (opcode_info['format'] == 4)
+
     
     def get_modification_details(self, source_line):
         """
