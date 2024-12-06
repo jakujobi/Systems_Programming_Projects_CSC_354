@@ -307,17 +307,17 @@ class SymbolTable:
     #         return None, None, f"Undefined symbol: {operand}"
         
     def get(self, operand):
-        is_immediate = operand.startswith('#')
-        is_indirect = operand.startswith('@')
-        is_indexed = operand.endswith(',X')
+        # is_immediate = operand.startswith('#')
+        # is_indirect = operand.startswith('@')
+        # is_indexed = operand.endswith(',X')
 
         base_operand = operand.strip('#@,X')  # Remove addressing symbols
         symbol = self.search(base_operand)
 
         if symbol:
             value = symbol.value
-            if is_indexed:
-                value += 0x8000  # Example: Set indexed addressing flag in object code
+            # if is_indexed:
+            #     value += 0x8000  # Example: Set indexed addressing flag in object code
             return value, symbol.rflag, None
         else:
             return None, None, f"Undefined symbol: {operand}"
