@@ -50,7 +50,7 @@ class ObjectProgramWriter:
         """
         Returns the separation character for formatting.
         """
-        return self.sp_ch if self.activate_separator else ""
+        return self.separation_character if self.activate_separator else ""
     
     def assemble_object_program(self) -> str:
         """
@@ -147,7 +147,7 @@ class ObjectProgramWriter:
         :return: The formatted header record string.
         """
         # Ensure program name is exactly 6 characters, padded with spaces if necessary
-        program_name_formatted = f"{program_name:<6}"[:6]
+        program_name_formatted = f"{program_name:<6}"[:4]
         return f"H{self.sp_ch}{program_name_formatted}{self.sp_ch}{start_address:06X}{self.sp_ch}{program_length:06X}"
     
     def format_end_record(self, first_executable_address: int) -> str:
