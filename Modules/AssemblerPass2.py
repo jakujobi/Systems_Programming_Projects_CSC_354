@@ -75,6 +75,9 @@ class AssemblerPass2:
         self.int_file_content = []
         self.int_source_code_lines = []
         
+        self.external_definitions = []
+        self.external_references = []
+        
 
         
         # self.logger = logger or ErrorLogHandler()
@@ -132,6 +135,7 @@ class AssemblerPass2:
         self.print_all_things
         self.write_output_files()
         self.create_and_write_listing_file()
+        self.print_all_things()
         self.report_errors()
         # print the log
         self.logger.display_log()
@@ -344,6 +348,34 @@ class AssemblerPass2:
         self.logger.log_action(f"Created header record: {header_record}")
         return header_record
 
+    def create_definition_record(self) -> str:
+        """
+        Creates the definition record (D) for external definitions.
+        """
+        if not self.external_definitions:
+            return ''
+
+        record = 'D'
+        for symbol in self.external_definitions:
+            address = self.symbol_table.get_symbol_address(symbol)
+            if address is not None:
+                record += f"{symbol:<6}{address:06X}"
+            else:
+                self.logger.log_error(f"Undefined symbol '{symbol}' in EXTDEF.")
+        return record
+
+    def create_reference_record(self) -> str:
+        """
+        Creates the reference record (R) for external references.
+        """
+        if not self.external_references:
+            return ''
+
+        record = 'R'
+        for symbol in self.external_references:
+            record += f"{symbol:<6}"
+        return record
+
     def create_end_record(self) -> str:
         """
         Constructs the end record based on the first executable instruction's address.
@@ -359,12 +391,23 @@ class AssemblerPass2:
 
 
     def assemble_object_program(self):
-        """
-        Assembles all records into the final object program using ObjectProgramWriter.
-
-        Logs the successful assembly of the object program.
-        """
-        
+        self.logger.log_action("Assembling object program.")
+        header_record = self.create_header_record()
+        definition_record = self.create_definition_record()
+        reference_record = self.create_reference_record()
+        text_records = self.text_record_manager.get_text_records()
+        modification_records = self.modification_record_manager.get_modification_records()
+        end_record = self.create_end_record()
+    
+        object_program = [header_record]
+        if definition_record:
+            object_program.append(definition_record)
+        if reference_record:
+            object_program.append(reference_record)
+        object_program.extend(text_records)
+        object_program.extend(modification_records)
+        object_program.append(end_record)
+    
         self.object_program = self.object_program_writer.assemble_object_program()
         self.logger.log_action("Assembled the complete object program.")
 
@@ -644,4 +687,142 @@ class AssemblerPass2:
         instruction_length = len(object_code) // 2
         self.location_counter.increment_by_decimal(instruction_length)
         self.logger.log_action(f"Generated object code '{object_code}' for BYTE directive.")
+    
+    def handle_word_directive(self, source_line: SourceCodeLine):
+        """
+        Handles the WORD directive by generating object code for constants.
+        """
+        operand = source_line.operands.strip()
+        self.logger.log_action(f"Handling WORD directive with operand '{operand}' at line {source_line.line_number}.")
+
+        try:
+            value = int(operand)
+            object_code = f"{value:06X}"
+            source_line.set_object_code_int_from_hex_string(object_code)
+            self.text_record_manager.add_object_code(source_line.address, object_code)
+            instruction_length = 3
+            self.location_counter.increment_by_decimal(instruction_length)
+            self.logger.log_action(f"Generated object code '{object_code}' for WORD directive.")
+        except ValueError:
+            error = f"Invalid operand '{operand}' for WORD directive at line {source_line.line_number}."
+            self.logger.log_error(error)
+            source_line.add_error(error)
+
+    def handle_resb_directive(self, source_line: SourceCodeLine):
+        """
+        Handles the RESB directive by updating the location counter.
+        """
+        operand = source_line.operands.strip()
+        self.logger.log_action(f"Handling RESB directive with operand '{operand}' at line {source_line.line_number}.")
+
+        try:
+            bytes_to_reserve = int(self.get_num_without_hashtag(operand))
+            self.location_counter.increment_by_decimal(bytes_to_reserve)
+            self.logger.log_action(f"Reserved {bytes_to_reserve} bytes.")
+        except ValueError:
+            error = f"Invalid operand '{operand}' for RESB directive at line {source_line.line_number}."
+            self.logger.log_error(error)
+            source_line.add_error(error)
+
+    def handle_resw_directive(self, source_line: SourceCodeLine):
+        """
+        Handles the RESW directive by updating the location counter.
+        """
+        operand = source_line.operands.strip()
+        self.logger.log_action(f"Handling RESW directive with operand '{operand}' at line {source_line.line_number}.")
+
+        try:
+            words_to_reserve = int(operand)
+            bytes_to_reserve = words_to_reserve * 3
+            self.location_counter.increment_by_decimal(bytes_to_reserve)
+            self.logger.log_action(f"Reserved {bytes_to_reserve} bytes.")
+        except ValueError:
+            error = f"Invalid operand '{operand}' for RESW directive at line {source_line.line_number}."
+            self.logger.log_error(error)
+            source_line.add_error(error)
+            
+    def handle_equ_directive(self, source_line: SourceCodeLine):
+        """
+        Handles the EQU directive by assigning a value to a symbol.
+        """
+        label = source_line.label.strip()
+        operand = source_line.operands.strip()
+        self.logger.log_action(f"Handling EQU directive with label '{label}' and operand '{operand}' at line {source_line.line_number}.")
+
+        if operand == '*':
+            value = self.location_counter.get_current_address_int()
+        else:
+            try:
+                value = self.evaluate_expression(operand)
+            except Exception as e:
+                error = f"Invalid expression '{operand}' in EQU directive at line {source_line.line_number}."
+                self.logger.log_error(error)
+                source_line.add_error(error)
+                return
+
+        if label:
+            self.symbol_table.add_symbol(label, value)
+            self.logger.log_action(f"Assigned value {value:X} to symbol '{label}'.")
+        else:
+            error = f"Missing label in EQU directive at line {source_line.line_number}."
+            self.logger.log_error(error)
+            source_line.add_error(error)
+            
+    def handle_org_directive(self, source_line: SourceCodeLine):
+        """
+        Handles the ORG directive by setting the location counter.
+        """
+        operand = source_line.operands.strip()
+        self.logger.log_action(f"Handling ORG directive with operand '{operand}' at line {source_line.line_number}.")
+
+        if operand == '':
+            error = f"Missing operand in ORG directive at line {source_line.line_number}."
+            self.logger.log_error(error)
+            source_line.add_error(error)
+            return
+
+        try:
+            new_address = self.evaluate_expression(operand)
+            self.location_counter.set_current_address(new_address)
+            self.logger.log_action(f"Set location counter to {new_address:X}.")
+        except Exception as e:
+            error = f"Invalid expression '{operand}' in ORG directive at line {source_line.line_number}."
+            self.logger.log_error(error)
+            source_line.add_error(error)
+
+    def handle_extdef_directive(self, source_line: SourceCodeLine):
+        """
+        Handles the EXTDEF directive by adding symbols to the external definitions.
+        """
+        operands = source_line.operands.strip().split(',')
+        self.logger.log_action(f"Handling EXTDEF directive with operands '{operands}' at line {source_line.line_number}.")
+
+        for symbol in operands:
+            symbol = symbol.strip()
+            if symbol:
+                self.external_definitions.append(symbol)
+                self.logger.log_action(f"Added '{symbol}' to external definitions.")
+            else:
+                error = f"Invalid symbol in EXTDEF directive at line {source_line.line_number}."
+                self.logger.log_error(error)
+                source_line.add_error(error)
+
+    def handle_extdef_directive(self, source_line: SourceCodeLine):
+        """
+        Handles the EXTDEF directive by adding symbols to the external definitions.
+        """
+        operands = source_line.operands.strip().split(',')
+        self.logger.log_action(f"Handling EXTDEF directive with operands '{operands}' at line {source_line.line_number}.")
+
+        for symbol in operands:
+            symbol = symbol.strip()
+            if symbol:
+                self.external_definitions.append(symbol)
+                self.logger.log_action(f"Added '{symbol}' to external definitions.")
+            else:
+                error = f"Invalid symbol in EXTDEF directive at line {source_line.line_number}."
+                self.logger.log_error(error)
+                source_line.add_error(error)
+
+
 #endregion
