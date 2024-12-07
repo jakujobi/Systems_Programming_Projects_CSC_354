@@ -357,7 +357,7 @@ class AssemblerPass2:
 
         record = 'D'
         for symbol in self.external_definitions:
-            address = self.symbol_table.get_symbol_address(symbol)
+            address = self.symbol_table.get(symbol)
             if address is not None:
                 record += f"{symbol:<6}{address:06X}"
             else:
@@ -511,6 +511,17 @@ class AssemblerPass2:
             self.logger.log_error(f"Invalid number format: '{num}'")
             return 0
 
+    def remove_immediate_hash_from_numbers(self, operand):
+        """
+        Converts '#number' to 'number' in the operand string,
+        but leaves '#Name' intact. It also handles cases like 'S,#4' to 'S,4'.
+
+        :param operand: The operand string to process.
+        :return: Modified operand string.
+        """
+        # Regular expression to match '#' followed by digits, ensuring '#' is not part of a word
+        pattern = re.compile(r'(?<![\w])#(\d+)\b')
+        return pattern.sub(r'\1', operand)
 
     def handle_directive(self, source_line: SourceCodeLine):
         """
@@ -522,7 +533,13 @@ class AssemblerPass2:
         """
         directive = source_line.opcode_mnemonic.upper()
         operands = source_line.operands
-
+    
+        # Process operands to remove '#' from numbers for specific directives
+        if directive in ["BYTE", "WORD", "RESB", "RESW", "EQU", "ORG"]:
+            original_operand = source_line.operands
+            source_line.operands = self.remove_immediate_hash_from_numbers(source_line.operands)
+            self.logger.log_action(f"Processed operand from '{original_operand}' to '{source_line.operands}' for directive '{directive}'.")
+    
         if directive == "START":
             self.handle_start_directive(source_line)
         elif directive == "END":
@@ -644,11 +661,9 @@ class AssemblerPass2:
         :param operand: The operand specifying the base symbol or address.
         """
         symbol = operand.strip()
-        base_address = self.symbol_table.get_symbol_address(symbol)
-        if base_address is not None:
-            self.base_register = base_address
-            self.object_code_generator.set_base_register_value(base_address)
-            self.logger.log_action(f"Base register set to symbol '{symbol}' with address {base_address}.")
+        if symbol is not None:
+            self.object_code_generator.set_base_register_value_from_symbol(symbol)
+            self.logger.log_action(f"Base register set to symbol '{symbol}'.")
         else:
             self.logger.log_error(f"Undefined symbol '{symbol}' in BASE directive.")
 
@@ -669,13 +684,15 @@ class AssemblerPass2:
         """
         operand = source_line.operands.strip()
         self.logger.log_action(f"Handling BYTE directive with operand '{operand}' at line {source_line.line_number}.")
-        
+        instruction_length = 3
         object_code = ''
         if operand.startswith("C'") and operand.endswith("'"):
             chars = operand[2:-1]
             object_code = ''.join(f"{ord(c):02X}" for c in chars)
+            source_line.set_object_code_int_from_hex_string(object_code)
         elif operand.startswith("X'") and operand.endswith("'"):
             object_code = operand[2:-1].upper()
+            source_line.set_object_code_int_from_hex_string(object_code)
         else:
             error = f"Invalid operand '{operand}' for BYTE directive at line {source_line.line_number}."
             self.logger.log_error(error)
@@ -702,6 +719,7 @@ class AssemblerPass2:
             self.text_record_manager.add_object_code(source_line.address, object_code)
             instruction_length = 3
             self.location_counter.increment_by_decimal(instruction_length)
+            source_line.set_instruction_length(instruction_length)
             self.logger.log_action(f"Generated object code '{object_code}' for WORD directive.")
         except ValueError:
             error = f"Invalid operand '{operand}' for WORD directive at line {source_line.line_number}."
@@ -718,6 +736,7 @@ class AssemblerPass2:
         try:
             bytes_to_reserve = int(self.get_num_without_hashtag(operand))
             self.location_counter.increment_by_decimal(bytes_to_reserve)
+            source_line.set_instruction_length(bytes_to_reserve)
             self.logger.log_action(f"Reserved {bytes_to_reserve} bytes.")
         except ValueError:
             error = f"Invalid operand '{operand}' for RESB directive at line {source_line.line_number}."
@@ -735,6 +754,7 @@ class AssemblerPass2:
             words_to_reserve = int(operand)
             bytes_to_reserve = words_to_reserve * 3
             self.location_counter.increment_by_decimal(bytes_to_reserve)
+            source_line.set_instruction_length(bytes_to_reserve)
             self.logger.log_action(f"Reserved {bytes_to_reserve} bytes.")
         except ValueError:
             error = f"Invalid operand '{operand}' for RESW directive at line {source_line.line_number}."
