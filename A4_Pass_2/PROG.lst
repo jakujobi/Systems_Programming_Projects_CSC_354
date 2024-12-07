@@ -1,7 +1,0 @@
-1                PROG:       START      #0     
-2                ONE:        FIX         0000C4    
-3          00001                 COMPR      S,T     00A045    
-4          00003                 LDL        #10     092004    
-5          00006                 STB        TWO,X     7BA002    
-7          0000B     TWO:        NORM        0000C8    
-8          0000C                 END        ONE     
