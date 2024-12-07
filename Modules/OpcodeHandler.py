@@ -9,7 +9,6 @@ from Modules.FileExplorer import FileExplorer
 from Modules.ErrorLogHandler import ErrorLogHandler
 
 class OpcodeHandler:
-    # directives = ['START', 'END', 'BYTE', 'WORD', 'RESB', 'RESW', 'EQU', 'ORG', 'EXTDEF', 'EXTREF']
     pseudo_ops = ['EXTDEF', 'EXTREF', 'EQU', 'ORG']
         # Default opcodes list
     default_opcodes = [
@@ -88,7 +87,7 @@ class OpcodeHandler:
         self.file_path = file_path
         self._load_opcodes()
         self.make_format_4()
-        self.directives = ['START', 'END', 'BYTE', 'WORD', 'RESB', 'RESW', 'EQU', 'ORG', 'EXTDEF', 'EXTREF']
+        self.directives = ['START', 'END', 'BYTE', 'WORD', 'BASE', 'RESB', 'LTORG', 'RESW', 'EQU', 'ORG', 'EXTDEF', 'EXTREF']
         
 
     def _load_opcodes(self):
