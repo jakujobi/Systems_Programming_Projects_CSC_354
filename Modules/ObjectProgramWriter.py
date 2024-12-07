@@ -25,7 +25,8 @@ class ObjectProgramWriter:
                  text_records: List[str],
                  modification_records: List[str],
                  end_record: str,
-                 logger: ErrorLogHandler):
+                 logger: ErrorLogHandler,
+                 activate_separator: bool = False):
         """
         Initializes the ObjectProgramWriter with all necessary records and an error handler.
         
@@ -40,6 +41,16 @@ class ObjectProgramWriter:
         self.modification_records = modification_records
         self.end_record = end_record
         self.logger = logger
+        
+        self.separation_character = "^"
+        self.activate_separator = activate_separator # Flag to activate the separation character
+        
+    @property
+    def sp_ch(self):
+        """
+        Returns the separation character for formatting.
+        """
+        return self.sp_ch if self.activate_separator else ""
     
     def assemble_object_program(self) -> str:
         """
@@ -137,7 +148,7 @@ class ObjectProgramWriter:
         """
         # Ensure program name is exactly 6 characters, padded with spaces if necessary
         program_name_formatted = f"{program_name:<6}"[:6]
-        return f"H^{program_name_formatted}^{start_address:06X}^{program_length:06X}"
+        return f"H{self.sp_ch}{program_name_formatted}{self.sp_ch}{start_address:06X}{self.sp_ch}{program_length:06X}"
     
     def format_end_record(self, first_executable_address: int) -> str:
         """
@@ -146,4 +157,4 @@ class ObjectProgramWriter:
         :param first_executable_address: The address of the first executable instruction.
         :return: The formatted end record string.
         """
-        return f"E^{first_executable_address:06X}"
+        return f"E{self.sp_ch}{first_executable_address:06X}"
