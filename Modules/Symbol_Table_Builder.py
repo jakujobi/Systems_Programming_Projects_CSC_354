@@ -322,6 +322,28 @@ class SymbolTable:
         else:
             return None, None, f"Undefined symbol: {operand}"
 
+    def get_value(self, operand):
+        """
+        This function returns the value for a given operand.
+        """
+        # Symbol lookup from the symbol table
+        symbol = self.search(operand)  # Search the table for the symbol
+        if symbol:
+            return symbol.value
+        else:
+            self.logger.log_error(f"Undefined symbol: {operand}")
+            return None
+    
+    def get_rflag(self, operand):
+        """
+        This function returns the rflag value for a given operand.
+        """
+        # Symbol lookup from the symbol table
+        symbol = self.search(operand)  # Search the table for the symbol
+        if symbol:
+            return symbol.rflag
+        else:
+            self.logger.log_error(f"Undefined symbol: {operand}")
 
     def search(self, symbol):
         """
