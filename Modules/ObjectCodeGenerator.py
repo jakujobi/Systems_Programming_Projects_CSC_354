@@ -193,7 +193,7 @@ class ObjectCodeGenerator:
         
         operands = source_line.operands.split(',')
         if len(operands) != 2:
-            _error_msg = f"Incorrect number of operands for format 2 instruction '{source_line.opcode_mnemonic}' at line {source_line.line_number}."
+            _error_msg = f"Incorrect number {len(operands)} of operands for format 2 instruction '{source_line.opcode_mnemonic}' at line {source_line.line_number}."
             self.logger.log_error(_error_msg)
             source_line.add_error(_error_msg)
             return None
@@ -394,6 +394,7 @@ class ObjectCodeGenerator:
         else:
             return 'simple'
     
+    
     def process_addressing_modes(self, operand, flags, source_line):
         """
         Processes the addressing modes and sets the nixbpe flags accordingly.
@@ -407,29 +408,33 @@ class ObjectCodeGenerator:
         self.logger.log_action(f"Processing addressing modes for operand '{operand}' at line {source_line.line_number}.")
         operand = operand.strip()
         
-        # Immediate addressing
         if operand.startswith('#'):
+            # Immediate addressing
             flags[0] = 0  # n
             flags[1] = 1  # i
-            operand = operand[1:].strip()
-        
-        # Indirect addressing
+            operand = operand[1:]
         elif operand.startswith('@'):
+            # Indirect addressing
             flags[0] = 1  # n
             flags[1] = 0  # i
-            operand = operand[1:].strip()
-        
-        # Simple addressing
+            operand = operand[1:]
         else:
+            # Simple addressing
             flags[0] = 1  # n
             flags[1] = 1  # i
         
-        # Indexed addressing
-        if ',X' in operand.upper():
-            flags[2] = 1  # x
-            operand = operand.upper().replace(',X', '').strip()
-        
-        return (operand, flags)
+        # Check for indexed addressing
+        if ',' in operand:
+            parts = operand.split(',')
+            if parts[1].strip().upper() == 'X':
+                flags[2] = 1  # x
+                operand = parts[0].strip()
+            else:
+                self.logger.log_error(f"Invalid index register in operand '{operand}' at line {source_line.line_number}.")
+                source_line.add_error(f"Invalid index register in operand '{operand}'.")
+                return None, None
+
+        return operand, flags
     
     def encode_object_code(self, opcode, flags, displacement, format_type):
         """
@@ -512,12 +517,33 @@ class ObjectCodeGenerator:
             self.logger.log_error(f"Invalid base register '{register}'.")
             return
         symbol = register  # Assuming register symbols are defined in the symbol table
-        symbol_entry = self.symbol_table.get_symbol(symbol)
+        symbol_entry = self.symbol_table.get(symbol)
         if not symbol_entry:
             self.logger.log_error(f"Symbol for base register '{register}' not found in symbol table.")
             return
         self.base_register_value = symbol_entry.value
         self.logger.log_action(f"Base register set to {register} with value {self.base_register_value:X}.")
+    
+    def set_base_register_value_from_symbol(self, operand):
+        """
+        Sets the base register value for base-relative addressing.
+
+        :param base_address: The address to set as the base register value.
+        """
+        base_address = self.symbol_table.get_value(operand)
+        if not base_address:
+            self.logger.log_error(f"Symbol for base register '{operand}' not found in symbol table.")
+            return
+        
+        self.base_register_value = base_address
+        self.logger.log_action(f"Base register set to address {base_address:X}.")
+
+    def get_base_register_value(self):
+        """
+        Retrieves the current value of the base register.
+        :return: The current value of the base register.
+        """
+        return self.base_register_value if self.base_register_value is not None else 0
     
     def unset_base_register(self):
         """
