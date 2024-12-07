@@ -34,7 +34,7 @@ class AssemblerPass2:
     record management, and final assembly of the object program.
     
     Attributes:
-        - int_file_name (str): Path to the intermediate file.
+        - int_file (str): Path to the intermediate file.
         - int_file_content (List[str]): Raw lines from the intermediate file.
         - int_source_code_lines (List[SourceCodeLine]): Parsed source lines.
         - logger (ErrorLogHandler): Handles logging of actions and errors.
@@ -64,12 +64,16 @@ class AssemblerPass2:
                  Program_length_prefix_for_Decimal: str = "Program Length (DEC):",
                  character_literal_prefix: str = '0C',
                  hex_literal_prefix: str = '0X',
-                 allow_error_lines_in_generated_document: bool = True):
+                 allow_error_lines_in_generated_document: bool = True,
+                 Listing_File_Extension: str = "lst",
+                 Object_Program_File_Extension: str = "obj",
+                 ):
         
-        self.int_file_name = int_filename
+        self.int_file = int_filename
+        self.int_file_extension = self.int_file.split('.')[-1]
+        self.int_file_name = self.int_file.replace(self.int_file_extension, '')
         self.int_file_content = []
         self.int_source_code_lines = []
-        self.int_file_extension = "int"
         
 
         
@@ -98,12 +102,10 @@ class AssemblerPass2:
         self.Program_length_prefix_for_Decimal = Program_length_prefix_for_Decimal or "Program Length (DEC):"
         
         
-        self.listing_file_extension = "lst"
-        self.object_program_file_extension = "obj"
-        # make object program file name to be `int_file_name` with file extension removed + '.obj', 
-        # and the listing file name to be `int_file_name` with file extension removed + '.lst'
-        self.object_program_file_name = self.int_file_name.replace(self.int_file_extension, self.object_program_file_extension)
-        self.listing_file_name = self.int_file_name.replace(self.int_file_extension, self.listing_file_extension)
+        self.listing_file_extension = Listing_File_Extension if Listing_File_Extension else "lst"
+        self.object_program_file_extension = Object_Program_File_Extension if Object_Program_File_Extension else "obj"
+        self.object_program_file = None
+        self.listing_file = None
         
         self.Start_div_symbol_table = "===SYM_START==="
         self.End_div_symbol_table = "===SYM_END==="
@@ -169,29 +171,29 @@ class AssemblerPass2:
         """
         Loads the intermediate file content into memory.
         """
-        self.logger.log_action(f"Loading intermediate file '{self.int_file_name}'.")
+        self.logger.log_action(f"Loading intermediate file '{self.int_file}'.")
         try:
-            self.int_file_content = self.file_explorer.read_file_raw(self.int_file_name)
+            self.int_file_content = self.file_explorer.read_file_raw(self.int_file)
             if not self.int_file_content:
                 self.logger.log_error("Intermediate file is empty.")
                 return
-            self.logger.log_action(f"Read {len(self.int_file_content)} lines from '{self.int_file_name}'.")
+            self.logger.log_action(f"Read {len(self.int_file_content)} lines from '{self.int_file}'.")
         except FileNotFoundError:
-            self.logger.log_error(f"Intermediate file '{self.int_file_name}' not found.")
+            self.logger.log_error(f"Intermediate file '{self.int_file}' not found.")
         except IOError as e:
-            self.logger.log_error(f"Error reading intermediate file '{self.int_file_name}': {e}")
+            self.logger.log_error(f"Error reading intermediate file '{self.int_file}': {e}")
 
     def create_output_files(self):
         """
         Creates the output files for the object program.
         """
         self.logger.log_action("Creating output files.")
-        self.object_program_file_name = self.file_explorer.create_new_file_in_main(self.program_name, self.object_program_file_extension)
-        self.logger.log_action(f"Created object program file '{self.object_program_file_name}'.")
+        self.object_program_file = self.file_explorer.create_new_file_in_main(self.int_file_name, self.object_program_file_extension)
+        self.logger.log_action(f"Created object program file '{self.object_program_file}'.")
         
         # Confirm the file was created
-        if not self.file_explorer.file_exists(self.object_program_file_name):
-            self.logger.log_error(f"Failed to create object program file '{self.object_program_file_name}'.")
+        if not self.file_explorer.file_exists(self.object_program_file):
+            self.logger.log_error(f"Failed to create object program file '{self.object_program_file}'.")
             return
 
     def parse_intermediate_lines(self):
@@ -203,7 +205,7 @@ class AssemblerPass2:
         """
         self.logger.log_action("Parsing intermediate file.")
         if not self.int_file_content:
-            self.logger.log_error(f"No content to parse in intermediate file '{self.int_file_name}'.")
+            self.logger.log_error(f"No content to parse in intermediate file '{self.int_file}'.")
             return
         
         int_file_parser = IntermediateFileParser(
@@ -232,55 +234,53 @@ class AssemblerPass2:
 
     
     def process_source_lines(self):
-        """
-        Iterates through each SourceCodeLine to generate object codes and manage records.
-
-        For each instruction:
-            - Skips comments and erroneous lines.
-            - Handles directives appropriately.
-            - Generates object code using ObjectCodeGenerator.
-            - Adds object code to TextRecordManager.
-            - Records modifications if necessary using ModificationRecordManager.
-            - Logs actions and errors.
-        """
         self.logger.log_action("Processing source lines.")
-        
-        if not hasattr(self, 'int_source_code_lines') or not self.int_source_code_lines:
+    
+        if not self.int_source_code_lines:
             self.logger.log_error("No source lines to process.")
             return
-
+    
         for source_line in self.int_source_code_lines:
             if source_line.is_comment() or source_line.has_errors():
                 self.logger.log_action(f"Skipping comment or erroneous line: {source_line}")
                 continue  # Skip comments and erroneous lines
-
+    
+            # **Set the address for the source line**
+            source_line.address = self.location_counter.get_current_address_int()
+            self.logger.log_action(f"Set source line address to {source_line.address:X}")
+    
             if self.check_if_sourceline_is_directive(source_line):
                 self.logger.log_action(f"Handling directive: {source_line}")
                 self.handle_directive(source_line)
                 continue  # Directives are handled separately
-
+    
             # Generate object code for the instruction
-            self.logger.log_action(f"Processing source line: {source_line}")
+            self.logger.log_action(f"Generating object code for line: {source_line}")
             object_code = self.object_code_generator.generate_object_code_for_line(source_line)
-
+    
             if object_code:
-                # Add object code to text records
+                # Add object code to the source line
                 source_line.set_object_code_int_from_hex_string(object_code)
+                self.logger.log_action(f"Generated object code: {object_code}")
+    
+                # Add object code to text records
                 self.text_record_manager.add_object_code(source_line.address, object_code)
-                self.logger.log_action(f"Processed and Added object code '{object_code}' at address {source_line.address_hex}.")
-
-                # If modification is required, add to modification records
+    
+                # Handle modification records if necessary
                 if self.object_code_generator.requires_modification(source_line):
                     modification_offset, modification_length = self.object_code_generator.get_modification_details(source_line)
                     self.modification_record_manager.add_modification(
                         address=source_line.address + modification_offset,
                         length=modification_length
                     )
-                    self.logger.log_action(f"Added modification record for address {source_line.address + modification_offset} with length {modification_length}.")
             else:
-                # Object code generation failed
-                #self.logger.log_error(f"Failed to generate object code for line: {source_line}")
+                self.logger.log_error(f"Failed to generate object code for line: {source_line}")
                 continue
+    
+            # # **Increment the location counter**
+            # instruction_length = source_line.get_instruction_length(source_line.opcode_mnemonic)
+            # self.location_counter.increment_by_decimal(instruction_length)
+            # self.logger.log_action(f"Incremented location counter by {instruction_length}. New address: {self.location_counter.get_current_address_int():X}")
             
     def check_if_sourceline_is_directive(self, source_line):
         """
@@ -378,29 +378,29 @@ class AssemblerPass2:
         self.logger.log_action("Creating the output file with create_output_file method.")
         self.logger.log_action("Writing the assembled object program to the output file with write_to_file method.")  
         try:
-            self.object_program_writer.write_to_file(self.object_program_file_name)
-            self.logger.log_action(f"Object program successfully written to '{self.object_program_file_name}'.")
+            self.object_program_writer.write_to_file(self.object_program_file)
+            self.logger.log_action(f"Object program successfully written to '{self.object_program_file}'.")
         except Exception as e:
-            self.logger.log_error(f"Failed to write object program to '{self.object_program_file_name}': {e}")
+            self.logger.log_error(f"Failed to write object program to '{self.object_program_file}': {e}")
 
     def create_and_write_listing_file(self):
         """
         This contains all the sourcelines from the intermediate file without errors
         """
         self.logger.log_action("Creating and writing the listing file.")
-        listing_file_name = self.file_explorer.create_new_file_in_main(self.program_name, self.listing_file_extension)
-        if not self.file_explorer.file_exists(listing_file_name):
-            self.logger.log_error(f"Failed to create listing file '{listing_file_name}'.")
+        self.listing_file = self.file_explorer.create_new_file_in_main(self.int_file_name, self.listing_file_extension)
+        if not self.file_explorer.file_exists(self.listing_file):
+            self.logger.log_error(f"Failed to create listing file '{self.listing_file}'.")
             return
 
         try:
-            with open(listing_file_name, 'w') as file:
+            with open(self.listing_file, 'w') as file:
                 for source_line in self.int_source_code_lines:
                     if not source_line.has_errors():
                         file.write(str(source_line) + '\n')
-            self.logger.log_action(f"Listing file successfully written to '{listing_file_name}'.")
+            self.logger.log_action(f"Listing file successfully written to '{self.listing_file}'.")
         except IOError as e:
-            self.logger.log_error(f"Failed to write listing file to '{listing_file_name}': {e}")
+            self.logger.log_error(f"Failed to write listing file to '{self.listing_file}': {e}")
         
 
     def report_errors(self):
@@ -484,10 +484,22 @@ class AssemblerPass2:
             self.handle_start_directive(source_line)
         elif directive == "END":
             self.handle_end_directive(source_line)
-        elif directive == "LTORG":
-            self.handle_ltorg_directive()
+        elif directive == "BYTE":
+            self.handle_byte_directive(source_line)
+        elif directive == "WORD":
+            self.handle_word_directive(source_line)
+        elif directive == "RESB":
+            self.handle_resb_directive(source_line)
+        elif directive == "RESW":
+            self.handle_resw_directive(source_line)
         elif directive == "EQU":
             self.handle_equ_directive(source_line)
+        elif directive == "ORG":
+            self.handle_org_directive(source_line)
+        elif directive == "EXTDEF":
+            self.handle_extdef_directive(source_line)
+        elif directive == "EXTREF":
+            self.handle_extref_directive(source_line)
         elif directive == "BASE":
             self.handle_base_directive(operands)
         elif directive == "NOBASE":
@@ -605,6 +617,31 @@ class AssemblerPass2:
         """
         self.base_register = None
         self.object_code_generator.unset_base_register()
-        self.logger.log_action("Base register unset using NOBASE directive.")     
-#endregion
+        self.logger.log_action("Base register unset using NOBASE directive.")
+        
 
+    def handle_byte_directive(self, source_line: SourceCodeLine):
+        """
+        Handles the BYTE directive by generating object code for constants.
+        """
+        operand = source_line.operands.strip()
+        self.logger.log_action(f"Handling BYTE directive with operand '{operand}' at line {source_line.line_number}.")
+        
+        object_code = ''
+        if operand.startswith("C'") and operand.endswith("'"):
+            chars = operand[2:-1]
+            object_code = ''.join(f"{ord(c):02X}" for c in chars)
+        elif operand.startswith("X'") and operand.endswith("'"):
+            object_code = operand[2:-1].upper()
+        else:
+            error = f"Invalid operand '{operand}' for BYTE directive at line {source_line.line_number}."
+            self.logger.log_error(error)
+            source_line.add_error(error)
+            return
+        
+        source_line.set_object_code_int_from_hex_string(object_code)
+        self.text_record_manager.add_object_code(source_line.address, object_code)
+        instruction_length = len(object_code) // 2
+        self.location_counter.increment_by_decimal(instruction_length)
+        self.logger.log_action(f"Generated object code '{object_code}' for BYTE directive.")
+#endregion
