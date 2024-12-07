@@ -11,7 +11,7 @@ from Modules.AssemblerPass2 import AssemblerPass2
 
 if __name__ == "__main__":
     
-    hardcoded_file = "P0.int"
+    hardcoded_file = "Htest.int"
     
     # Get the source file from the command-line argument or use the default
     source_file = sys.argv[1] if len(sys.argv) > 1 else hardcoded_file
