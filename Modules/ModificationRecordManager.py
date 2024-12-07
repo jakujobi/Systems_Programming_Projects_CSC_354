@@ -22,7 +22,8 @@ class ModificationRecordManager:
     """
 
     def __init__(self, location_counter: LocationCounter,
-                 logger: ErrorLogHandler):
+                 logger: ErrorLogHandler,
+                 activate_separator: bool = False):
         """
         Initializes the ModificationRecordManager with an empty list of modification records.
         
@@ -31,8 +32,17 @@ class ModificationRecordManager:
         self.logger = logger or ErrorLogHandler()
         self.modification_records = []             # List to store finalized modification records
         self.location_counter = location_counter   # Reference to the LocationCounter
+        self.separation_character = "^"
+        self.activate_separator = activate_separator # Flag to activate the separation character 
         
         self.logger.log_action("ModificationRecordManager initialized.")
+
+    @property
+    def sp_ch(self):
+        """
+        Returns the separation character for formatting.
+        """
+        return self.separation_character if self.activate_separator else ""
 
     def add_modification(self, address: int, length: int):
         """
@@ -46,14 +56,14 @@ class ModificationRecordManager:
             return  # Validation failed; error already logged
         
         # Check for duplicate modification records
-        if any(record.startswith(f"M^{address:06X}") for record in self.modification_records):
+        if any(record.startswith(f"M{self.sp_ch}{address:06X}") for record in self.modification_records):
             self.logger.log_error(
                 f"Duplicate modification record for address {address:06X}."
             )
             return
         
         # Format the modification record
-        formatted_record = f"M^{address:06X}^{length:02X}"
+        formatted_record = f"M{self.sp_ch}{address:06X}{self.sp_ch}{length:02X}"
         
         # Add the formatted record to the list of modification records
         self.modification_records.append(formatted_record)
