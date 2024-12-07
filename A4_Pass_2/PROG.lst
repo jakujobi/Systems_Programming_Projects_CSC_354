@@ -1,38 +1,7 @@
-1          00000     PROG:       START      1000     
-39         00457                 EXTREF     GOTEM     
-58         00483     ALPHA:      EQU        #1000     
-84         004C9                             
-85         004C9                             
-86         004C9     DATA:       BYTE       0Xf1     
-87         004CA     DATA:       BYTE       0XF1     
-88         004CB     DATA:       BYTE       =0XF1     
-89         004CB     DA_2:       BYTE       0XF11     
-90         004CB     DAT3:       BYTE       0XG1     
-91         004CC     DAT4:       BYTE       X'G1'     
-92         004CC     t123456789: BYTE       1     
-93         004CC     GOO:        BYTE       1     
-94         004CC     BA3D:       BYTE       #1     
-95         004CC     Z:          BYTE       20     
-96         004CC     CHARZ:      BYTE       0CA     
-97         004CC     FLOATZ:     BYTE       0C'\"1     
-98         004CF     FOUR:       RESB       #4     
-99         004D3     HABR:       RESW       637     
-100        00C4A     COUNT:      WORD       #1     
-101        00C4D     LENGTH:     WORD       4096     
-102        00C50                 WORD       COUNT     
-103        00C53                 WORD       COUNT-HABR     
-104        00C56     ONE:        RESB       1     
-105        00C57     RETaDR:     RESW       #1     
-106        00C5A     FIVE:       RESW       #3     
-107        00C63     BREAK:      RESB       1911     
-108        013DA     DEVICE:     BYTE       0X'\"F8'     
-109        013DD                 RESB       DATA     
-110        013DD                 RESB       HERE-ALPHA     
-111        013DD                 RESB       ALpHA-7777     
-112        013DD     T2:         EQU        *     
-113        013DD                 EXTDEF     ZA, ZB,DEVICE, ZD,ZE,ZF,AH,Zz     
-114        013DD                 EXTDEF     ZG     
-115        013DD                 EXTREF     OTRFUN,AAA ,AAB     
-116        013DD                 WORD       DEVICE-AAA     
-117        013E0                 WORD       AAA-AAB     
-126        013FD                 END        PROG     
+1                PROG:       START      #0     
+2                ONE:        FIX         0000C4    
+3          00001                 COMPR      S,T     00A045    
+4          00003                 LDL        #10     092004    
+5          00006                 STB        TWO,X     7BA002    
+7          0000B     TWO:        NORM        0000C8    
+8          0000C                 END        ONE     
