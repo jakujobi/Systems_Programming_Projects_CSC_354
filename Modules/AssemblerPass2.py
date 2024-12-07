@@ -71,7 +71,7 @@ class AssemblerPass2:
         
         self.int_file = int_filename
         self.int_file_extension = self.int_file.split('.')[-1]
-        self.int_file_name = self.int_file.replace(self.int_file_extension, '')
+        self.int_file_name = self.int_file.replace(self.int_file_extension, '').rstrip('.')
         self.int_file_content = []
         self.int_source_code_lines = []
         
