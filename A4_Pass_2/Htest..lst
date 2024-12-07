@@ -1,0 +1,10 @@
+1          00000     PROG:       START      #0               
+2          00000     FIRST:      LDB        #BUFFER          692010    
+3          00003                 BASE       BUFFER           
+4          00003                 STL        RETADDR          174E10    
+5          00006                 LDX        #3600            054DFD    
+7          00009     AGAIN:      STSW       BUFFER,X         EBA007    
+9          0000C                 JEQ        @AGAIN           322FFC    
+10         0000F     BUFFER:     RESW       1200             
+11         00E1F     RETADDR:    RESB       3                
+12         00E22                 END        FIRST            
