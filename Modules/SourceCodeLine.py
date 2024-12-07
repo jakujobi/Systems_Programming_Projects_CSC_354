@@ -107,7 +107,9 @@ class SourceCodeLine:
         column_size_opcode_mnemonic = 10
         opcode_mnemonic = f"{self.opcode_mnemonic:<{column_size_opcode_mnemonic}}" if self.opcode_mnemonic else (' ' * column_size_opcode_mnemonic)
 
-        operands = f"{self.operands}{spacing}" if self.operands else ''
+        # make the operand column size 16 or 32 or 64 depending on the length of the operands
+        # Ensure the column size for operands is at least 16, or the length of the operands if longer
+        operands = f"{self.operands:<{(max(12, len(self.operands)))}}{spacing}" if self.operands else ''
         
         column_size_object_code = 6
         object_code_in_hex = f"{self.object_code_hex}{spacing}" if self.object_code_hex else ''
