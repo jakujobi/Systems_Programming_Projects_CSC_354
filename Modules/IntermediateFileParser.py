@@ -90,10 +90,7 @@ class IntermediateFileParser:
         for line in lines_iterator:
             line = line.strip()
             # ignore empty lines
-            if not line or self.is_divider_line(line):
-                continue
-            # ignore fluff lines
-            if line in self.fluff_lines:
+            if not line or self.is_divider_line(line) or line in self.fluff_lines:
                 continue
             # Check if the line is a title line
             if self.is_title_line(line):
@@ -196,7 +193,8 @@ class IntermediateFileParser:
 
     def get_program_length(self):
         return self.program_length
-    
+
+
     def parse_code_line(self, line):
         parts = line.strip().split()
         if len(parts) < 2:
@@ -236,7 +234,7 @@ class IntermediateFileParser:
             self.new_line_number += 1
         else:
             line_number = original_line_number
-
+        
         # Create SourceCodeLine object
         source_line = SourceCodeLine(
             line_number=line_number,
