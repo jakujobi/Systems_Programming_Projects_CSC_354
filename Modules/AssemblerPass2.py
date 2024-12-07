@@ -385,7 +385,8 @@ class AssemblerPass2:
         :return: The formatted end record string.
         """
         self.logger.log_action("Creating end record with create_end_record method.")
-        end_record = f"E^{self.first_executable_address}"
+        # as hex string
+        end_record = f"E^{self.first_executable_address:06X}"
         self.logger.log_action(f"Created end record: {end_record}")
         return end_record
 
@@ -605,7 +606,7 @@ class AssemblerPass2:
         operand = source_line.operands
         if operand:
             symbol = operand.strip()
-            executable_address = self.symbol_table.get(symbol)
+            executable_address = self.symbol_table.get_value(symbol)
             if executable_address is not None:
                 self.first_executable_address = executable_address
                 self.logger.log_action(f"Execution begins at address {self.first_executable_address}.")
