@@ -85,6 +85,7 @@
 
 import sys
 import os
+from typing import List
 
 # Add the parent directory to the Python path
 repo_home_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
@@ -245,7 +246,7 @@ class LiteralTableList:
         while current is not None:
             literal_data = current.literal_data
             # address = f"{literal_data.address:05X}" if literal_data.address is not None else "None"
-            address = f"{literal_data.address:<05}" if literal_data.address is not None else "None"
+            address = f"{literal_data.address:05X}" if literal_data.address is not None else "None"
             result.append(f"{literal_data.name:<10} {literal_data.value:<10} {literal_data.length:<6} {address:<8}")
             current = current.next
         
@@ -328,6 +329,18 @@ class LiteralTableList:
             current = current.next
         return False
 
+    def get_literals(self) -> List[LiteralData]:
+        """
+        Returns a list of all literals in the literal table.
+
+        :return: List of LiteralData objects.
+        """
+        literals = []
+        current = self.head
+        while current is not None:
+            literals.append(current.literal_data)
+            current = current.next
+        return literals
 
     def get_address_for_literal_from_name(self, name: str) -> int | None:
         """
