@@ -100,6 +100,7 @@ class AssemblerPass1:
         # Process all the source code lines
         self.process_source_lines(self.source_lines)
         
+        
         # Display the symbol table
         self.display_symbol_table()
         
@@ -195,6 +196,10 @@ class AssemblerPass1:
             else:
                 line_number -= 1
                 continue
+            
+        # Add literal code lines to the generated file
+        line_for_literals = line_number
+        self.add_literals_at_end_of_program(line_for_literals)
         
         # Log the end of processing
         self.logger.log_action(f"Finished processing of source code lines. {lines_with_errors} lines had errors.")
@@ -459,6 +464,51 @@ class AssemblerPass1:
                 self.logger.log_error(f"An error occurred while writing the symbol table to the output: {e}")
         else:
             self.logger.log_error("Symbol table is empty.")
+    
+    def add_literals_at_end_of_program(self, line_for_literals: int):
+        """
+        Make source lines that contain * as the label, literal name as the opcode, and the literal value as the operands.
+        The address of the first should be the last address of the program.
+        The instruction length would be the length of the literal.
+        Also update the address of the literals in the literal table.
+        """
+        line_number = line_for_literals
+        for literal in self.literal_table.get_literals():
+            try:
+                self.process_literal(literal.name)
+                line_number += 1
+                literal_as_string = str(literal)
+                literal_name = (literal.name)
+                literal_value = (literal.value)
+                literal_length = (literal.length)
+                
+                # Create a new source code line
+                source_line = SourceCodeLine(
+                    line_number = line_number,
+                    line_text = literal_as_string,
+                    label = "*",
+                    opcode_mnemonic = literal_name,
+                    operands = literal_value,
+                    instruction_length = literal_length,
+                    address = self.location_counter.get_current_address_int()
+                )
+                self.logger.log_action(f"Created new source line for literal: {source_line}")
+                
+                # Update the literal's address in the literal table
+                literal.address = source_line.address
+                
+                # Add the line to the generated file
+                self.add_line_to_generated_file(source_line)
+                self.logger.log_action(f"Added literal line to the output: {source_line}")
+            except Exception as e:
+                _error = f"An error occurred while adding literals to the output: {e}"
+                self.logger.log_error(_error)
+                line_number -= 1
+                raise ValueError(_error)
+                continue
+            # Increment the location counter
+            self.logger.log_action(f"About to increment location counter by {literal_length}")
+            self.location_counter.increment_by_decimal(literal_length)
 
     def add_literal_table_to_output_file(self):
         """
