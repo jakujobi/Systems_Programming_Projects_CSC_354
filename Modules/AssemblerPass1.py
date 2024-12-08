@@ -51,6 +51,7 @@ class AssemblerPass1:
         
         self.generated_file_extension = '.int' or generated_file_extension
         
+        self.filename = filename
         self.source_file = filename
         self.intermediate_file = None
         
@@ -122,9 +123,9 @@ class AssemblerPass1:
             self.intermediate_file.close()
             self.logger.log_action(f"Closed intermediate file.")
             
-        # Close tthe program and exit
+        # Close the program and exit
         self.logger.log_action(f"Program completed.")
-        exit()
+        # exit()
         
         
     def load_source_file(self):
