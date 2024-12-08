@@ -504,7 +504,7 @@ class AssemblerPass1:
                 _error = f"An error occurred while adding literals to the output: {e}"
                 self.logger.log_error(_error)
                 line_number -= 1
-                raise ValueError(_error)
+                # raise ValueError(_error)
                 continue
             # Increment the location counter
             self.logger.log_action(f"About to increment location counter by {literal_length}")
