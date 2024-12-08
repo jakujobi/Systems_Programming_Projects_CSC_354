@@ -626,7 +626,7 @@ class AssemblerPass1:
         try:
             if operand.startswith(self.character_literal_prefix):
                 value = operand[2:]
-                return len(value) - 1
+                return len(value)
             elif operand.startswith(self.hex_literal_prefix):
                 value = operand[2:]
                 if len(value) % 2 != 0:
