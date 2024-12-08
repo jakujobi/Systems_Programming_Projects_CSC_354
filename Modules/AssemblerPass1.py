@@ -68,7 +68,6 @@ class AssemblerPass1:
 
         # Symbol Table
         self.symbol_table = SymbolTable()
-        self.symbol_table_driver = SymbolTableDriver(logger=self.logger)
         self.literal_table = LiteralTableList(logger=self.logger)
         
         self.program_name = None
@@ -539,6 +538,8 @@ class AssemblerPass1:
                 "WORD": self.directive_WORD,
                 "RESB": self.directive_RESB,
                 "RESW": self.directive_RESW,
+                "EXTDEF": self.directive_EXTDEF,
+                "EXTREF": self.directive_EXTREF,
             }
 
             directive_handler = directives.get(source_line.opcode_mnemonic)
@@ -750,7 +751,8 @@ class AssemblerPass1:
         for operand in operands:
             operand = operand.strip()
             if operand:
-                self.symbol_table_driver.add_external_reference(operand)
+                symbol_data = SymbolData(symbol=operand, value=0, rflag=True)
+                self.symbol_table.insert(symbol_data)
                 self.logger.log_action(f"Declared external reference '{operand}' with EXTREF directive.")
         # Set instruction length to 0
         source_line.instruction_length = 0
@@ -763,7 +765,8 @@ class AssemblerPass1:
         for operand in operands:
             operand = operand.strip()
             if operand:
-                self.symbol_table_driver.add_external_definition(operand)
+                symbol_data = SymbolData(symbol=operand, value=0, rflag=True)
+                self.symbol_table.insert(symbol_data)
                 self.logger.log_action(f"Declared external definition '{operand}' with EXTDEF directive.")
         # Set instruction length to 0
         source_line.instruction_length = 0
