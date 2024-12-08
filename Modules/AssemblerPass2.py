@@ -122,6 +122,7 @@ class AssemblerPass2:
         
         self.allow_error_lines_in_generated_document = allow_error_lines_in_generated_document
         
+        self.run()
         
         
     def run(self):
@@ -357,7 +358,7 @@ class AssemblerPass2:
 
         record = 'D'
         for symbol in self.external_definitions:
-            address = self.symbol_table.get(symbol)
+            address = self.symbol_table.get_value(symbol)
             if address is not None:
                 record += f"{symbol:<6}{address:06X}"
             else:
@@ -814,10 +815,12 @@ class AssemblerPass2:
     def handle_extdef_directive(self, source_line: SourceCodeLine):
         """
         Handles the EXTDEF directive by adding symbols to the external definitions.
+    
+        :param source_line: The SourceCodeLine object representing the EXTDEF directive.
         """
         operands = source_line.operands.strip().split(',')
         self.logger.log_action(f"Handling EXTDEF directive with operands '{operands}' at line {source_line.line_number}.")
-
+    
         for symbol in operands:
             symbol = symbol.strip()
             if symbol:
@@ -828,22 +831,25 @@ class AssemblerPass2:
                 self.logger.log_error(error)
                 source_line.add_error(error)
 
-    def handle_extdef_directive(self, source_line: SourceCodeLine):
+    def handle_extref_directive(self, source_line: SourceCodeLine):
         """
-        Handles the EXTDEF directive by adding symbols to the external definitions.
+        Handles the EXTREF directive by adding symbols to the external references.
+
+        :param source_line: The SourceCodeLine object representing the EXTREF directive.
         """
         operands = source_line.operands.strip().split(',')
-        self.logger.log_action(f"Handling EXTDEF directive with operands '{operands}' at line {source_line.line_number}.")
+        self.logger.log_action(f"Handling EXTREF directive with operands '{operands}' at line {source_line.line_number}.")
 
         for symbol in operands:
             symbol = symbol.strip()
             if symbol:
-                self.external_definitions.append(symbol)
-                self.logger.log_action(f"Added '{symbol}' to external definitions.")
+                self.external_references.append(symbol)
+                self.logger.log_action(f"Added '{symbol}' to external references.")
             else:
-                error = f"Invalid symbol in EXTDEF directive at line {source_line.line_number}."
+                error = f"Invalid symbol in EXTREF directive at line {source_line.line_number}."
                 self.logger.log_error(error)
                 source_line.add_error(error)
+            
 
 
 #endregion
