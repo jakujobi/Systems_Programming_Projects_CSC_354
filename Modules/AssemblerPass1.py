@@ -488,7 +488,7 @@ class AssemblerPass1:
                     line_text = literal_as_string,
                     label = "*",
                     opcode_mnemonic = literal_name,
-                    operands = literal_value,
+                    # operands = literal_value,
                     instruction_length = literal_length,
                     address = self.location_counter.get_current_address_int()
                 )
