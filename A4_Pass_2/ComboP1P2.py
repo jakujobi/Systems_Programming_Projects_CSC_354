@@ -32,6 +32,5 @@ if __name__ == "__main__":
     proceed = input(f"Proceed with Pass 2 for {intermediate_file}? (y/n): ") # accept enter
     if proceed.lower() == "y" or proceed == "":
         pass2 = AssemblerPass2(intermediate_file)
-        pass2.run()
     else:
         print("Pass 2 skipped.")
