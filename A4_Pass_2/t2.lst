@@ -1,0 +1,8 @@
+1          00000     FA20_2:     START      #0               
+2          00000                 EXTDEF     ONE,THREE        
+3          00000                 EXTREF     TWO,FOUR         
+4          00000     BEGIN:      +SSK       ONE              EF100000    
+5          00004                 +DIVF      TWO              67100000    
+6          00008                 +WD        FOUR+#6          DF100000    
+8          0000C     THREE:      WORD       97               000061    
+9          0000F                 END        BEGIN            

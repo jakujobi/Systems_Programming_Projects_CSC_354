@@ -1,0 +1,39 @@
+1          00000     FA20_2:     START      #0               
+2          00000                 EXTDEF     ONE,THREE        
+3          00000                 EXTREF     TWO,FOUR         
+4          00000     BEGIN:      +SSK       ONE              
+5          00004                 +DIVF      TWO              
+6          00008                 +WD        FOUR+#6          
+7          0000C     ONE:        WORD       THREE-TWO        
+8          0000F     THREE:      WORD       #97              
+9          00012                 END        BEGIN            
+
+
+===SYM_START===
+
+______________________________________________
+Symbol Table:
+______________________________________________
+Symbol     Value      RFlag  IFlag  MFlag 
+______________________________________________
+BEGI       00000      1      1      0     
+FA20       00000      1      1      0     
+FOUR       00000      0      1      0     
+ONE        00000      1      1      1     
+THRE       00000      1      1      1     
+TWO        00000      0      1      0     
+______________________________________________
+
+===SYM_END===
+
+
+===LIT_START===
+Literal table is empty.
+===LIT_END===
+
+
+===PROG_LEN_START===
+Program Length (DEC): 18
+Program Length (HEX): 00012
+
+===PROG_LEN_END===
