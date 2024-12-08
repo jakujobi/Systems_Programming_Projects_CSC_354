@@ -329,6 +329,89 @@ class LiteralTableList:
         return False
 
 
+    def get_address_for_literal_from_name(self, name: str) -> int | None:
+        """
+        /***************************************************************************************
+        ***  METHOD : get_address_for_literal                                                ***
+        ***  DESCRIPTION :                                                                   ***
+        ***      Retrieves the address of a literal by its name.                             ***
+        ***                                                                                  ***
+        ***  INPUT PARAMETERS :                                                              ***
+        ***      name : str  : The name of the literal to search for.                       ***
+        ***                                                                                  ***
+        ***  RETURN : int | None                                                             ***
+        ***      Returns the address of the literal if found, otherwise None.                ***
+        ***************************************************************************************/
+
+        Retrieve the address of a literal by its name.
+
+        :param name: The name of the literal to search for.
+        :return: The address of the literal if found, or None if not found.
+        """
+        return self.search(name).address if self.search(name) else None
+    
+    def get_value_for_literal_from_name(self, name: str) -> str | None:
+        """
+        /***************************************************************************************
+        ***  METHOD : get_value_for_literal                                                  ***
+        ***  DESCRIPTION :                                                                   ***
+        ***      Retrieves the value of a literal by its name.                               ***
+        ***                                                                                  ***
+        ***  INPUT PARAMETERS :                                                              ***
+        ***      name : str  : The name of the literal to search for.                       ***
+        ***                                                                                  ***
+        ***  RETURN : str | None                                                             ***
+        ***      Returns the value of the literal if found, otherwise None.                  ***
+        ***************************************************************************************/
+
+        Retrieve the value of a literal by its name.
+
+        :param name: The name of the literal to search for.
+        :return: The value of the literal if found, or None if not found.
+        """
+        return self.search(name).value if self.search(name) else None
+        
+    def get_length_for_literal_from_name(self, name: str) -> int | None:
+        """
+        /***************************************************************************************
+        ***  METHOD : get_length_for_literal                                                 ***
+        ***  DESCRIPTION :                                                                   ***
+        ***      Retrieves the length of a literal by its name.                              ***
+        ***                                                                                  ***
+        ***  INPUT PARAMETERS :                                                              ***
+        ***      name : str  : The name of the literal to search for.                       ***
+        ***                                                                                  ***
+        ***  RETURN : int | None                                                             ***
+        ***      Returns the length of the literal if found, otherwise None.                 ***
+        ***************************************************************************************/
+
+        Retrieve the length of a literal by its name.
+
+        :param name: The name of the literal to search for.
+        :return: The length of the literal if found, or None if not found.
+        """
+        return self.search(name).length if self.search(name) else None
+    
+    def get_literal_data_from_name(self, name: str) -> LiteralData | None:
+        """
+        /***************************************************************************************
+        ***  METHOD : get_literal_data_from_name                                             ***
+        ***  DESCRIPTION :                                                                   ***
+        ***      Retrieves the LiteralData object of a literal by its name.                  ***
+        ***                                                                                  ***
+        ***  INPUT PARAMETERS :                                                              ***
+        ***      name : str  : The name of the literal to search for.                       ***
+        ***                                                                                  ***
+        ***  RETURN : LiteralData | None                                                    ***
+        ***      Returns the LiteralData object if found, otherwise None.                    ***
+        ***************************************************************************************/
+
+        Retrieve the LiteralData object of a literal by its name.
+
+        :param name: The name of the literal to search for.
+        :return: The LiteralData object if found, or None if not found.
+        """
+        return self.search(name) if self.search(name) else None
 
     def insert_sorted(self, literal_data: LiteralData):
         """
