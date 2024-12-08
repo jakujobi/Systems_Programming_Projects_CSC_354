@@ -1,0 +1,45 @@
+1          00000     CSC_354:    START      #0               
+2          00000     FIRST:      RESW       #1               
+3          00003     GO:         LDA        =0CABCDE         
+4          00006                 LDA        =0X00ff          
+5          00009                 +LDT       =0X02468A        
+6          0000D     SECOND:     BYTE       0CXYZ            
+7          00010     THIRD:      RESB       #6               
+8          00016     FOURTH:     BYTE       0X00FF           
+9          00018     FIFTH:      BYTE       0CXYZ            
+10         0001B                 END        GO               
+
+
+===SYM_START===
+
+______________________________________________
+Symbol Table:
+______________________________________________
+Symbol     Value      RFlag  IFlag  MFlag 
+______________________________________________
+CSC_       00000      1      1      0     
+FIFT       00018      1      1      0     
+FIRS       00000      1      1      0     
+FOUR       00016      1      1      0     
+GO         00003      1      1      0     
+SECO       0000D      1      1      0     
+THIR       00010      1      1      0     
+______________________________________________
+
+===SYM_END===
+
+
+===LIT_START===
+Literal Table:
+Literal    Value      Length Address 
+=0CABCDE   4142434445 5      None    
+=0X00ff    00FF       2      None    
+=0X02468A  02468A     3      None    
+===LIT_END===
+
+
+===PROG_LEN_START===
+Program Length (DEC): 27
+Program Length (HEX): 0001B
+
+===PROG_LEN_END===
