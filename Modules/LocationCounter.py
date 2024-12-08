@@ -63,18 +63,16 @@ class LocationCounter:
     
     def increment_by_decimal(self, increment_value: int):
         """
-          Takes an integer value, increments the location counter by its hexadecimal equivalent.
+        Increments the location counter by the integer value provided.
         """
         try:
-            hex_value = int(hex(increment_value), 16)
-            self.current_address += hex_value
-            _action = f"LOCCTR incremented by integer {increment_value} (hex {hex_value:X}) to {self.current_address:X}"
+            self.current_address += increment_value
+            _action = f"LOCCTR incremented by integer {increment_value} to {self.current_address:X}"
             self.logger.log_action(_action, False)
         except ValueError:
-            Error = f"Invalid increment value '{increment_value}'"
-            self.logger.log_error(Error)
-            raise ValueError(Error)
-
+            error = f"Invalid increment value '{increment_value}'"
+            self.logger.log_error(error)
+            raise ValueError(error)
         
     def increment_by_hexadecimal(self, increment_value: str):
         """
