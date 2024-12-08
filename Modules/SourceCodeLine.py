@@ -101,7 +101,11 @@ class SourceCodeLine:
         address = f"{hex_address:<{column_size_address}}{spacing}" if self.address is not None else ' ' * (column_size_address)
         
         column_size_label = 11
-        raw_label = f"{self.label}{self.LABEL_SUFFIX_SYMBOL}" if self.label else ''
+        
+        if self.label == '*' and self.opcode_mnemonic.startswith('='):
+            raw_label =  f"{self.label}" if self.label else ''
+        else:
+            raw_label = f"{self.label}{self.LABEL_SUFFIX_SYMBOL}" if self.label else ''
         label = f"{raw_label:<{column_size_label}}" if self.label else (' ' * column_size_label)
 
         column_size_opcode_mnemonic = 10
@@ -118,28 +122,6 @@ class SourceCodeLine:
         return f"{line_number} {address}{errors}{label} {opcode_mnemonic} {operands} {object_code_in_hex}"
         # return f"{line_number} {address}{errors}{label} {opcode_mnemonic} {operands}{comment}"
 
-    # def __str__(self) -> str:
-    #     """
-    #     Provides a string representation of the SourceCodeLine object.
-    #     """
-    #     parts = [
-    #         f"{self.line_number:<10}",  # Line Number
-    #         f"{self.address_hex or '':<6}",  # Address
-    #     ]
-
-    #     if self.errors:
-    #         parts.append(f"[ERROR: {'; '.join(self.errors)}]    ")
-    #     else:
-    #         parts.append(" " * 20)
-
-    #     label = f"{self.label}{self.LABEL_SUFFIX_SYMBOL}" if self.label else ""
-    #     parts.append(f"{label:<11}")  # Label
-
-    #     parts.append(f"{self.opcode_mnemonic:<10}")  # Opcode Mnemonic
-    #     parts.append(f"{self.operands:<15}")  # Operands
-    #     parts.append(f"{self.object_code_hex or '':<6}")  # Object Code
-
-        # return ' '.join(parts)
 
     def __eq__(self, other):
         if not isinstance(other, SourceCodeLine):
