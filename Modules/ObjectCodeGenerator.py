@@ -297,11 +297,13 @@ class ObjectCodeGenerator:
 
         if operand.startswith('='):
             # It's a literal
-            literal = self.literal_table.get_literal(operand)
+            literal = self.literal_table.get_literal_data_from_name(operand)
             if not literal:
                 self.logger.log_error(f"Literal '{operand}' not found in literal table.")
                 return (None, None)
             resolved_value = literal.address
+            self.logger.log_action(f"resolved_value: {resolved_value}")
+            self.logger.log_action(f"Resolved literal '{operand}' to address {resolved_value}.")
             relocation_info = 'R'  # Usually literals are relocatable
         elif operand.isdigit():
             # Immediate numeric value
