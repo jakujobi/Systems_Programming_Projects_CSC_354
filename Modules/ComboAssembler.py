@@ -15,10 +15,12 @@ class ComboAssembler:
     Assembles a source program in two passes: Pass 1 and Pass 2.
     """
     def __init__(self, source_file):
+        # remove the file extension
         self.source_file = source_file
         self.pass1 = AssemblerPass1(self.source_file)
-        # add `.int` to the source file name to get the intermediate file name
-        self.intermediate_file = self.source_file + ".int"
+        
+        #replace the file extension with .int
+        self.intermediate_file = source_file.split(".")[0]+ ".int"
         self.pass2 = AssemblerPass2(self.intermediate_file)
     
     def assemble(self):
