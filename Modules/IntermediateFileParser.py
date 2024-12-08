@@ -54,6 +54,7 @@ class IntermediateFileParser:
         
         self.int_file_lines = int_file_content or []
         self.parsed_code_lines = []
+        self.literal_code_lines = []
         
         self.read_error_line_input = read_error_line_input
 
@@ -113,6 +114,7 @@ class IntermediateFileParser:
         Processes a single line of the intermediate file content. If the line is an error code line and
         read_error_line_input is False, then the line is skipped. Otherwise, the line is split into parts and
         checked for a line number. If the line number is invalid, an error is logged.
+        .
 
         :param line: The single line of the intermediate file content to be processed
         :return: None
@@ -132,13 +134,17 @@ class IntermediateFileParser:
             self.logger.log_action(f"Empty line: '{line}'")
             return
         
-        if not parts[0].isdigit():
-            self.logger.log_error(f"Invalid line doesn't have a line number: '{line}'")
-            return
-        
-        if parts[0].isdigit():
-            self.parse_code_line(line)
+        if parts[0].isdigit():            
+            # if the 3rd part is "*" and the starting of the line is `=`, then it is a literal line
+            if len(parts) >= 4 and parts[2] == "*" and parts[3].startswith('='):
+                # Process literal lines
+                self.parse_literal_code_lines_starting_with_star(line)
+            else:
+                self.parse_code_line(line)
+        else:
+            self.logger.log_error(f"Invalid line format: '{line}'")
             
+
         
     def is_error_code_line(self, line):
         """
@@ -248,7 +254,33 @@ class IntermediateFileParser:
         )
         self.parsed_code_lines.append(source_line)
 
+    def parse_literal_code_lines_starting_with_star(self, line):
+        """
+        Parses the literal code lines starting with an asterisk '*'.
+
+        :param line: The line of the intermediate file content to be processed
+        :return: None
+        """
+        parts = line.strip().split()
+        if len(parts) < 2:
+            _error = (f"Invalid literal line format less that 2 parts: '{line}'")
+            self.logger.log_error(_error)
+            return
+
+        original_line_number = parts[0]
+        address = int(parts[1], 16)
+        label = parts [2]
+        literal_name = parts[3]
         
+
+        # Initialize variables
+        label = ''
+        opcode_mnemonic = ''
+        operands = ''
+        comment = ''
+
+        # Put values in a source code line object
+      
     def parse_symbol_table(self, lines_iterator):
         """
         Parses the symbol table section of the intermediate file.
