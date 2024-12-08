@@ -11,7 +11,7 @@ from Modules.AssemblerPass2 import AssemblerPass2
 
 if __name__ == "__main__":
     
-    hardcoded_file = "Htest.int"
+    hardcoded_file = "source.int"
     
     # Get the source file from the command-line argument or use the default
     source_file = sys.argv[1] if len(sys.argv) > 1 else hardcoded_file
@@ -19,5 +19,5 @@ if __name__ == "__main__":
     # Create an instance of AssemblerPass1 with the source file
     assembler_pass2 = AssemblerPass2(source_file)
     
-    # Run the assembler pass 1
-    assembler_pass2.run()
+    # # Run the assembler pass 1
+    # assembler_pass2.run()
