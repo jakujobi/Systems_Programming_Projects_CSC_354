@@ -12,6 +12,20 @@ from Modules.ErrorLogHandler import ErrorLogHandler
 from Modules.AssemblerPass1 import AssemblerPass1
 from Modules.AssemblerPass2 import AssemblerPass2
 
+def process_files(file_list):
+    for file in file_list:
+        source_file = str(file) + ".asm"
+        intermediate_file = str(file) + ".int"
+
+        pass1 = AssemblerPass1(source_file)
+        
+        # Ask for user input to proceed with Pass 2
+        proceed = input(f"Proceed with Pass 2 for {intermediate_file}? (y/n): ") # accept enter
+        if proceed.lower() == "y" or proceed == "":
+            pass2 = AssemblerPass2(intermediate_file)
+        else:
+            print("Pass 2 skipped.")
+
 if __name__ == "__main__":
     # Make an array of file names
     test_files = ["Htest1",
@@ -22,15 +36,15 @@ if __name__ == "__main__":
                   "t3",
                   ]
 
-    source_file = str(test_files[0]) + ".asm"
-    intermediate_file = str(test_files[0]) + ".int"
+    process_files(test_files)
+    # source_file = str(test_files[0]) + ".asm"
+    # intermediate_file = str(test_files[0]) + ".int"
 
-    # remove the file extension
-    pass1 = AssemblerPass1(source_file)
+    # pass1 = AssemblerPass1(source_file)
     
-    # Ask for user input to proceed with Pass 2
-    proceed = input(f"Proceed with Pass 2 for {intermediate_file}? (y/n): ") # accept enter
-    if proceed.lower() == "y" or proceed == "":
-        pass2 = AssemblerPass2(intermediate_file)
-    else:
-        print("Pass 2 skipped.")
+    # # Ask for user input to proceed with Pass 2
+    # proceed = input(f"Proceed with Pass 2 for {intermediate_file}? (y/n): ") # accept enter
+    # if proceed.lower() == "y" or proceed == "":
+    #     pass2 = AssemblerPass2(intermediate_file)
+    # else:
+    #     print("Pass 2 skipped.")
