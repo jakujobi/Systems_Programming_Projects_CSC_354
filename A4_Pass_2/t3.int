@@ -8,9 +8,9 @@
 8          00016     FOURTH:     BYTE       0X00FF           
 9          00018     FIFTH:      BYTE       0Cxyz            
 10         0001B                 END        GO               
-11         0001B     *           =0CABCDE   4142434445       
-12         00020     *           =0X00ff    00FF             
-13         00022     *           =0X02468A  02468A           
+11         0001B     *           =0CABCDE    
+12         00020     *           =0X00ff     
+13         00022     *           =0X02468A   
 
 
 ===SYM_START===
