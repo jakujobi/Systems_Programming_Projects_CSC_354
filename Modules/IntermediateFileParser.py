@@ -74,6 +74,7 @@ class IntermediateFileParser:
             'Symbol Table:',
             'Symbol     Value      RFlag  IFlag  MFlag',
             'Literal table is empty.',
+            'Symbol table is empty.',
             getattr(self.symbol_table, 'str_header', ''),
             getattr(self.literal_table, 'str_header', ''),
         ]
