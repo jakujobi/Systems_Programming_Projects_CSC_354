@@ -230,7 +230,11 @@ class ObjectCodeGenerator:
             self.logger.log_error(f"Undefined symbol '{operand}' at line {source_line.line_number}.")
             return None
         
+        # convert the resolved value to an int
+        # resolved_value = self.validator.convert_string_hex_str_to_int(resolved_value)
+        
         # Calculate displacement
+        self.logger.log_action(f"Calculating displacement for operand '{operand}' at address {current_address}.")
         displacement = self.calculate_displacement(resolved_value, current_address)
         if displacement is None:
             self.logger.log_error(f"Displacement out of range for operand '{operand}' at line {source_line.line_number}.")
@@ -301,9 +305,14 @@ class ObjectCodeGenerator:
             if not literal:
                 self.logger.log_error(f"Literal '{operand}' not found in literal table.")
                 return (None, None)
-            resolved_value = literal.address
+            # # Convert the literal value to an integer
+            resolved_value = self.validator.convert_string_hex_str_to_int(literal.address)
+            # resolved_value = literal.address
             self.logger.log_action(f"resolved_value: {resolved_value}")
             self.logger.log_action(f"Resolved literal '{operand}' to address {resolved_value}.")
+            # Tell me wht the types are
+            self.logger.log_action(f"Type of resolved_value: {type(resolved_value)}")
+            self.logger.log_action(f"Type of current_address: {type(current_address)}")
             relocation_info = 'R'  # Usually literals are relocatable
         elif operand.isdigit():
             # Immediate numeric value
