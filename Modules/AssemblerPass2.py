@@ -130,12 +130,12 @@ class AssemblerPass2:
         self.parse_intermediate_lines()
         self.initialize_generators_and_managers()
         self.process_source_lines()
+        self.create_and_write_listing_file()
         self.finalize_records()
         self.assemble_object_program()
         self.create_output_files()
         self.print_all_things
         self.write_output_files()
-        self.create_and_write_listing_file()
         self.print_all_things()
         self.report_errors()
         # print the log
