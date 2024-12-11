@@ -34,9 +34,9 @@ class IntermediateFileParser:
     """
     
     def __init__(self,
+                 symbol_table_passed: SymbolTable,
+                 literal_table_passed: LiteralTableList,
                  logger: ErrorLogHandler = None,
-                 symbol_table_passed: SymbolTable = None,
-                 literal_table_passed: LiteralTableList = None,
                  int_file_content=None,
                  read_error_line_input: bool = False,
                  Program_length_prefix_for_Hex: str = None,
