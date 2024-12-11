@@ -461,7 +461,8 @@ class AssemblerPass2:
                         line_number += 1
                         literal_as_string = str(literal)
                         literal_name = literal.name
-                        literal_length = literal.length                        
+                        literal_length = literal.length
+                        literal_value = literal.value                       
                         try:
                             # Create a new source code line
                             source_line = SourceCodeLine(
@@ -470,8 +471,10 @@ class AssemblerPass2:
                                 label="*",
                                 opcode_mnemonic=literal_name,
                                 instruction_length=literal_length,
+                                operands= " ",
                                 address = self.location_counter.get_current_address_int()
                             )
+                            source_line.set_object_code_int_from_hex_string(literal_value)
                             self.logger.log_action(f"Created new source line for literal: {source_line}")
                         except Exception as e:
                             _error = f"An error occurred while creating a source line for the literal: {e}"
