@@ -338,7 +338,7 @@ class AssemblerPass2:
         _current_address = self.location_counter.get_current_address_int()
         program_length = _current_address - self.program_start_address
         self.program_length = program_length  # Store the program length
-        header_record = f"H{program_name_formatted}{self.program_start_address:06X}^{program_length:06X}"
+        header_record = f"H{program_name_formatted}{self.program_start_address:06X}{program_length:06X}"
         self.logger.log_action(f"Created header record: {header_record}")
         return header_record
 
@@ -370,6 +370,7 @@ class AssemblerPass2:
             record += f"{symbol:<6}"
         return record
 
+
     def create_end_record(self) -> str:
         """
         Constructs the end record based on the first executable instruction's address.
@@ -391,20 +392,23 @@ class AssemblerPass2:
         definition_record = self.create_definition_record()
         reference_record = self.create_reference_record()
         text_records = self.text_record_manager.get_text_records()
+        # Just get the modification records as a list
         modification_records = self.modification_record_manager.get_modification_records()
         end_record = self.create_end_record()
-    
+
         object_program = [header_record]
         if definition_record:
             object_program.append(definition_record)
         if reference_record:
             object_program.append(reference_record)
         object_program.extend(text_records)
+        # Add each modification record (already individually formatted)
         object_program.extend(modification_records)
         object_program.append(end_record)
-    
+
         self.object_program = self.object_program_writer.assemble_object_program()
         self.logger.log_action("Assembled the complete object program.")
+
 
     def write_output_files(self):
         """
