@@ -437,15 +437,61 @@ class AssemblerPass2:
         if not self.file_explorer.file_exists(self.listing_file):
             self.logger.log_error(f"Failed to create listing file '{self.listing_file}'.")
             return
-
+        line_number = 0
         try:
             with open(self.listing_file, 'w') as file:
                 for source_line in self.int_source_code_lines:
                     if not source_line.has_errors():
+                        line_number += 1
+                        source_line.line_number = line_number
                         file.write(str(source_line) + '\n')
+                    self.add_literals_at_end_of_program(line_number)
             self.logger.log_action(f"Listing file successfully written to '{self.listing_file}'.")
         except IOError as e:
             self.logger.log_error(f"Failed to write listing file to '{self.listing_file}': {e}")
+            
+    def add_literals_at_end_of_program(self, line_for_literals: int):
+        """
+        Make source lines that contain * as the label, literal name as the opcode, and the literal value as the operands.
+        The address of the first should be the last address of the program.
+        The instruction length would be the length of the literal.
+        Also update the address of the literals in the literal table.
+        """
+        line_number = line_for_literals
+        for literal in self.literal_table.get_literals():
+            try:
+                self.process_literal(literal.name)
+                line_number += 1
+                literal_as_string = str(literal)
+                literal_name = (literal.name)
+                literal_length = (literal.length)
+                
+                # Create a new source code line
+                source_line = SourceCodeLine(
+                    line_number = line_number,
+                    line_text = literal_as_string,
+                    label = "*",
+                    opcode_mnemonic = literal_name,
+                    instruction_length = literal_length,
+                    address = self.location_counter.get_current_address_int()
+                )
+                self.logger.log_action(f"Created new source line for literal: {source_line}")
+                
+                # Update the literal's address in the literal table
+                literal.address = source_line.address
+                
+                # Add the line to the generated file
+                self.add_line_to_generated_file(source_line)
+                self.logger.log_action(f"Added literal line to the output: {source_line}")
+            except Exception as e:
+                _error = f"An error occurred while adding literals to the output: {e}"
+                self.logger.log_error(_error)
+                line_number -= 1
+                # raise ValueError(_error)
+                continue
+            # Increment the location counter
+            self.logger.log_action(f"About to increment location counter by {literal_length}")
+            self.location_counter.increment_by_decimal(literal_length)
         
 
     def report_errors(self):
