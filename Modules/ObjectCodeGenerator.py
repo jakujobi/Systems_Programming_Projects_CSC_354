@@ -75,13 +75,15 @@ class ObjectCodeGenerator:
                 continue
             object_code = self.generate_object_code_for_line(source_line)
             if object_code and self.requires_modification(source_line):
-                    modification_offset, modification_length = self.get_modification_details(source_line)
-                    self.modification_record_manager.add_modification(
-                        address=source_line.address + modification_offset,
-                        length=modification_length
-                    )
-            # Directives are handled by AssemblerPass2
-    
+                modification_offset, modification_length = self.get_modification_details(source_line)
+                address=self.location_counter.current_address + modification_offset,
+
+                self.modification_record_manager.add_modification(
+                    address,
+                    length=modification_length
+                )
+                self.logger.log_action(f"Modification recorded at address {address:06X} with length {modification_length}")
+
     def generate_object_code_for_line(self, source_line):
         """
         Generates object code for a single source line.
@@ -292,8 +294,6 @@ class ObjectCodeGenerator:
         
         return object_code
     
-    # ... rest of the methods remain unchanged, but ensure that all uses of 'opcode_info' are adjusted accordingly
-
     
     def resolve_operand(self, operand, current_address):
         self.logger.log_action(f"Resolving operand '{operand}' at address {current_address}.")
@@ -581,7 +581,7 @@ class ObjectCodeGenerator:
             self.logger.log_error(f"Unsupported literal type '{literal.type}' for literal '{literal.name}'.")
             return None
         return object_code
-    
+        
     def requires_modification(self, source_line):
         """
         Determines if the instruction requires a modification record.
@@ -590,14 +590,20 @@ class ObjectCodeGenerator:
         :return: Boolean indicating if modification is required.
         """
         self.logger.log_action(f"Checking if instruction '{source_line.opcode_mnemonic}' requires modification.")
+        
         opcode_mnemonic = source_line.opcode_mnemonic
         format4 = opcode_mnemonic.startswith('+')
         if format4:
             opcode_mnemonic = opcode_mnemonic[1:]
+        
         opcode_info = self.opcode_handler.get_opcode(opcode_mnemonic)
         if not opcode_info:
+            self.logger.log_error(f"Opcode information not found for '{opcode_mnemonic}'.")
             return False
-        return format4 or (opcode_info['format'] == 4)
+        
+        requires_mod = format4 or (opcode_info.get('format') == 4)
+        self.logger.log_action(f"Modification required: {requires_mod}")
+        return requires_mod
 
     
     def get_modification_details(self, source_line):
