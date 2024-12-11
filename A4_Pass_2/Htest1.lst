@@ -8,3 +8,24 @@
 8          0000F     BUFFER:     RESW       1200             
 9          00E1F     RETADDR:    RESB       3                
 10         00E22                 END        FIRST            
+
+
+===SYM_START===
+______________________________________________
+Symbol Table:
+______________________________________________
+Symbol     Value      RFlag  IFlag  MFlag 
+______________________________________________
+AGAI       0000B      1      1      0     
+BUFF       00013      1      1      0     
+FIRS       00000      1      1      0     
+PROG       00000      1      1      0     
+RETA       00E23      1      1      0     
+______________________________________________
+
+===SYM_END===
+
+
+===LIT_START===
+Literal table is empty.
+===LIT_END===
