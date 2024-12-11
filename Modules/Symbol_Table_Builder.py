@@ -329,7 +329,7 @@ class SymbolTable:
         # Symbol lookup from the symbol table
         symbol = self.search(operand)  # Search the table for the symbol
         if symbol:
-            return symbol.value
+            return int(symbol.value)
         else:
             self.logger.log_error(f"Undefined symbol: {operand}")
             return None
