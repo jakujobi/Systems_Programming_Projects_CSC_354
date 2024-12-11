@@ -475,7 +475,7 @@ class AssemblerPass1:
         line_number = line_for_literals
         for literal in self.literal_table.get_literals():
             try:
-                self.process_literal(literal.name)
+                # self.process_literal(literal.name)
                 line_number += 1
                 literal_as_string = str(literal)
                 literal_name = (literal.name)
