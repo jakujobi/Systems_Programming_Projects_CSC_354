@@ -1,7 +1,10 @@
 1          00000     CSC_354:    START      #0               
 2          00000     FIRST:      RESW       1                
-3          00003     GO:         LDA        =0CABCDE         
-4          00003                 LDA        =0X00ff          
-5          00003                 +LDT       =0X02468A        
-6          00003     THIRD:      RESB       6                
-7          00009                 END        GO               
+3          00003     GO:         LDA        =0CABCDE         032015    
+4          00006                 LDA        =0X00ff          032017    
+5          00009                 +LDT       =0X02468A        77100022    
+6          0000D     THIRD:      RESB       6                
+7          00013                 END        GO               
+8          00013     *           =0CABCDE    
+9          00018     *           =0X00ff     
+10         0001A     *           =0X02468A   
