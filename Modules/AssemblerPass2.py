@@ -461,9 +461,7 @@ class AssemblerPass2:
                         line_number += 1
                         literal_as_string = str(literal)
                         literal_name = literal.name
-                        literal_length = literal.length
-                        literal_address = literal.address
-                        
+                        literal_length = literal.length                        
                         try:
                             # Create a new source code line
                             source_line = SourceCodeLine(
