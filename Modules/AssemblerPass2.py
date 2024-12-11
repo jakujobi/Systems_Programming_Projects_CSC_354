@@ -752,11 +752,11 @@ class AssemblerPass2:
         self.logger.log_action(f"Handling BYTE directive with operand '{operand}' at line {source_line.line_number}.")
         instruction_length = 3
         object_code = ''
-        if operand.startswith("C'") and operand.endswith("'"):
+        if operand.startswith(self.character_literal_prefix) and operand.endswith(""):
             chars = operand[2:-1]
             object_code = ''.join(f"{ord(c):02X}" for c in chars)
             source_line.set_object_code_int_from_hex_string(object_code)
-        elif operand.startswith("X'") and operand.endswith("'"):
+        elif operand.startswith(self.hex_literal_prefix) and operand.endswith(""):
             object_code = operand[2:-1].upper()
             source_line.set_object_code_int_from_hex_string(object_code)
         else:
