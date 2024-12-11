@@ -54,8 +54,19 @@ class ModificationRecordManager:
         :param length: The length in half-bytes (nibbles) that need to be modified.
         """
         # Validate modification parameters
-        if not self.validate_modification(address, length):
-            return  # Validation failed; error already logged
+        
+        # log the type of address
+        self.logger.log_action(f"Address type: {type(address)}")
+        self.logger.log_action(f"Address: {address}")
+        
+        
+        
+        
+        # # convert the address to an integer from hex string
+        # address = int(address)
+        
+        # if not self.validate_modification(address, length):
+        #     return  # Validation failed; error already logged
         
         # Check for duplicate modification records
         if any(record.startswith(f"M{self.sp_ch}{address:06X}") for record in self.modification_records):
@@ -104,7 +115,7 @@ class ModificationRecordManager:
         program_length = self.location_counter.program_length
         if address < 0 or address + (length // 2) > program_length:
             self.logger.log_error(
-                f"Invalid modification address or length: Address={address:06X}, Length={length}"
+                f"Invalid modification address or length: Address={address}, Length={length}"
             )
             return False
         
