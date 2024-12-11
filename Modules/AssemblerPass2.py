@@ -287,15 +287,7 @@ class AssemblerPass2:
             # self.location_counter.increment_by_decimal(instruction_length)
             # self.logger.log_action(f"Incremented location counter by {instruction_length}. New address: {self.location_counter.get_current_address_int():X}")
             
-    def check_if_sourceline_is_directive(self, source_line):
-        """
-        Checks if a given source line is a directive.
 
-        :param source_line: The source line to check.
-        :return: True if the source line is a directive, False otherwise.
-        """
-        opcode = source_line.opcode_mnemonic.upper()
-        return opcode in self.opcode_handler.directives
 
     def finalize_records(self):
         """
@@ -333,7 +325,8 @@ class AssemblerPass2:
         """
         # mention that this method is being called
         self.logger.log_action("Creating header record with create_header_record method.")
-        program_name_formatted = f"{self.program_name}"
+        # use only the first 4 characters of the program name
+        program_name_formatted = f"{self.program_name}"[:4]
         # program_name_formatted = f"{self.program_name:<6}"[:6]  # Ensure 6 characters
         # check if location counter exists
         if self.location_counter is None:
@@ -345,7 +338,7 @@ class AssemblerPass2:
         _current_address = self.location_counter.get_current_address_int()
         program_length = _current_address - self.program_start_address
         self.program_length = program_length  # Store the program length
-        header_record = f"H^{program_name_formatted}^{self.program_start_address:06X}^{program_length:06X}"
+        header_record = f"H{program_name_formatted}{self.program_start_address:06X}^{program_length:06X}"
         self.logger.log_action(f"Created header record: {header_record}")
         return header_record
 
@@ -387,7 +380,7 @@ class AssemblerPass2:
         """
         self.logger.log_action("Creating end record with create_end_record method.")
         # as hex string
-        end_record = f"E^{self.first_executable_address:06X}"
+        end_record = f"E{self.first_executable_address:06X}"
         self.logger.log_action(f"Created end record: {end_record}")
         return end_record
 
@@ -545,6 +538,17 @@ class AssemblerPass2:
 
 # *Directives Region ______________________________________________________
 #region Directives
+    def check_if_sourceline_is_directive(self, source_line):
+        """
+        Checks if a given source line is a directive.
+
+        :param source_line: The source line to check.
+        :return: True if the source line is a directive, False otherwise.
+        """
+        opcode = source_line.opcode_mnemonic.upper()
+        return opcode in self.opcode_handler.directives
+
+
     def get_num_without_hashtag(self, num: str) -> int:
         """
         Gets the number without the '#' character.
