@@ -17,7 +17,4 @@ if __name__ == "__main__":
     source_file = sys.argv[1] if len(sys.argv) > 1 else hardcoded_file
     
     # Create an instance of AssemblerPass1 with the source file
-    assembler_pass2 = AssemblerPass2(source_file)
-    
-    # # Run the assembler pass 1
-    # assembler_pass2.run()
+    AssemblerPass2(source_file)
