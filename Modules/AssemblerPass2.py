@@ -447,6 +447,8 @@ class AssemblerPass2:
             self.logger.log_error(f"Failed to write listing file to '{self.listing_file}': {e}")
             
         self.add_literals_at_end_of_program(line_number)
+        self.add_symbol_table_to_output_file()
+        self.add_literal_table_to_output_file()
             
             
     
@@ -503,7 +505,58 @@ class AssemblerPass2:
         except Exception as e:
             self.logger.log_error(f"An error occurred while adding literals to the output: {e}")
         
-        
+    def add_symbol_table_to_output_file(self):
+        """
+        Adds the symbol table to the output.
+        """
+        try:
+            self.logger.log_action("Trying to add literals to the output.")
+            with open(self.listing_file, 'a') as file:
+                # add symbol table to the output
+                self.logger.log_action("Adding symbol table to the output.")
+                if self.symbol_table:
+                    try:
+                        _symbol_table = str(self.symbol_table)
+                        _header = f"\n\n{self.Start_div_symbol_table}"
+                        file.write(_header)
+                        file.write(str(_symbol_table) + '\n')
+                        _footer = f"{self.End_div_symbol_table}\n"
+                        file.write(_footer)
+                        self.logger.log_action("Symbol table added to the output.")
+                    except Exception as e:
+                        self.logger.log_error(f"Whoops! An error occurred while writing the symbol table to the output: {e}")
+                else:
+                    self.logger.log_error("Symbol table is empty.")
+        except Exception as e:
+            self.logger.log_error(f"An error occurred while adding the symbol table to the output: {e}")
+
+
+    def add_literal_table_to_output_file(self):
+        """
+        Adds the literal table to the output.
+        """
+        try:
+            self.logger.log_action("Trying to add literals to the output.")
+            with open(self.listing_file, 'a') as file:
+                # add literal table to the output
+                self.logger.log_action("Adding literal table to the output.")
+                if self.literal_table:
+                    try:
+                        _literal_table = str(self.literal_table)
+                        _header = f"\n\n{self.Start_div_literal_table}\n"
+                        file.write(_header)
+                        file.write(_literal_table + '\n')
+                        _footer = f"{self.End_div_literal_table}\n"
+                        file.write(_footer)
+                        self.logger.log_action("Literal table added to the output.")
+                    except Exception as e:
+                        self.logger.log_error(f"An error occurred while writing the literal table to the output: {e}")
+                else:
+                    self.logger.log_error("Literal table is empty.")
+        except Exception as e:
+            self.logger.log_error(f"An error occurred while adding the literal table to the output: {e}")
+            
+
 
     def report_errors(self):
         """
