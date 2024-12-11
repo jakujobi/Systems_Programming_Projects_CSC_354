@@ -32,15 +32,6 @@ ______________________________________________
 ===SYM_END===
 
 
-===LIT_START===
-Literal Table:
-Literal    Value      Length Address 
-=0CABCDE   4142434445 5      0001B   
-=0X00ff    00FF       2      00020   
-=0X02468A  02468A     3      00022   
-===LIT_END===
-
-
 ===PROG_LEN_START===
 Program Length (DEC): 37
 Program Length (HEX): 00025

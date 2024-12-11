@@ -4,5 +4,5 @@
 4          00000     BEGIN:      +SSK       ONE              EF100000    
 5          00004                 +DIVF      TWO              67100000    
 6          00008                 +WD        FOUR+#6          DF100000    
-8          0000C     THREE:      WORD       97               000061    
-9          0000F                 END        BEGIN            
+7          0000C     THREE:      WORD       97               000061    
+8          0000F                 END        BEGIN            
