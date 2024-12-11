@@ -142,6 +142,22 @@ class LiteralData:
         self.value: str = value.upper()  # Normalize value
         self.length: int = length
         self.address: int = address or None
+        
+    def __str__(self):
+        """
+        /***************************************************************************************
+        ***  METHOD : __str__                                                                ***
+        ***  DESCRIPTION :                                                                   ***
+        ***      Returns a string representation of the LiteralData object.                  ***
+        ***                                                                                  ***
+        ***  RETURN : str                                                                    ***
+        ***      A formatted string with the literal name, value, length, and address.       ***
+        ***************************************************************************************/
+
+        Return a string representation of the LiteralData object.
+        :return: A formatted string with the literal name, value, length, and address.
+        """
+        return f"LiteralData: {self.name} = {self.value} (Length: {self.length}, Address: {self.address})"
 
 
 
@@ -230,31 +246,45 @@ class LiteralTableList:
         ***  METHOD : __str__                                                                ***
         ***  DESCRIPTION :                                                                   ***
         ***      Returns a string representation of the literal table.                       ***
+        ***      This method iterates through the linked list of literals and formats        ***
+        ***      each literal's name, value, length, and address into a readable string.     ***
         ***                                                                                  ***
         ***  RETURN : str                                                                    ***
-        ***      A string representation of the literal table.                               ***
+        ***      A string representation of the literal table, including headers and         ***
+        ***      formatted literal data. If the table is empty, returns a message            ***
+        ***      indicating that the literal table is empty.                                 ***
         ***************************************************************************************/
         """
-
-        if self.head is None:
-            return "Literal table is empty."
-        
-        result = ["Literal Table:"]
-        result.append(self.str_header)
-        
-        current = self.head
-        while current is not None:
-            literal_data = current.literal_data
-            # address = f"{literal_data.address:05X}" if literal_data.address is not None else "None"
+        try:
+            if self.head is None:
+                return "Literal table is empty."
             
-            # if address is a string with Hexadecimal value convert it to hex int
-            address = f"{int(literal_data.address, 16):05X}" if literal_data.address is not None else "None"
+            # Ensure str_header is defined
+            if not hasattr(self, 'str_header'):
+                self.str_header = f"{'Name':<10} {'Value':<10} {'Length':<6} {'Address':<8}"
             
-            # address = f"{literal_data.address:05X}" if literal_data.address is not None else "None"
-            result.append(f"{literal_data.name:<10} {literal_data.value:<10} {literal_data.length:<6} {address:<8}")
-            current = current.next
-        
-        return "\n".join(result)
+            result = ["Literal Table:"]
+            result.append(self.str_header)
+            
+            current = self.head
+            while current is not None:
+                literal_data = current.literal_data
+                # Handle address formatting with error checking
+                if isinstance(literal_data.address, str):
+                    try:
+                        address = f"{int(literal_data.address, 16):05X}"
+                    except ValueError:
+                        self.logger.log_error(f"Invalid hexadecimal address format: {literal_data.address}")
+                        address = "INVALID"
+                else:
+                    address = f"{literal_data.address:05X}" if literal_data.address is not None else "None"
+                
+                result.append(f"{literal_data.name:<10} {literal_data.value:<10} {literal_data.length:<6} {address:<8}")
+                current = current.next
+            
+            return "\n".join(result)
+        except Exception as e:
+            self.logger.log_error(f"Error occurred while formatting literal table: {e}")
 
 
     def insert(self, literal_data: LiteralData):
