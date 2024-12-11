@@ -744,32 +744,54 @@ class AssemblerPass2:
         self.logger.log_action("Base register unset using NOBASE directive.")
         
 
+        
     def handle_byte_directive(self, source_line: SourceCodeLine):
         """
         Handles the BYTE directive by generating object code for constants.
+        For example:
+            BYTE 0CXYZ => 'X'=0x58, 'Y'=0x59, 'Z'=0x5A => "58595A"
+            BYTE 0X00FF => just "00FF"
         """
         operand = source_line.operands.strip()
         self.logger.log_action(f"Handling BYTE directive with operand '{operand}' at line {source_line.line_number}.")
-        instruction_length = 3
         object_code = ''
-        if operand.startswith(self.character_literal_prefix) and operand.endswith(""):
-            chars = operand[2:-1]
+        
+        # Check the prefix
+        if operand.startswith(self.character_literal_prefix):
+            # Character literal: extract chars after '0C'
+            chars = operand[2:]  # All chars after '0C'
+            # Convert each char to ASCII hex
             object_code = ''.join(f"{ord(c):02X}" for c in chars)
-            source_line.set_object_code_int_from_hex_string(object_code)
-        elif operand.startswith(self.hex_literal_prefix) and operand.endswith(""):
-            object_code = operand[2:-1].upper()
-            source_line.set_object_code_int_from_hex_string(object_code)
+        elif operand.startswith(self.hex_literal_prefix):
+            # Hex literal: take substring after '0X' as hex directly
+            hex_val = operand[2:].strip()
+            # Validate hex string
+            if all(ch in "0123456789ABCDEFabcdef" for ch in hex_val):
+                object_code = hex_val.upper()
+            else:
+                error = f"Invalid hex characters in operand '{operand}' for BYTE directive at line {source_line.line_number}."
+                self.logger.log_error(error)
+                source_line.add_error(error)
+                return
         else:
-            error = f"Invalid operand '{operand}' for BYTE directive at line {source_line.line_number}."
+            error = f"Invalid operand '{operand}' for BYTE directive at line {source_line.line_number}. Expected prefix '0C' or '0X'."
             self.logger.log_error(error)
             source_line.add_error(error)
             return
-        
+
+        # Set object code on the source line
         source_line.set_object_code_int_from_hex_string(object_code)
+        
+        # Add object code to text records
         self.text_record_manager.add_object_code(source_line.address, object_code)
+
+        # Update location counter based on the length of the object code
         instruction_length = len(object_code) // 2
         self.location_counter.increment_by_decimal(instruction_length)
+        source_line.set_instruction_length(instruction_length)
+
         self.logger.log_action(f"Generated object code '{object_code}' for BYTE directive.")
+
     
     def handle_word_directive(self, source_line: SourceCodeLine):
         """
