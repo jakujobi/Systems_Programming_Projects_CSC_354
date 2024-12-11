@@ -270,14 +270,17 @@ class LiteralTableList:
             while current is not None:
                 literal_data = current.literal_data
                 # Handle address formatting with error checking
-                if isinstance(literal_data.address, str):
+                if isinstance(literal_data.address, int):
+                    address = f"{literal_data.address:05X}"
+                elif isinstance(literal_data.address, str):
                     try:
-                        address = f"{int(literal_data.address, 16):05X}"
+                        address_int = int(literal_data.address, 16)
+                        address = f"{address_int:05X}"
                     except ValueError:
                         self.logger.log_error(f"Invalid hexadecimal address format: {literal_data.address}")
                         address = "INVALID"
                 else:
-                    address = f"{literal_data.address:05X}" if literal_data.address is not None else "None"
+                    address = "None"
                 
                 result.append(f"{literal_data.name:<10} {literal_data.value:<10} {literal_data.length:<6} {address:<8}")
                 current = current.next
