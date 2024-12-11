@@ -3,11 +3,11 @@
 3          00003     GO:         LDA        =0CABCDE         032015    
 4          00006                 LDA        =0X00ff          032017    
 5          00009                 +LDT       =0X02468A        77100022    
-6          0000D     SECOND:     BYTE       0Cxyz            007879    
-7          0000F     THIRD:      RESB       6                
-8          00015     FOURTH:     BYTE       0X00FF           00000F    
-9          00016     FIFTH:      BYTE       0Cxyz            007879    
-10         00018                 END        GO               
-11         00018     *           =0CABCDE                    4142434445    
-12         0001D     *           =0X00ff                     0000FF    
-13         0001F     *           =0X02468A                   02468A    
+6          0000D     SECOND:     BYTE       0Cxyz            78797A    
+7          00010     THIRD:      RESB       6                
+8          00016     FOURTH:     BYTE       0X00FF           0000FF    
+9          00018     FIFTH:      BYTE       0Cxyz            78797A    
+10         0001B                 END        GO               
+11         0001B     *           =0CABCDE                    4142434445    
+12         00020     *           =0X00ff                     0000FF    
+13         00022     *           =0X02468A                   02468A    
