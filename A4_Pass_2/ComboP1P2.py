@@ -18,26 +18,27 @@ def process_files(file_list):
             source_file = str(file) + ".asm"
             intermediate_file = str(file) + ".int"
 
-            pass1 = AssemblerPass1(source_file)
+            AssemblerPass1(source_file)
             
             # Ask for user input to proceed with Pass 2
             proceed = input(f"Proceed with Pass 2 for {intermediate_file}? (y/n): ") # accept enter
             if proceed.lower() == "y" or proceed == "":
-                pass2 = AssemblerPass2(intermediate_file)
+                AssemblerPass2(intermediate_file)
             else:
                 print("Pass 2 skipped.")
-        except:
-            print("Error processing file: ", file)
+        except Exception as e:
+            print(f"Error processing {file}: {e}")
 
 if __name__ == "__main__":
     # Make an array of file names
-    test_files = ["Htest3",
-                  "Htest2",
-                  "Htest1",
-                  "t1",
-                  "t2",
-                  "t3",
-                  ]
+    test_files = [
+                "Htest3",
+                "Htest2",
+                "Htest1",
+                "t1",
+                "t2",
+                "t3",
+                ]
 
     process_files(test_files)
     # source_file = str(test_files[0]) + ".asm"
