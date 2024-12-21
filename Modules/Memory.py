@@ -145,6 +145,7 @@ class Memory:
             self.logger.log_action(f"Wrote byte {value:02X} to address {address:05X}.")
         except (ValueError, TypeError) as e:
             self.logger.log_error(str(e), "Memory.write_byte")
+            raise e
 
     def read_byte(self, address: int) -> Optional[int]:
         """
@@ -161,6 +162,7 @@ class Memory:
                 self.logger.log_action(f"Read byte {value:02X} from address {address:05X}.")
             else:
                 self.logger.log_action(f"Read uninitialized byte from address {address:05X}.")
+                raise ValueError(f"Uninitialized byte at address {address:05X}.")
             return value
         except ValueError as e:
             self.logger.log_error(str(e), "Memory.read_byte")
