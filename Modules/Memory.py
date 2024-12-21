@@ -257,3 +257,44 @@ class Memory:
         :return: A string representing the entire memory.
         """
         return self.get_dump(self.start_address, self.start_address + self.size)
+    
+    
+
+
+
+def main():
+    # Initialize the ErrorLogHandler
+    logger = ErrorLogHandler(print_log_actions=True)
+    
+    # Initialize Memory with size 256 bytes starting at address 0x03300
+    memory = Memory(size=256, start_address=0x03300, logger=logger)
+    
+    # Write a single byte
+    memory.write_byte(0x03300, 0xAB)
+    
+    # Write multiple bytes
+    memory.write_bytes(0x03310, b'\xDE\xAD\xBE\xEF')
+    
+    # Read a byte
+    value = memory.read_byte(0x03300)
+    
+    # Check initialization
+    is_init = memory.is_initialized(0x03300)
+    
+    # Attempt to write an invalid byte
+    try:
+        memory.write_byte(0x03301, 0x1FF)  # Invalid byte value
+    except ValueError:
+        pass  # Error already logged
+    
+    # Generate and print memory dump
+    dump = memory.get_dump(0x03300, 0x03320)
+    print("\nMemory Dump:")
+    print(dump)
+    
+    # Display logs and errors
+    logger.display_log()
+    logger.display_errors()
+
+if __name__ == "__main__":
+    main()
